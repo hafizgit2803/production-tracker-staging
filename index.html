@@ -777,6 +777,37 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 #ver-stamp{position:fixed;bottom:6px;right:10px;font-size:10px;color:var(--muted);
   opacity:.45;pointer-events:none;z-index:100;font-weight:500;letter-spacing:.03em}
 
+
+/* Buyer Assignment redesign */
+.ba-card{border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);transition:box-shadow .15s}
+.ba-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.ba-card-hdr{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1.5px solid var(--line);background:var(--bg)}
+.ba-merch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ba-merch-name{font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.01em}
+.ba-merch-div{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+.ba-chip-area{padding:12px 16px;min-height:48px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.ba-buyer-chip{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:var(--panel);
+  border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;letter-spacing:-.01em}
+.ba-buyer-chip button{background:rgba(255,255,255,.2);border:none;cursor:pointer;
+  color:inherit;font-size:12px;width:18px;height:18px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  transition:background .12s;line-height:1}
+.ba-buyer-chip button:hover{background:rgba(255,255,255,.35)}
+.ba-add-row{padding:10px 16px 14px;display:flex;gap:8px;align-items:center;border-top:1px solid var(--line)}
+.ba-custom-select{flex:1;position:relative}
+.ba-custom-select select{width:100%;padding:9px 36px 9px 12px;border:1.5px solid var(--line);
+  border-radius:9px;background:var(--bg);color:var(--ink);font-size:13px;font-weight:500;
+  appearance:none;-webkit-appearance:none;cursor:pointer;outline:none}
+.ba-custom-select select:focus{border-color:var(--accent)}
+.ba-custom-select::after{content:"&#x25BE;";position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  color:var(--muted);pointer-events:none;font-size:14px}
+.ba-assign-btn{padding:9px 18px;border-radius:9px;background:var(--accent);color:#fff;
+  border:none;cursor:pointer;font-size:13px;font-weight:700;flex-shrink:0;transition:opacity .12s}
+.ba-assign-btn:hover{opacity:.88}
+.ba-empty-note{color:var(--muted);font-size:12.5px;font-style:italic}
+.ba-unassigned-pool{background:var(--amber-soft);border:1.5px solid #FDE68A;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.ba-add-box{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -811,7 +842,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.5</p>
   </div>
 </div>
 
@@ -846,7 +877,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-2.4</div>
+  <div id="ver-stamp">v2026-08-31 WF-2.5</div>
 </div>
 
 
@@ -4945,66 +4976,69 @@ function renderBuyerAssign() {
   var merchants = S.users.filter(function(u){ return u.role === 'merchant'; })
     .sort(function(a,b){ return a.name.localeCompare(b.name); });
   var unassigned = S.buyers.filter(function(b){ return !S.buyerAssignments[b.id]; });
-  var divColors = { sweater: '#7C3AED', knit: '#059669' };
+  var divColors = { sweater:'#7C3AED', knit:'#059669' };
+  var divBg    = { sweater:'#EDE9FE', knit:'#D1FAE5' };
 
-  var html = '';
-
-  // ── Merchant cards ────────────────────────────────────────────────────────
-  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px">';
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:18px">';
 
   merchants.forEach(function(m) {
     var myBuyers = S.buyers.filter(function(b){ return S.buyerAssignments[b.id] === m.id; });
-    var avc = divColors[m.division] || '#6B7280';
-    var hasUnassigned = unassigned.length > 0;
+    var dot = divColors[m.division] || '#6B7280';
+    var dotBg = divBg[m.division] || '#F3F4F6';
 
-    html += '<div style="border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel)">'
-      // Card header
-      + '<div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:12px">'
-      + '<div class="av" style="background:'+avc+';width:36px;height:36px;font-size:13px;flex-shrink:0">'+initials(m.name)+'</div>'
-      + '<div><div style="font-weight:600;font-size:14px;color:var(--ink)">'+m.name+'</div>'
-      + '<div style="font-size:11px;color:var(--muted);text-transform:capitalize">'+(m.division||'')+'</div></div>'
+    html += '<div class="ba-card">'
+      // Header — no avatar, just dot + name
+      + '<div class="ba-card-hdr">'
+      + '<div style="display:flex;flex-direction:column;flex:1">'
+      + '<div style="display:flex;align-items:center;gap:7px">'
+      + '<span style="width:9px;height:9px;border-radius:50%;background:'+dot+';flex-shrink:0;display:inline-block"></span>'
+      + '<span class="ba-merch-name">'+m.name+'</span>'
+      + '</div>'
+      + '<span class="ba-merch-div" style="margin-left:16px">'+(m.division||'')+'</span>'
+      + '</div>'
+      + '<span style="font-size:11px;font-weight:700;color:var(--muted);background:'+dotBg+';color:'+dot+';padding:3px 9px;border-radius:20px">'+myBuyers.length+' buyer'+(myBuyers.length!==1?'s':'')+'</span>'
       + '</div>'
       // Buyer chips
-      + '<div style="min-height:32px;margin-bottom:10px">'
+      + '<div class="ba-chip-area">'
       + (myBuyers.length
-        ? myBuyers.map(function(b){
-            return '<span style="display:inline-flex;align-items:center;gap:5px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px">'
-              + b.name
-              + '<button data-bid="'+b.id+'" data-mid="'+m.id+'" onclick="baRemove(this.dataset.bid,this.dataset.mid)" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;padding:0;line-height:1;opacity:.7" title="Remove">&#x2715;</button>'
-              + '</span>';
-          }).join('')
-        : '<div style="color:var(--muted);font-size:12px;font-style:italic">No buyers assigned yet</div>')
+          ? myBuyers.map(function(b){
+              return '<span class="ba-buyer-chip">'
+                + b.name
+                + '<button data-bid="'+b.id+'" data-mid="'+m.id+'" onclick="baRemove(this.dataset.bid,this.dataset.mid)" title="Remove">&#x2715;</button>'
+                + '</span>';
+            }).join('')
+          : '<span class="ba-empty-note">No buyers assigned yet</span>')
       + '</div>'
-      // Add buyer row
-      + '<div style="display:flex;gap:6px;align-items:center">'
-      + (hasUnassigned
-        ? '<select class="adm-sel" id="ba-sel-'+m.id+'" style="flex:1;font-size:12px">'
-          + '<option value="">+ Add buyer...</option>'
-          + unassigned.map(function(b){ return '<option value="'+b.id+'">'+b.name+'</option>'; }).join('')
-          + '</select>'
-          + '<button class="btn sm pri" data-mid="'+m.id+'" onclick="baAssign(this.dataset.mid)" style="flex-shrink:0">Assign</button>'
-        : '<div style="font-size:11px;color:var(--muted);font-style:italic">No unassigned buyers available</div>')
+      // Add buyer
+      + '<div class="ba-add-row">'
+      + (unassigned.length
+          ? '<div class="ba-custom-select"><select id="ba-sel-'+m.id+'">'
+            + '<option value="">Choose buyer to add&hellip;</option>'
+            + unassigned.map(function(b){ return '<option value="'+b.id+'">'+b.name+'</option>'; }).join('')
+            + '</select></div>'
+            + '<button class="ba-assign-btn" data-mid="'+m.id+'" onclick="baAssign(this.dataset.mid)">Assign</button>'
+          : '<span class="ba-empty-note">No unassigned buyers in pool</span>')
       + '</div></div>';
   });
   html += '</div>';
 
-  // ── Unassigned buyers pool ─────────────────────────────────────────────────
+  // Unassigned pool
   if (unassigned.length) {
-    html += '<div style="background:var(--amber-soft);border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-bottom:16px">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">&#x26A0; Unassigned Buyers</div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:6px">'
+    html += '<div class="ba-unassigned-pool">'
+      + '<div style="font-size:11px;font-weight:800;color:#92400E;letter-spacing:.08em;text-transform:uppercase;margin-bottom:9px">Unassigned Buyers</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:7px">'
       + unassigned.map(function(b){
-          return '<span style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600">'+b.name+'</span>';
+          return '<span style="background:#fff;border:1.5px solid #FDE68A;color:#92400E;border-radius:8px;padding:5px 13px;font-size:13px;font-weight:700">'+b.name+'</span>';
         }).join('')
       + '</div></div>';
   }
 
-  // ── Add new buyer ──────────────────────────────────────────────────────────
-  html += '<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px">Add New Buyer</div>'
+  // Add new buyer
+  html += '<div class="ba-add-box">'
+    + '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add New Buyer to Pool</div>'
     + '<div style="display:flex;gap:8px">'
-    + '<input id="ba-new-name" class="adm-inp" placeholder="Buyer name (e.g. H&amp;M, Zara)..." style="flex:1">'
-    + '<button class="btn pri" onclick="baAddBuyer()">+ Add</button>'
+    + '<input id="ba-new-name" class="adm-inp" placeholder="Buyer name  (e.g. H&amp;M, Zara, Next)..." style="flex:1;font-size:13px">'
+    + '<button class="btn pri" onclick="baAddBuyer()" style="flex-shrink:0;font-weight:700">+ Add Buyer</button>'
     + '</div>'
     + '<div id="ba-err" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>'
     + '</div>';
