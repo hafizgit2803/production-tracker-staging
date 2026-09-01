@@ -794,13 +794,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
   transition:background .12s;line-height:1}
 .ba-buyer-chip button:hover{background:rgba(255,255,255,.35)}
 .ba-add-row{padding:10px 16px 14px;display:flex;gap:8px;align-items:center;border-top:1px solid var(--line)}
-.ba-custom-select{flex:1;position:relative}
-.ba-custom-select select{width:100%;padding:9px 36px 9px 12px;border:1.5px solid var(--line);
-  border-radius:9px;background:var(--bg);color:var(--ink);font-size:13px;font-weight:500;
-  appearance:none;-webkit-appearance:none;cursor:pointer;outline:none}
-.ba-custom-select select:focus{border-color:var(--accent)}
-.ba-custom-select::after{content:"&#x25BE;";position:absolute;right:11px;top:50%;transform:translateY(-50%);
-  color:var(--muted);pointer-events:none;font-size:14px}
+
 .ba-assign-btn{padding:9px 18px;border-radius:9px;background:var(--accent);color:#fff;
   border:none;cursor:pointer;font-size:13px;font-weight:700;flex-shrink:0;transition:opacity .12s}
 .ba-assign-btn:hover{opacity:.88}
@@ -4988,72 +4982,77 @@ function renderBuyerAssign() {
   var merchants = S.users.filter(function(u){ return u.role === 'merchant'; })
     .sort(function(a,b){ return a.name.localeCompare(b.name); });
   var unassigned = S.buyers.filter(function(b){ return !S.buyerAssignments[b.id]; });
-  var divColors = { sweater:'#7C3AED', knit:'#059669' };
-  var divBg    = { sweater:'#EDE9FE', knit:'#D1FAE5' };
+  var dotColor = { sweater:'#7C3AED', knit:'#059669' };
 
   var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:18px">';
 
   merchants.forEach(function(m) {
     var myBuyers = S.buyers.filter(function(b){ return S.buyerAssignments[b.id] === m.id; });
-    var dot = divColors[m.division] || '#6B7280';
-    var dotBg = divBg[m.division] || '#F3F4F6';
+    var dot = dotColor[m.division] || '#6B7280';
+    var selId = 'ba-sel-' + m.id;
 
-    html += '<div class="ba-card">'
-      // Header — no avatar, just dot + name
-      + '<div class="ba-card-hdr">'
-      + '<div style="display:flex;flex-direction:column;flex:1">'
-      + '<div style="display:flex;align-items:center;gap:7px">'
-      + '<span style="width:9px;height:9px;border-radius:50%;background:'+dot+';flex-shrink:0;display:inline-block"></span>'
-      + '<span class="ba-merch-name">'+m.name+'</span>'
-      + '</div>'
-      + '<span class="ba-merch-div" style="margin-left:16px">'+(m.division||'')+'</span>'
-      + '</div>'
-      + '<span style="font-size:11px;font-weight:700;color:var(--muted);background:'+dotBg+';color:'+dot+';padding:3px 9px;border-radius:20px">'+myBuyers.length+' buyer'+(myBuyers.length!==1?'s':'')+'</span>'
-      + '</div>'
-      // Buyer chips
-      + '<div class="ba-chip-area">'
-      + (myBuyers.length
-          ? myBuyers.map(function(b){
-              return '<span class="ba-buyer-chip">'
-                + b.name
-                + '<button data-bid="'+b.id+'" data-mid="'+m.id+'" onclick="baRemove(this.dataset.bid,this.dataset.mid)" title="Remove">&#x2715;</button>'
-                + '</span>';
-            }).join('')
-          : '<span class="ba-empty-note">No buyers assigned yet</span>')
-      + '</div>'
-      // Add buyer
-      + '<div class="ba-add-row">'
-      + (unassigned.length
-          ? '<div class="ba-custom-select"><select id="ba-sel-'+m.id+'">'
-            + '<option value="">Choose buyer to add&hellip;</option>'
-            + unassigned.map(function(b){ return '<option value="'+b.id+'">'+b.name+'</option>'; }).join('')
-            + '</select></div>'
-            + '<button class="ba-assign-btn" data-mid="'+m.id+'" onclick="baAssign(this.dataset.mid)">Assign</button>'
-          : '<span class="ba-empty-note">No unassigned buyers in pool</span>')
-      + '</div></div>';
+    html += '<div class="ba-card">';
+    // Header
+    html += '<div class="ba-card-hdr">';
+    html += '<div style="flex:1">';
+    html += '<div style="display:flex;align-items:center;gap:7px">';
+    html += '<span style="width:9px;height:9px;border-radius:50%;background:' + dot + ';display:inline-block;flex-shrink:0"></span>';
+    html += '<span style="font-weight:700;font-size:14px">' + m.name + '</span>';
+    html += '</div>';
+    html += '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-left:16px">' + (m.division||'') + '</span>';
+    html += '</div>';
+    html += '<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F3F4F6;color:var(--muted)">' + myBuyers.length + ' buyer' + (myBuyers.length!==1?'s':'') + '</span>';
+    html += '</div>';
+    // Chips
+    html += '<div class="ba-chip-area">';
+    if (myBuyers.length) {
+      myBuyers.forEach(function(b) {
+        html += '<span class="ba-buyer-chip">' + b.name;
+        html += '<button data-bid="' + b.id + '" data-mid="' + m.id + '" onclick="baRemove(this.dataset.bid,this.dataset.mid)" title="Remove">&#x2715;</button>';
+        html += '</span>';
+      });
+    } else {
+      html += '<span style="color:var(--muted);font-size:12.5px;font-style:italic">No buyers assigned yet</span>';
+    }
+    html += '</div>';
+    // Add row
+    html += '<div class="ba-add-row">';
+    if (unassigned.length) {
+      html += '<select id="' + selId + '" style="flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">';
+      html += '<option value="">Choose buyer to add...</option>';
+      unassigned.forEach(function(b) {
+        html += '<option value="' + b.id + '">' + b.name + '</option>';
+      });
+      html += '</select>';
+      html += '<button class="ba-assign-btn" data-mid="' + m.id + '" onclick="baAssign(this.dataset.mid)">Assign</button>';
+    } else {
+      html += '<span style="color:var(--muted);font-size:12px;font-style:italic">No buyers in pool yet</span>';
+    }
+    html += '</div>';
+    html += '</div>';
   });
   html += '</div>';
 
   // Unassigned pool
   if (unassigned.length) {
-    html += '<div class="ba-unassigned-pool">'
-      + '<div style="font-size:11px;font-weight:800;color:#92400E;letter-spacing:.08em;text-transform:uppercase;margin-bottom:9px">Unassigned Buyers</div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:7px">'
-      + unassigned.map(function(b){
-          return '<span style="background:#fff;border:1.5px solid #FDE68A;color:#92400E;border-radius:8px;padding:5px 13px;font-size:13px;font-weight:700">'+b.name+'</span>';
-        }).join('')
-      + '</div></div>';
+    html += '<div class="ba-unassigned-pool">';
+    html += '<div style="font-size:11px;font-weight:800;color:#92400E;letter-spacing:.08em;text-transform:uppercase;margin-bottom:9px">Unassigned Buyers</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:7px">';
+    unassigned.forEach(function(b) {
+      html += '<span style="background:#fff;border:1.5px solid #FDE68A;color:#92400E;border-radius:8px;padding:5px 13px;font-size:13px;font-weight:700">' + b.name + '</span>';
+    });
+    html += '</div></div>';
   }
 
   // Add new buyer
-  html += '<div class="ba-add-box">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add New Buyer to Pool</div>'
-    + '<div style="display:flex;gap:8px">'
-    + '<input id="ba-new-name" class="adm-inp" placeholder="Buyer name  (e.g. H&amp;M, Zara, Next)..." style="flex:1;font-size:13px">'
-    + '<button class="btn pri" onclick="baAddBuyer()" style="flex-shrink:0;font-weight:700">+ Add Buyer</button>'
-    + '</div>'
-    + '<div id="ba-err" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>'
-    + '</div>';
+  html += '<div class="ba-add-box">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add New Buyer to Pool</div>';
+  html += '<div style="display:flex;gap:8px">';
+  html += '<input id="ba-new-name" class="adm-inp" placeholder="Buyer name (e.g. H&M, Zara, Next)..." style="flex:1;font-size:13px">';
+  html += '<button class="btn pri" onclick="baAddBuyer()" style="flex-shrink:0;font-weight:700">+ Add Buyer</button>';
+  html += '</div>';
+  html += '<div id="ba-err" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>';
+  html += '</div>';
 
   $('ba-body').innerHTML = html;
 }
