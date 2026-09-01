@@ -842,7 +842,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.5</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.6</p>
   </div>
 </div>
 
@@ -877,7 +877,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-2.5</div>
+  <div id="ver-stamp">v2026-08-31 WF-2.6</div>
 </div>
 
 
@@ -2287,7 +2287,7 @@ function renderArchive() {
 // ─── ORDER ACTIONS ───
 let orderForMerchant = null;
 
-function openOrder(mid) {
+async function openOrder(mid) {
   orderForMerchant = mid;
   const m = S.users.find(u => u.id === mid);
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
@@ -2298,6 +2298,18 @@ function openOrder(mid) {
   var prev=$('order-img-preview');if(prev){prev.src='';prev.style.display='none';}
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
   var fi=$('o_image');if(fi)fi.value='';
+  // Populate buyer dropdown
+  if(!S.buyers||!S.buyers.length){ try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){} }
+  var buyerSel=$('o_buyer');
+  if(buyerSel){
+    var myB = getBuyersForMerchant(mid);
+    if(myB.length){
+      buyerSel.innerHTML='<option value="">-- Select buyer --</option>'
+        +myB.map(function(b){return '<option value="'+b.id+'">'+b.name+'</option>';}).join('');
+    } else {
+      buyerSel.innerHTML='<option value="">No buyers assigned yet</option>';
+    }
+  }
   openModal('ov-order');
 }
 
