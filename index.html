@@ -772,6 +772,11 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
   padding:10px 4px;cursor:pointer;user-select:none;border-bottom:2px solid var(--line);margin-bottom:8px}
 .buyer-section-hdr:hover span:first-child{opacity:.8}
 
+
+/* Version stamp */
+#ver-stamp{position:fixed;bottom:6px;right:10px;font-size:10px;color:var(--muted);
+  opacity:.45;pointer-events:none;z-index:100;font-weight:500;letter-spacing:.03em}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -806,7 +811,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.3</p>
   </div>
 </div>
 
@@ -841,6 +846,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
+  <div id="ver-stamp">v2026-08-31 WF-2.3</div>
 </div>
 
 
@@ -3413,7 +3419,8 @@ function renderAdminPage() {
   $('page-title').textContent = 'Admin Panel';
   $('page-sub').innerHTML = 'User management &amp; assignments';
   $('stamp').innerHTML = '';
-  $('act-row').innerHTML = '<button class="btn pri" onclick="openMerchantAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F517;</span> Merchant Assignment</button>';
+  $('act-row').innerHTML = '<button class="btn pri" onclick="openMerchantAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F517;</span> Merchant Assignment</button>'
+    + ' <button class="btn" onclick="openBuyerAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F6CD;</span> Buyer Assignment</button>';
 
   var inp = 'class="adm-inp"';
   var sel = 'class="adm-sel"';
