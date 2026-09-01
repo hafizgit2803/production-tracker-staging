@@ -8,7 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Workflow — Shahana Group</title>
+<title>Production Tracker — Shahana Group</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F455;</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- SheetJS loaded on demand -->
@@ -766,6 +766,12 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .maint-note{background:#FDF6E3;border:1px solid #F6D860;border-radius:9px;
   padding:10px 14px;font-size:12.5px;color:#92400E;margin-top:12px;text-align:center;display:none}
 
+
+/* Buyer section headers in board */
+.buyer-section-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 4px;cursor:pointer;user-select:none;border-bottom:2px solid var(--line);margin-bottom:8px}
+.buyer-section-hdr:hover span:first-child{opacity:.8}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -800,7 +806,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.2</p>
   </div>
 </div>
 
@@ -848,7 +854,8 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
       <div class="grid3" style="margin-bottom:10px">
         <div class="f"><label>Style / SKU</label><input id="o_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. KB-7742"></div>
         <div class="f"><label>PO Number</label><input id="o_po" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. PO-2026-001"></div>
-        <div class="f"><label>Buyer</label><input id="o_buyer" list="dl_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
+        <div class="f"><label>Order Confirm Date</label><input id="o_confirm_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Buyer</label><select id="o_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select buyer --</option></select></div>
         <div class="f"><label>Buying house</label><input id="o_house" list="dl_house" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
       </div>
       <div class="f" style="margin-bottom:10px"><label>Product Photo <span style="font-size:11px;color:var(--muted);font-weight:400">(optional - shared across all POs of this style)</span></label>
@@ -1132,6 +1139,17 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
   </div>
 </div>
 
+<!-- === BUYER ASSIGNMENT MODAL === -->
+<div class="ov" id="ov-buyer-assign" onclick="if(event.target===this)closeModal('ov-buyer-assign')">
+  <div class="modal" style="max-width:860px;width:96vw;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0">
+      <div><h3>Buyer Assignment</h3><div class="msub">Assign buyers to merchants. One buyer per merchant.</div></div>
+      <button class="btn" onclick="closeModal('ov-buyer-assign')">Close</button>
+    </div>
+    <div class="m-b" id="ba-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
 <!-- ═══ MODAL: ADD NOTE ═══ -->
 <div class="ov" id="ov-note" onclick="if(event.target===this)closeModal('ov-note')">
   <div class="modal slim">
@@ -1176,7 +1194,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 <!-- ═══ MODAL: ADMIN ═══ -->
 <!-- Autocomplete datalists -->
 <datalist id="dl_house"></datalist>
-<datalist id="dl_buyer"></datalist>
+
 <datalist id="dl_gauge"></datalist>
 <datalist id="dl_color"></datalist>
 <datalist id="dl_comp"></datalist>
@@ -1250,6 +1268,8 @@ const S = {
   boardSummaries: {},
   tnaRequests: [],
   myAssignments: [],
+  buyers: [],
+  buyerAssignments: {},
   layingGoods: [],
   layingLoaded: false,
 };
@@ -1461,6 +1481,8 @@ async function startApp() {
   try { await loadMemo(); } catch(e) { console.error('loadMemo:', e); }
   try { await loadTNARequests(); } catch(e) { console.error('loadTNARequests:', e); }
   try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
+  try { await loadBuyers(); } catch(e) { console.error('loadBuyers:', e); }
+  try { await loadBuyerAssignments(); } catch(e) { console.error('loadBuyerAssignments:', e); }
   try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
 
   cleanOldArchive();
@@ -1481,13 +1503,24 @@ async function loadUsers() {
   S.users = data || [];
 }
 
+function autolinkBuyerId(orders) {
+  // Match buyer text to buyer record by name (case-insensitive)
+  orders.forEach(function(o) {
+    if (!o.buyer_id && o.buyer) {
+      var match = S.buyers.find(function(b){ return b.name.toLowerCase()===o.buyer.toLowerCase(); });
+      if (match) o.buyer_id = match.id;
+    }
+  });
+  return orders;
+}
+
 async function loadDashOrders() {
   // Lightweight query — only columns needed for dashboard stats + TNA checking
   let q = db.from('orders').select(DASH_COLS)
     .or('stage.eq.live,stage.is.null').order('ship_date', { ascending: true });
   if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
   const { data } = await q;
-  S.orders = data || [];
+  S.orders = autolinkBuyerId(data || []);
   await loadAlerts();
 }
 
@@ -1506,7 +1539,7 @@ async function loadBoardOrders(merchantId) {
   const { data } = await db.from('orders').select('*')
     .eq('merchant_id', merchantId).or('stage.eq.live,stage.is.null')
     .order('ship_date', { ascending: true });
-  S.boardCache[merchantId] = data || [];
+  S.boardCache[merchantId] = autolinkBuyerId(data || []);
   // Load summaries in parallel (yarn totals + approval status)
   const ids = (data || []).map(o => o.id);
   if (ids.length) {
@@ -2060,6 +2093,75 @@ async function renderBoard(uid) {
       + '</td></tr>';
   }).join('');
 
+
+  // ── Group by buyer ────────────────────────────────────────────────────────
+  var myBuyers = getBuyersForMerchant(uid);
+  var grouped = {};
+  myBuyers.forEach(function(b){ grouped[b.id]=[]; });
+  var otherOrders = [];
+  orders.forEach(function(o){
+    if(o.buyer_id&&grouped[o.buyer_id]!==undefined) grouped[o.buyer_id].push(o);
+    else otherOrders.push(o);
+  });
+  myBuyers.forEach(function(b){
+    grouped[b.id].sort(function(a,b2){return (a.confirm_date||'9999')<(b2.confirm_date||'9999')?-1:1;});
+  });
+
+  if(!myBuyers.length&&S.user.role==='merchant'){
+    $('content').innerHTML='<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin.</p></div></div>';
+    return;
+  }
+  if(!orders.length){
+    $('content').innerHTML=notesHtml+'<div class="card"><div class="empty"><h4>No live orders</h4><p>'+(canEdit?'Click &ldquo;+ New order&rdquo; to add your first order.':'No orders yet.')+'</p></div></div>';
+    return;
+  }
+
+  var allHtml='';
+  myBuyers.forEach(function(b){
+    var bOrders=grouped[b.id];
+    var sk='bbs_'+uid+'_'+b.id;
+    var open=localStorage.getItem(sk)!=='0';
+    var bQty=bOrders.reduce(function(s,o){return s+(o.qty||0);},0);
+    var bVal=bOrders.reduce(function(s,o){return s+(o.qty||0)*(o.fob||0);},0);
+    allHtml+='<div style="margin-bottom:16px">'+
+      '<div class="buyer-section-hdr" onclick="toggleBuyerSection(\''+sk+'\')"> '+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+      '<span style="font-family:var(--serif);font-size:16px;font-weight:600">'+b.name+'</span>'+
+      '<span class="chip" style="font-size:10px">'+bOrders.length+' orders</span>'+
+      (bOrders.length?'<span style="font-size:11px;color:var(--muted)">'+fmt(bQty)+' pcs &middot; '+money(bVal)+'</span>':'')+
+      '</div><span class="rail-section-arrow'+(open?' open':'')+'" id="arr-'+sk+'">&#x25B6;</span></div>'+
+      '<div id="sec-'+sk+'" style="max-height:'+(open?'99999px':'0')+';overflow:hidden;transition:max-height .3s ease">'+
+      (bOrders.length?buildBoardTableHTML(bOrders,uid,canEdit,''):'<div class="card" style="padding:14px;color:var(--muted);font-size:13px">No orders for this buyer yet.</div>')+
+      '</div></div>';
+  });
+  if(otherOrders.length){
+    var sk2='bbs_'+uid+'_other';
+    var open2=localStorage.getItem(sk2)!=='0';
+    allHtml+='<div style="margin-bottom:16px">'+
+      '<div class="buyer-section-hdr" onclick="toggleBuyerSection(\''+sk2+'\')"> '+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+      '<span style="font-family:var(--serif);font-size:16px;font-weight:600">Other</span>'+
+      '<span class="chip" style="font-size:10px">'+otherOrders.length+' orders</span></div>'+
+      '<span class="rail-section-arrow'+(open2?' open':'')+'" id="arr-'+sk2+'">&#x25B6;</span></div>'+
+      '<div id="sec-'+sk2+'" style="max-height:'+(open2?'99999px':'0')+';overflow:hidden;transition:max-height .3s ease">'+
+      buildBoardTableHTML(otherOrders,uid,canEdit,'')+
+      '</div></div>';
+  }
+  $('content').innerHTML = notesHtml + allHtml;
+}
+
+function toggleBuyerSection(key){
+  var el=document.getElementById('sec-'+key);
+  var arrow=document.getElementById('arr-'+key);
+  if(!el) return;
+  var open=el.style.maxHeight!=='0px'&&el.style.maxHeight!=='0';
+  el.style.maxHeight=open?'0':'99999px';
+  if(arrow) arrow.classList.toggle('open',!open);
+  localStorage.setItem(key,open?'0':'1');
+}
+
+function buildBoardTableHTML(orders, uid, canEdit, notesHtml) {
+  notesHtml = notesHtml || '';
   $('content').innerHTML = notesHtml + '<div class="card"><div class="scroller"><table>'
     + '<thead><tr>'
     + '<th class="stk" rowspan="2">Style</th>'
@@ -2093,6 +2195,7 @@ async function renderBoard(uid) {
     + '</table></div></div>'
     + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
 }
+
 
 
 // ─── ARCHIVE ───
@@ -2153,7 +2256,7 @@ function openOrder(mid) {
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
   $('ord-err').style.display = 'none';
   ['o_house','o_buyer','o_style','o_gauge','o_color','o_comp','o_qty','o_fob',
-   'o_po','p_yarn','p_pp','p_sew','p_pack','p_knit','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
+   'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_knit','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
   $('o_total').value = '';
   var prev=$('order-img-preview');if(prev){prev.src='';prev.style.display='none';}
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
@@ -2173,6 +2276,8 @@ function syncShip() {
 }
 
 async function saveOrder() {
+  var buyerVal=($('o_buyer')&&$('o_buyer').value)||'';
+  if(!buyerVal){$('ord-err').textContent='Please select a buyer.';$('ord-err').style.display='block';return;}
   const style = $('o_style').value.trim();
   const qty = Number($('o_qty').value) || 0;
   if (!style || !qty) {
@@ -2186,6 +2291,8 @@ async function saveOrder() {
     merchant_id: orderForMerchant,
     house: $('o_house').value, buyer: $('o_buyer').value,
     po_number: ($('o_po')&&$('o_po').value.trim())||null,
+    confirm_date: ($('o_confirm_date')&&$('o_confirm_date').value)||null,
+    buyer_id: ($('o_buyer')&&$('o_buyer').value)||null,
     stage: 'live',
     style, gauge: $('o_gauge').value, color: $('o_color').value,
     comp: $('o_comp').value, qty, fob: Number($('o_fob').value)||0,
@@ -4790,6 +4897,135 @@ async function deleteStyleImage() {
     renderBoard(S.view);
   }
   toast('Photo deleted', 'ok-t');
+}
+
+
+// === BUYER SYSTEM ===
+async function loadBuyers() {
+  var res = await db.from('buyers').select('*').order('name');
+  S.buyers = res.data || [];
+}
+
+async function loadBuyerAssignments() {
+  // Load buyer->merchant assignments
+  var res = await db.from('buyer_assignments').select('buyer_id,merchant_id');
+  S.buyerAssignments = {};
+  (res.data||[]).forEach(function(row) {
+    S.buyerAssignments[row.buyer_id] = row.merchant_id;
+  });
+}
+
+function getBuyersForMerchant(merchantId) {
+  return S.buyers.filter(function(b) {
+    return S.buyerAssignments[b.id] === merchantId;
+  });
+}
+
+function getMerchantForBuyer(buyerId) {
+  return S.buyerAssignments[buyerId] || null;
+}
+
+// === BUYER ASSIGNMENT MODULE ===
+async function openBuyerAssign() {
+  $('ba-body').innerHTML = '<div class="loading"><span class="spin"></span> Loading...</div>';
+  openModal('ov-buyer-assign');
+  await loadBuyers();
+  await loadBuyerAssignments();
+  renderBuyerAssign();
+}
+
+function renderBuyerAssign() {
+  var merchants = S.users.filter(function(u){ return u.role === 'merchant'; });
+  var unassigned = S.buyers.filter(function(b){ return !S.buyerAssignments[b.id]; });
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:4px">';
+
+  merchants.forEach(function(m) {
+    var myBuyers = S.buyers.filter(function(b){ return S.buyerAssignments[b.id] === m.id; });
+    var avC = {sweater:'#7C3AED',knit:'#059669'}[m.division] || '#6B7280';
+
+    html += '<div class="ma-card">'
+      + '<div class="ma-card-head">'
+      + '<div class="av" style="background:'+avC+';width:32px;height:32px;font-size:12px">'+initials(m.name)+'</div>'
+      + '<div><div style="font-weight:600;font-size:13px">'+m.name+'</div>'
+      + '<div style="font-size:11px;color:var(--muted)">'+(m.division||'')+'</div></div>'
+      + '</div>'
+      + '<div class="ma-chips" id="ba-chips-'+m.id+'">'
+      + (myBuyers.length ? myBuyers.map(function(b){
+          return '<span class="chip" style="display:inline-flex;align-items:center;gap:4px;margin:2px">'
+            + b.name
+            + '<button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:0 0 0 2px" data-bid="'+b.id+'" data-mid="'+m.id+'" onclick="baRemove(this.dataset.bid,this.dataset.mid)">&#x2715;</button>'
+            + '</span>';
+        }).join('') : '<span style="color:var(--muted);font-size:12px">No buyers assigned</span>')
+      + '</div>'
+      + '<div style="margin-top:8px">'
+      + (unassigned.length
+        ? '<select class="adm-sel" id="ba-sel-'+m.id+'" style="width:100%"><option value="">+ Add buyer...</option>'
+          + unassigned.map(function(b){
+              return '<option value="'+b.id+'">'+b.name+'</option>';
+            }).join('')
+          + '</select>'
+          + '<button class="btn sm pri" style="margin-top:6px;width:100%" data-mid="'+m.id+'" onclick="baAssign(this.dataset.mid)">Assign</button>'
+        : '<div style="font-size:11px;color:var(--muted)">All buyers assigned</div>')
+      + '</div></div>';
+  });
+  html += '</div>';
+
+  // Unassigned buyers section
+  if (unassigned.length) {
+    html += '<div style="margin:16px 0 0;padding:14px;background:var(--amber-soft);border:1px solid #FDE68A;border-radius:10px">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px">Unassigned Buyers</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:6px">'
+      + unassigned.map(function(b){
+          return '<span class="chip" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A">'+b.name+'</span>';
+        }).join('')
+      + '</div></div>';
+  }
+
+  // Add new buyer button
+  html += '<div style="margin-top:14px;display:flex;gap:8px;align-items:center">'
+    + '<input id="ba-new-name" class="adm-inp" placeholder="New buyer name..." style="flex:1">'
+    + '<button class="btn pri" onclick="baAddBuyer()">+ Add buyer</button>'
+    + '</div>'
+    + '<div id="ba-err" style="display:none;color:var(--red);font-size:12px;margin-top:6px"></div>';
+
+  $('ba-body').innerHTML = html;
+}
+
+async function baAddBuyer() {
+  var name = ($('ba-new-name').value||'').trim();
+  if (!name) { $('ba-err').textContent='Enter a buyer name.'; $('ba-err').style.display='block'; return; }
+  var { data, error } = await db.from('buyers').insert({ name: name }).select().single();
+  if (error) {
+    $('ba-err').textContent = error.code==='23505' ? 'Buyer already exists.' : error.message;
+    $('ba-err').style.display='block'; return;
+  }
+  $('ba-err').style.display='none';
+  S.buyers.push(data);
+  $('ba-new-name').value='';
+  toast(name + ' added to buyers');
+  renderBuyerAssign();
+}
+
+async function baAssign(merchantId) {
+  var sel = document.getElementById('ba-sel-' + merchantId);
+  if (!sel || !sel.value) return;
+  var buyerId = sel.value;
+  var buyer = S.buyers.find(function(b){ return b.id === buyerId; });
+  var { error } = await db.from('buyer_assignments').upsert({ buyer_id: buyerId, merchant_id: merchantId });
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  S.buyerAssignments[buyerId] = merchantId;
+  toast((buyer ? buyer.name : 'Buyer') + ' assigned');
+  renderBuyerAssign();
+}
+
+async function baRemove(buyerId, merchantId) {
+  var buyer = S.buyers.find(function(b){ return b.id === buyerId; });
+  var { error } = await db.from('buyer_assignments').delete().eq('buyer_id', buyerId);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  delete S.buyerAssignments[buyerId];
+  toast((buyer ? buyer.name : 'Buyer') + ' unassigned');
+  renderBuyerAssign();
 }
 
 // ─── START ───
