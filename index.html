@@ -836,7 +836,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.7</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.8</p>
   </div>
 </div>
 
@@ -871,7 +871,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-2.7</div>
+  <div id="ver-stamp">v2026-08-31 WF-2.8</div>
 </div>
 
 
@@ -3469,7 +3469,7 @@ function renderAdminPage() {
   + '<div class="adm-card-head"><div><h3 class="adm-h3">My Account</h3><div class="adm-sub">Change your display name and password' + '</div></div></div>'
   + '<div class="adm-row3" style="grid-template-columns:1fr 1fr 1fr auto">'
   + '<div class="adm-field"><label class="adm-lbl">Display name</label><input id="admin-own-name" ' + inp + ' value="' + (S.user.name||'').replace(/"/g,'&quot;') + '"></div>'
-  + '<div class="adm-field"><label class="adm-lbl">Current password</label><div class="pwd-wrap"><input id="admin-cur-pwd" type="password" ' + inp + ' value="' + (S.user.password||'').replace(/"/g,'&quot;') + '" readonly style="background:#F3F4F6;cursor:default"><button class="pwd-eye" tabindex="-1" onmousedown="showPwd(\'admin-cur-pwd\',true)" onmouseup="showPwd(\'admin-cur-pwd\',false)" onmouseleave="showPwd(\'admin-cur-pwd\',false)" ontouchstart="showPwd(\'admin-cur-pwd\',true)" ontouchend="showPwd(\'admin-cur-pwd\',false)">&#x1F441;</button></div></div>'
+  + '<div class="adm-field"><label class="adm-lbl">Current password</label><div class="pwd-wrap"><input id="admin-cur-pwd" type="password" ' + inp + ' value="' + (isHashed(S.user.password) ? '[hashed - cannot display]' : (S.user.password||'').replace(/"/g,'&quot;')) + '" readonly style="background:#F3F4F6;cursor:default"><button class="pwd-eye" tabindex="-1" onmousedown="showPwd(\'admin-cur-pwd\',true)" onmouseup="showPwd(\'admin-cur-pwd\',false)" onmouseleave="showPwd(\'admin-cur-pwd\',false)" ontouchstart="showPwd(\'admin-cur-pwd\',true)" ontouchend="showPwd(\'admin-cur-pwd\',false)">&#x1F441;</button></div></div>'
   + '<div class="adm-field"><label class="adm-lbl">New password</label><div class="pwd-wrap"><input id="admin-own-pwd" type="password" ' + inp + ' placeholder="Enter new password"><button class="pwd-eye" tabindex="-1" onmousedown="showPwd(\'admin-own-pwd\',true)" onmouseup="showPwd(\'admin-own-pwd\',false)" onmouseleave="showPwd(\'admin-own-pwd\',false)" ontouchstart="showPwd(\'admin-own-pwd\',true)" ontouchend="showPwd(\'admin-own-pwd\',false)">&#x1F441;</button></div></div>'
   + '<div class="adm-field adm-field-btn"><button class="btn pri adm-save-btn" onclick="saveMyProfile()">Save changes</button></div>'
   + '</div>'
@@ -3523,7 +3523,7 @@ async function saveMyProfile() {
   errEl.style.display = 'none';
   if (!name) { errEl.textContent = 'Name cannot be empty'; errEl.style.display = 'block'; return; }
   var update = { name: name };
-  if (pwd) update.password = pwd;
+  if (pwd) update.password = await hashPassword(pwd);
   const { error } = await db.from('users').update(update).eq('id', S.user.id);
   if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
   S.user.name = name;
@@ -3989,7 +3989,8 @@ async function resetPwd(uid) {
   const inp = $('pw_' + uid);
   const newPwd = inp ? inp.value.trim() : '';
   if (!newPwd) { toast('Enter a new password first', 'err'); return; }
-  const { error } = await db.from('users').update({ password: newPwd }).eq('id', uid);
+  const hashed = await hashPassword(newPwd);
+  const { error } = await db.from('users').update({ password: hashed }).eq('id', uid);
   if (!error) { inp.value = ''; toast('Password reset', 'ok-t'); }
   else { toast('Error. Try again.', 'err'); }
 }
@@ -3997,7 +3998,8 @@ async function resetPwd(uid) {
 async function changeMgmtPwd() {
   const newPwd = $('mgmt_pwd').value.trim();
   if (!newPwd) { toast('Enter a new password', 'err'); return; }
-  const { error } = await db.from('users').update({ password: newPwd }).eq('id', S.user.id);
+  const hashed2 = await hashPassword(newPwd);
+  const { error } = await db.from('users').update({ password: hashed2 }).eq('id', S.user.id);
   if (!error) { $('mgmt_pwd').value = ''; toast('Management password updated', 'ok-t'); }
   else { toast('Error. Try again.', 'err'); }
 }
