@@ -5095,6 +5095,17 @@ async function baRemove(buyerId, merchantId) {
   renderBuyerAssign();
 }
 
+
+// === PASSWORD HASHING ===
+async function hashPassword(plain) {
+  if (!plain) return '';
+  if (/^[0-9a-f]{64}$/.test(plain)) return plain; // already hashed
+  var data = new TextEncoder().encode(plain);
+  var buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+function isHashed(str) { return !!(str && /^[0-9a-f]{64}$/.test(str)); }
+
 // ─── START ───
 init();
 </script>
