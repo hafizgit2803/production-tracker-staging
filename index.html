@@ -833,6 +833,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .cm-toggle{width:36px;height:20px;border-radius:20px;background:#D1D5DB;position:relative;
   cursor:pointer;transition:background .15s;border:none;display:inline-block}
 .cm-toggle.on{background:var(--accent)}
+.cm-toggle:disabled{opacity:.5;cursor:not-allowed}
 .cm-toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;
   background:#fff;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .cm-toggle.on::after{left:18px}
@@ -908,7 +909,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.2</p>
   </div>
 </div>
 
@@ -943,7 +944,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.1</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.2</div>
 </div>
 
 
@@ -5425,10 +5426,16 @@ function getUnifiedOrderedItems(buyerId) {
   return items.sort(function(a,b){ return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
 }
 
-function getVisibleUnifiedItems(buyerId) {
+function getVisibleUnifiedItems(buyerId, location) {
+  location = location || 'live';
   return getUnifiedOrderedItems(buyerId).filter(function(item) {
-    if (item.block && item.block.mandatory) return true;
-    return item.cfg && item.cfg.visible;
+    if (!item.cfg) return false;
+    var mandatory = item.block && item.block.mandatory;
+    if (!mandatory && !item.cfg.visible) return false;
+    if (location === 'live') return !!item.cfg.in_live || mandatory;
+    if (location === 'laying') return !!item.cfg.in_laying;
+    if (location === 'shipped') return !!item.cfg.in_shipped;
+    return false;
   });
 }
 
@@ -5547,16 +5554,9 @@ async function renderBuyerColumnTable(buyerId) {
       ? '<span style="font-size:10px;color:var(--muted);font-style:italic">always on</span>'
       : '<button class="cm-toggle ' + (cfg.visible?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="visible" onclick="cmToggle(this)"></button>';
 
-    var liveToggle, layingToggle, shippedToggle;
-    if (item.isFixed) {
-      liveToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
-      layingToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
-      shippedToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
-    } else {
-      liveToggle = '<button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_live" onclick="cmToggle(this)"></button>';
-      layingToggle = '<button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_laying" onclick="cmToggle(this)"></button>';
-      shippedToggle = '<button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button>';
-    }
+    var liveToggle = '<button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_live" onclick="cmToggle(this)"' + (isMandatory?' disabled title="Style always shows in Live"':'') + '></button>';
+    var layingToggle = '<button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_laying" onclick="cmToggle(this)"></button>';
+    var shippedToggle = '<button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button>';
 
     return '<tr data-key="' + item.key + '" style="' + (isFrozen?'background:var(--accent-soft)':'') + '">'
       + '<td>' + (isFrozen ? '<span title="Frozen" style="margin-right:6px">&#x1F9CA;</span>' : '') + '<div class="cm-field-name">' + name + '</div><div class="cm-field-type">' + typeLabel + '</div></td>'
