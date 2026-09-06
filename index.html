@@ -884,6 +884,12 @@ table.dyn-board td.col-yarn,table.dyn-board td .cell{white-space:normal}
 table.dyn-board td.wrap2,table.dyn-board th.wrap2{white-space:normal;line-height:1.25;overflow:visible}
 table.dyn-board td:has(.style-thumb){overflow:visible}
 
+
+/* Sticky header rows for dynamic buyer table */
+table.dyn-board thead th{position:sticky;z-index:25;background-color:#F7F5EF;top:0}
+table.dyn-board thead th.stk-dyn{z-index:35}
+[data-theme="dark"] table.dyn-board thead th{background-color:#252325}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -918,7 +924,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.9</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.0</p>
   </div>
 </div>
 
@@ -953,7 +959,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.9</div>
+  <div id="ver-stamp">v2026-08-31 WF-4.0</div>
 </div>
 
 
@@ -2194,6 +2200,7 @@ async function renderBoard(uid) {
 
   $('content').innerHTML = notesHtml + allHtml
     + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
+  requestAnimationFrame(applyStickyHeaderOffsets);
 }
 
 // Fully self-contained table builder — computes everything it needs from its own params
@@ -5991,6 +5998,22 @@ async function updPfFloor(sel) {
   if (S.view && S.boardCache[S.view]) renderBoard(S.view);
 }
 
+
+
+// === STICKY HEADER OFFSET FIX (2-row headers need measured, not guessed, offsets) ===
+function applyStickyHeaderOffsets() {
+  document.querySelectorAll('table.dyn-board').forEach(function(table) {
+    var thead = table.querySelector('thead');
+    if (!thead) return;
+    var rows = thead.querySelectorAll('tr');
+    if (rows.length < 2) return;
+    var row1Height = rows[0].getBoundingClientRect().height;
+    // Row1 cells (rowspan=2) already span both rows, so only row2's OWN cells need offsetting
+    rows[1].querySelectorAll('th').forEach(function(th) {
+      th.style.top = row1Height + 'px';
+    });
+  });
+}
 
 // ─── START ───
 init();
