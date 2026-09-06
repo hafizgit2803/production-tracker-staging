@@ -918,7 +918,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.7</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.9</p>
   </div>
 </div>
 
@@ -953,7 +953,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.7</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.9</div>
 </div>
 
 
@@ -2299,7 +2299,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   var itemByKey = {};
   visItems.forEach(function(it){ itemByKey[it.key] = it; });
 
-  const rows = orders.map(function(o) {
+  const rows = orders.map(function(o, rowIdx) {
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
 
@@ -2333,6 +2333,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     }
 
     if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span><div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:11px;');
+    if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:10.5px;');
+    if (itemByKey['_attachments']) cellsByKey['_attachments'] = singleTd('_attachments', '', '<button class="btn sm ghost" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();toast(\'Attachments coming soon\')">&#x1F4CE; 0</button>');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11px;font-family:var(--mono);color:var(--muted);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
@@ -2411,6 +2414,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style</th>';
     else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
     else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
+    else if (key === '_serial') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">#</th>';
+    else if (key === '_confirm_date') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Confirm</th>';
+    else if (key === '_attachments') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Files</th>';
     else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
     else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
     else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Gauge</th>';
@@ -5428,9 +5434,12 @@ var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 
 // === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
 var FIXED_BLOCKS = [
+  { key:'_serial',       name:'#',            width:40,  mandatory:false },
   { key:'_style',       name:'Style',        width:130, wrap:true, mandatory:true  },
   { key:'_photo',       name:'Photo',        width:56,  mandatory:false },
   { key:'_po',          name:'PO',           width:90,  mandatory:false },
+  { key:'_confirm_date',name:'Confirm Date', width:85,  mandatory:false },
+  { key:'_attachments', name:'Attachments',  width:100, mandatory:false },
   { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
   { key:'_house',       name:'House',        width:80,  wrap:true, mandatory:false },
   { key:'_gauge',       name:'Gauge',        width:58,  mandatory:false },
@@ -5475,7 +5484,7 @@ function isFixedKey(key) {
 
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
-  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:175, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:135, defLoc:{live:true,laying:false,shipped:false} },
   { key:'season',         name:'Season',         type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'department',     name:'Department',     type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
@@ -5505,9 +5514,29 @@ var MASTER_FIELDS = [
 
   // ── MULTI-MODULE FIELDS ─────────────────────────────────────────────────
   { key:'sales_contract', name:'Sales Contract No', type:'text_memory', defLoc:{live:true,laying:true,shipped:true} },
-  { key:'lc_no',          name:'LC No',          type:'text_memory', defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_no',          name:'LC No',          type:'text_memory', width:170, defLoc:{live:true,laying:true,shipped:true} },
   { key:'lc_status',      name:'LC Received Status', type:'dropdown', options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
 ];
+
+
+// === DEFAULT COLUMN ORDER — the interleaved sequence for brand-new buyers ===
+var DEFAULT_COLUMN_ORDER = [
+  '_serial','_style','_buyer','_house','_po','article_no','_confirm_date','_photo',
+  '_qty','_fob','_value','country','season','department','_ship','_gauge','_colour',
+  '_composition','avg_weight','sales_contract','lc_no','lc_status','_approvals',
+  '_attachments','_accessories','_yarn','internal_pp','buyer_pp','khata_sign','_production'
+];
+// Append any remaining keys (not explicitly listed above) in their natural definition order
+(function() {
+  var seen = {}; DEFAULT_COLUMN_ORDER.forEach(function(k){ seen[k]=true; });
+  FIXED_BLOCKS.forEach(function(fb){ if(!seen[fb.key]){ DEFAULT_COLUMN_ORDER.push(fb.key); seen[fb.key]=true; } });
+  MASTER_FIELDS.forEach(function(mf){ if(!seen[mf.key]){ DEFAULT_COLUMN_ORDER.push(mf.key); seen[mf.key]=true; } });
+})();
+
+function getDefaultColOrder(key) {
+  var idx = DEFAULT_COLUMN_ORDER.indexOf(key);
+  return idx === -1 ? 999 : idx;
+}
 
 function getFieldByKey(key) {
   return MASTER_FIELDS.find(function(f){ return f.key===key; });
@@ -5527,24 +5556,22 @@ async function loadFieldVisibility() {
 function getBuyerFieldConfig(buyerId, fieldKey) {
   var cfg = S.fieldVisibility[buyerId] && S.fieldVisibility[buyerId][fieldKey];
   if (cfg) return cfg;
-  // Fallback default
+  // Fallback default — uses the unified DEFAULT_COLUMN_ORDER sequence
   if (isFixedKey(fieldKey)) {
     var fb = getFixedBlockByKey(fieldKey);
     if (!fb) return null;
-    var defaultOrder = FIXED_BLOCKS.findIndex(function(x){ return x.key===fieldKey; });
     return {
       buyer_id: buyerId, field_key: fieldKey, visible: true,
       in_live: true, in_laying: false, in_shipped: false,
-      col_order: defaultOrder
+      col_order: getDefaultColOrder(fieldKey)
     };
   }
   var master = getFieldByKey(fieldKey);
   if (!master) return null;
-  var customOrder = FIXED_BLOCKS.length + MASTER_FIELDS.findIndex(function(x){ return x.key===fieldKey; });
   return {
     buyer_id: buyerId, field_key: fieldKey, visible: true,
     in_live: !!master.defLoc.live, in_laying: !!master.defLoc.laying, in_shipped: !!master.defLoc.shipped,
-    col_order: customOrder
+    col_order: getDefaultColOrder(fieldKey)
   };
 }
 
