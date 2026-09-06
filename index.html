@@ -880,6 +880,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
 table.dyn-board{table-layout:fixed}
 table.dyn-board th,table.dyn-board td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 table.dyn-board td.col-yarn,table.dyn-board td .cell{white-space:normal}
+table.dyn-board td.wrap2,table.dyn-board th.wrap2{white-space:normal;line-height:1.25;overflow:visible}
 table.dyn-board td:has(.style-thumb){overflow:visible}
 
 @media print{
@@ -916,7 +917,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.6</p>
   </div>
 </div>
 
@@ -951,7 +952,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.4</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.6</div>
 </div>
 
 
@@ -2325,8 +2326,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     function singleTd(key, extraClass, innerHtml, extraStyle) {
       var it = itemByKey[key];
+      var wrapCls = (it.isFixed && it.block.wrap) ? ' wrap2' : '';
       var style = wStyle(it) + frozenStyle(it) + (extraStyle||'');
-      return '<td class="' + (extraClass||'') + frozenClass(it) + '" style="' + style + '">' + innerHtml + '</td>';
+      return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
     if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span><div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
@@ -2390,6 +2392,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       + rowCells
       + '<td style="white-space:nowrap;width:180px;min-width:180px">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
+      + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
       + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + o.style + '\',\'' + o.buyer + '\')">&#x2715;</button>' : '')
       + '</td></tr>';
@@ -2408,10 +2411,10 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
     else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
     else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
-    else if (key === '_house') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
+    else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
     else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Gauge</th>';
-    else if (key === '_colour') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Colour</th>';
-    else if (key === '_composition') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Composition</th>';
+    else if (key === '_colour') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Colour</th>';
+    else if (key === '_composition') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Composition</th>';
     else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Qty</th>';
     else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">FOB</th>';
     else if (key === '_value') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Value</th>';
@@ -2428,7 +2431,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:90px;min-width:90px;max-width:90px;font-size:9px">'+s.n+'</th>';}).join('');
     }
     else if (key === '_balance') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Bal</th>';
-    else if (key === '_notes') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Notes</th>';
+    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Notes</th>';
     else {
       var mf = getFieldByKey(key);
       topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (mf?mf.name:key) + '</th>';
@@ -2500,6 +2503,11 @@ function renderArchive() {
 let orderForMerchant = null;
 
 async function openOrder(mid) {
+  _editOrderId = null;
+  document.querySelector('#ov-order h3').textContent = 'New order';
+  $('save-order-btn').textContent = 'Add order';
+  var buyerSelReset = $('o_buyer');
+  if (buyerSelReset) { buyerSelReset.disabled = false; buyerSelReset.style.opacity=''; buyerSelReset.style.cursor=''; buyerSelReset.title=''; }
   orderForMerchant = mid;
   const m = S.users.find(u => u.id === mid);
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
@@ -2546,15 +2554,17 @@ async function saveOrder() {
     $('ord-err').style.display = 'block'; return;
   }
   $('save-order-btn').disabled = true;
-  $('save-order-btn').textContent = 'Saving…';
+  $('save-order-btn').textContent = _editOrderId ? 'Saving\u2026' : 'Saving\u2026';
+
+  var buyerObj = S.buyers.find(function(b){ return b.id === buyerVal; });
+  var buyerName = buyerObj ? buyerObj.name : buyerVal;
 
   const row = {
     merchant_id: orderForMerchant,
-    house: $('o_house').value, buyer: $('o_buyer').value,
+    house: $('o_house').value, buyer: buyerName,
     po_number: ($('o_po')&&$('o_po').value.trim())||null,
     confirm_date: ($('o_confirm_date')&&$('o_confirm_date').value)||null,
-    buyer_id: ($('o_buyer')&&$('o_buyer').value)||null,
-    stage: 'live',
+    buyer_id: buyerVal,
     style, gauge: $('o_gauge').value, color: $('o_color').value,
     comp: $('o_comp').value, qty, fob: Number($('o_fob').value)||0,
     ship_date: $('p_ship').value || null,
@@ -2564,14 +2574,21 @@ async function saveOrder() {
     plan_ship: $('p_ship').value||null,
     updated_by: S.user.name, updated_at: new Date().toISOString()
   };
+  if (!_editOrderId) row.stage = 'live';
 
-  const { error } = await db.from('orders').insert(row);
+  var error;
+  if (_editOrderId) {
+    var res = await db.from('orders').update(row).eq('id', _editOrderId);
+    error = res.error;
+  } else {
+    var res2 = await db.from('orders').insert(row);
+    error = res2.error;
+  }
+
   if (!error) {
-    // Save memo
     for (const [f, v] of [['house',row.house],['buyer',row.buyer],['gauge',row.gauge],['color',row.color],['comp',row.comp]]) {
       if (v) saveMemo(f, v);
     }
-    // Touch merchant updated_at
     await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
     var imgFile = $('o_image');
     var styleVal = ($('o_style').value||'').trim().toUpperCase();
@@ -2579,16 +2596,81 @@ async function saveOrder() {
       try { await uploadStyleImage(orderForMerchant, styleVal, imgFile.files[0]); } catch(e) { console.error('img:', e); }
     }
     closeModal('ov-order');
-    toast('Order added', 'ok-t');
-    await loadAll();
+    toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
+    _editOrderId = null;
+    delete S.boardCache[orderForMerchant];
+    await loadDashOrders();
     render();
   } else {
     $('ord-err').textContent = 'Error saving. Please try again.';
     $('ord-err').style.display = 'block';
   }
   $('save-order-btn').disabled = false;
-  $('save-order-btn').textContent = 'Add order';
+  $('save-order-btn').textContent = _editOrderId ? 'Save changes' : 'Add order';
 }
+
+// === EDIT ORDER ===
+var _editOrderId = null;
+
+async function editOrder(orderId) {
+  var o = (S.boardCache[S.view]||[]).find(function(x){ return x.id===orderId; });
+  if (!o) { toast('Order not found', 'err'); return; }
+  _editOrderId = orderId;
+  orderForMerchant = o.merchant_id;
+
+  $('ord-sub').textContent = 'Editing ' + o.style;
+  $('ord-err').style.display = 'none';
+
+  $('o_style').value = o.style || '';
+  $('o_house').value = o.house || '';
+  $('o_gauge').value = o.gauge || '';
+  $('o_color').value = o.color || '';
+  $('o_comp').value = o.comp || '';
+  $('o_qty').value = o.qty || '';
+  $('o_fob').value = o.fob || '';
+  if ($('o_po')) $('o_po').value = o.po_number || '';
+  if ($('o_confirm_date')) $('o_confirm_date').value = o.confirm_date || '';
+  calcTotal();
+
+  $('p_ship').value = o.plan_ship || o.ship_date || '';
+  $('p_yarn').value = o.plan_yarn || '';
+  $('p_pp').value = o.plan_pp || '';
+  if ($('p_sew')) $('p_sew').value = o.plan_sew || '';
+  if ($('p_pack')) $('p_pack').value = o.plan_pack || '';
+  $('p_knit').value = o.plan_knit || '';
+  $('p_insp').value = o.plan_insp || '';
+
+  var prev=$('order-img-preview');
+  var existingImg = getStyleImage(o.merchant_id, o.style);
+  if (prev) {
+    if (existingImg) { prev.src = existingImg; prev.style.display='block'; }
+    else { prev.src=''; prev.style.display='none'; }
+  }
+  var ph=$('order-img-placeholder'); if(ph) ph.style.display = existingImg ? 'none' : 'block';
+  var fi=$('o_image'); if(fi) fi.value='';
+
+  // Populate buyer dropdown, pre-select current buyer, then LOCK it (buyer cannot change after order creation)
+  if(!S.buyers||!S.buyers.length){ try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){} }
+  var buyerSel=$('o_buyer');
+  if(buyerSel){
+    var myB = getBuyersForMerchant(o.merchant_id);
+    if(myB.length){
+      buyerSel.innerHTML='<option value="">-- Select buyer --</option>'
+        +myB.map(function(b){return '<option value="'+b.id+'"'+(b.id===o.buyer_id?' selected':'')+'>'+b.name+'</option>';}).join('');
+    } else {
+      buyerSel.innerHTML='<option value="">No buyers assigned yet</option>';
+    }
+    buyerSel.disabled = true;
+    buyerSel.style.opacity = '0.6';
+    buyerSel.style.cursor = 'not-allowed';
+    buyerSel.title = 'Buyer cannot be changed after order is created';
+  }
+
+  document.querySelector('#ov-order h3').textContent = 'Edit order';
+  $('save-order-btn').textContent = 'Save changes';
+  openModal('ov-order');
+}
+
 
 async function setProd(ordId, key, val) {
   const o = S.orders.find(x => x.id === ordId);
@@ -5345,25 +5427,25 @@ var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 
 // === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
 var FIXED_BLOCKS = [
-  { key:'_style',       name:'Style',        width:140, mandatory:true  },
-  { key:'_photo',       name:'Photo',        width:62,  mandatory:false },
-  { key:'_po',          name:'PO',           width:115, mandatory:false },
-  { key:'_buyer',       name:'Buyer',        width:120, mandatory:false },
-  { key:'_house',       name:'House',        width:90,  mandatory:false },
-  { key:'_gauge',       name:'Gauge',        width:70,  mandatory:false },
-  { key:'_colour',      name:'Colour',       width:90,  mandatory:false },
-  { key:'_composition', name:'Composition',  width:110, mandatory:false },
-  { key:'_qty',         name:'Qty',          width:80,  mandatory:false },
-  { key:'_fob',         name:'FOB',          width:75,  mandatory:false },
-  { key:'_value',       name:'Value',        width:95,  mandatory:false },
-  { key:'_ship',        name:'Ship Date',    width:90,  mandatory:false },
-  { key:'_days',        name:'Days',         width:65,  mandatory:false },
-  { key:'_yarn',        name:'Yarn / Fabric',width:150, mandatory:false },
-  { key:'_accessories', name:'Accessories',  width:130, mandatory:false },
+  { key:'_style',       name:'Style',        width:120, mandatory:true  },
+  { key:'_photo',       name:'Photo',        width:56,  mandatory:false },
+  { key:'_po',          name:'PO',           width:90,  mandatory:false },
+  { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
+  { key:'_house',       name:'House',        width:80,  wrap:true, mandatory:false },
+  { key:'_gauge',       name:'Gauge',        width:58,  mandatory:false },
+  { key:'_colour',      name:'Colour',       width:78,  wrap:true, mandatory:false },
+  { key:'_composition', name:'Composition',  width:88,  wrap:true, mandatory:false },
+  { key:'_qty',         name:'Qty',          width:65,  mandatory:false },
+  { key:'_fob',         name:'FOB',          width:60,  mandatory:false },
+  { key:'_value',       name:'Value',        width:80,  mandatory:false },
+  { key:'_ship',        name:'Ship Date',    width:75,  mandatory:false },
+  { key:'_days',        name:'Days',         width:52,  mandatory:false },
+  { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
+  { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
-  { key:'_balance',     name:'Balance',      width:80,  mandatory:false },
-  { key:'_notes',       name:'Notes',        width:120, mandatory:false },
+  { key:'_balance',     name:'Balance',      width:65,  mandatory:false },
+  { key:'_notes',       name:'Notes',        width:100, wrap:true, mandatory:false },
 ];
 
 
