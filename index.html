@@ -722,9 +722,10 @@ button.apv-chip{font-family:inherit}
 
 /* Product image feature */
 .style-thumb{width:38px;height:38px;object-fit:cover;border-radius:6px;cursor:zoom-in;
-  vertical-align:middle;border:1px solid var(--line);transition:transform .15s;display:block}
-.style-thumb:hover{transform:scale(2.2);z-index:20;position:relative;
-  box-shadow:0 4px 16px rgba(0,0,0,.25)}
+  vertical-align:middle;border:1px solid var(--line);transition:transform .15s;display:block;
+  transform-origin:center center;margin:0 auto}
+.style-thumb:hover{transform:scale(2.4);z-index:60;position:relative;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);transform-origin:center center}
 .img-upload-area{border:2px dashed var(--line);border-radius:10px;padding:14px;
   text-align:center;cursor:pointer;transition:all .15s;position:relative}
 .img-upload-area:hover{border-color:var(--accent);background:var(--accent-soft)}
@@ -917,7 +918,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.6</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.7</p>
   </div>
 </div>
 
@@ -952,7 +953,7 @@ table.dyn-board td:has(.style-thumb){overflow:visible}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.6</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.7</div>
 </div>
 
 
@@ -2261,7 +2262,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       if (item.key === '_approvals') return 4 * 108;
       return item.block.width || 120;
     }
-    return CUSTOM_TYPE_WIDTHS[item.master.type] || 130;
+    return item.master.width || CUSTOM_TYPE_WIDTHS[item.master.type] || 130;
   }
   function subWidthOf(item, subIndex) {
     // For group columns, each internal sub-column's own width (used for offset math past the group)
@@ -2407,7 +2408,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     var fStyle = frozenStyle(item);
     var fClass = frozenClass(item);
 
-    if (key === '_style') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style</th>';
+    if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style</th>';
     else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
     else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
     else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
@@ -5427,7 +5428,7 @@ var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 
 // === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
 var FIXED_BLOCKS = [
-  { key:'_style',       name:'Style',        width:120, mandatory:true  },
+  { key:'_style',       name:'Style',        width:130, wrap:true, mandatory:true  },
   { key:'_photo',       name:'Photo',        width:56,  mandatory:false },
   { key:'_po',          name:'PO',           width:90,  mandatory:false },
   { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
@@ -5474,7 +5475,7 @@ function isFixedKey(key) {
 
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
-  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:175, defLoc:{live:true,laying:false,shipped:false} },
   { key:'season',         name:'Season',         type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'department',     name:'Department',     type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
