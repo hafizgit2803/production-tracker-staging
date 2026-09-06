@@ -859,6 +859,21 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .pf-step-name{font-weight:600;font-size:13px}
 .pf-select{padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#FCFBF7;font-size:12.5px}
 
+
+/* Dynamic frozen columns (Column Manager freeze feature) */
+td.stk-dyn, th.stk-dyn{position:sticky;z-index:20;background-color:var(--panel)}
+th.stk-dyn{background-color:#F7F5EF;z-index:30}
+td.stk-last, th.stk-last{box-shadow:4px 0 8px -3px rgba(0,0,0,.10);border-right:1px solid var(--line)}
+tbody tr:hover td.stk-dyn{background-color:var(--panel)!important}
+tbody tr.r10 td.stk-dyn{background-color:#FDF8EA!important}
+tbody tr.r5  td.stk-dyn{background-color:#FDF0E0!important}
+tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
+[data-theme="dark"] th.stk-dyn{background-color:#252325!important}
+[data-theme="dark"] td.stk-dyn{background-color:var(--panel)!important}
+[data-theme="dark"] tbody tr.r10 td.stk-dyn{background-color:#2A2010!important}
+[data-theme="dark"] tbody tr.r5  td.stk-dyn{background-color:#2E1E10!important}
+[data-theme="dark"] tbody tr.late td.stk-dyn{background-color:#2E1515!important}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -893,7 +908,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.0</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.1</p>
   </div>
 </div>
 
@@ -928,7 +943,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.0</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.1</div>
 </div>
 
 
@@ -2141,7 +2156,6 @@ async function renderBoard(uid) {
     var open = localStorage.getItem(sk) !== '0';
     var bQty = bOrders.reduce(function(s,o){ return s+(o.qty||0); }, 0);
     var bVal = bOrders.reduce(function(s,o){ return s+(o.qty||0)*(o.fob||0); }, 0);
-    var customFields = getVisibleFieldsForBuyer(b.id, 'live');
     allHtml += '<div style="margin-bottom:16px">'
       + '<div class="buyer-section-hdr" data-sk="' + sk + '" onclick="toggleBuyerSection(this.dataset.sk)">'
       + '<div style="display:flex;align-items:center;gap:10px">'
@@ -2150,7 +2164,7 @@ async function renderBoard(uid) {
       + (bOrders.length ? '<span style="font-size:11px;color:var(--muted)">' + fmt(bQty) + ' pcs &middot; ' + money(bVal) + '</span>' : '')
       + '</div><span class="rail-section-arrow' + (open?' open':'') + '" id="arr-' + sk + '">&#x25B6;</span></div>'
       + '<div id="sec-' + sk + '" style="max-height:' + (open?'99999px':'0') + ';overflow:hidden;transition:max-height .3s ease">'
-      + (bOrders.length ? renderBuyerOrdersTable(bOrders, uid, division, canEdit, VSTEPS, customFields) : '<div class="card" style="padding:14px;color:var(--muted);font-size:13px">No orders for this buyer yet.</div>')
+      + (bOrders.length ? renderBuyerOrdersTable(bOrders, uid, division, canEdit, VSTEPS, b.id) : '<div class="card" style="padding:14px;color:var(--muted);font-size:13px">No orders for this buyer yet.</div>')
       + '</div></div>';
   });
 
@@ -2164,7 +2178,7 @@ async function renderBoard(uid) {
       + '<span class="chip" style="font-size:10px">' + otherOrders.length + ' orders</span></div>'
       + '<span class="rail-section-arrow' + (open2?' open':'') + '" id="arr-' + sk2 + '">&#x25B6;</span></div>'
       + '<div id="sec-' + sk2 + '" style="max-height:' + (open2?'99999px':'0') + ';overflow:hidden;transition:max-height .3s ease">'
-      + renderBuyerOrdersTable(otherOrders, uid, division, canEdit, VSTEPS, [])
+      + renderBuyerOrdersTable(otherOrders, uid, division, canEdit, VSTEPS, null)
       + '</div></div>';
   }
 
@@ -2184,7 +2198,7 @@ function toggleBuyerSection(key){
   localStorage.setItem(key,open?'0':'1');
 }
 
-function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFields) {
+function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId) {
   const sums = (S.boardSummaries[uid] || {});
   const unit = division === 'knit' ? 'kgs' : 'lbs';
   const matLabel = division === 'knit' ? 'Fabric' : 'Yarn';
@@ -2221,6 +2235,37 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFi
     return '<button class="apv-chip not-sent" onclick="' + oc + '">Not booked</button>';
   }
 
+  // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
+  var visItems = buyerId ? getVisibleUnifiedItems(buyerId) : FIXED_BLOCKS.map(function(fb){
+    return { key: fb.key, isFixed: true, block: fb, cfg: { visible:true, col_order:0 } };
+  });
+  var freezeCount = buyerId ? getBuyerFreezeCount(buyerId) : 1;
+
+  // Compute widths + cumulative left offsets for frozen items
+  function widthOf(item) {
+    if (item.isFixed) {
+      if (item.key === '_production') return VSTEPS.length * 90;
+      return item.block.width || 120;
+    }
+    return 130; // default width for custom fields when frozen
+  }
+  var leftOffsets = {}; // key -> px
+  var cum = 0;
+  for (var i = 0; i < visItems.length && i < freezeCount; i++) {
+    leftOffsets[visItems[i].key] = cum;
+    cum += widthOf(visItems[i]);
+  }
+  var lastFrozenKey = freezeCount > 0 && visItems.length ? visItems[Math.min(freezeCount, visItems.length) - 1].key : null;
+
+  function frozenAttrs(key) {
+    if (!(key in leftOffsets)) return '';
+    var isLast = key === lastFrozenKey;
+    return ' class="stk-dyn' + (isLast ? ' stk-last' : '') + '" style="left:' + leftOffsets[key] + 'px"';
+  }
+
+  // ── Build custom field lookup for this buyer (live location) ──
+  var customFieldItems = visItems.filter(function(it){ return !it.isFixed; }).map(function(it){ return it.master; });
+
   const rows = orders.map(function(o) {
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
@@ -2237,13 +2282,10 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFi
         + '<div class="row"><span class="k">Rcvd</span><span class="v ' + (totalRc>=totalBk?'ok':'') + '">' + fmt(totalRc) + '</span></div>'
         + '<div class="row"><span class="k">Bal</span><span class="v ' + (bal>0?'bad':bal===0&&totalBk>0?'ok':'') + '">' + fmt(bal) + '</span></div>'
       : '<div style="color:var(--muted);font-size:10px;padding:2px 0">No booking</div>';
-    const yarnCell = '<td class="col-yarn">' + yarnInner
-      + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '')
-      + '</td>';
 
     const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:10px">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:10px">'+dl+'</span>' : dl;
 
-    const prodCells = VSTEPS.map(function(s) {
+    const prodTds = VSTEPS.map(function(s) {
       const v = o[s.k] || 0, full = v >= (o.qty||0) && (o.qty||0) > 0;
       const pct = o.qty ? Math.min(100, 100*v/o.qty) : 0;
       if (full && canEdit) return '<td style="text-align:center"><button class="ok-chip" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();openEditQty(\'' + o.id + '\',\'' + s.k + '\',' + v + ',' + o.qty + ',\'' + s.n + '\')">&#x2713; OK</button></td>';
@@ -2256,34 +2298,46 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFi
       ? '<input class="rem-in" style="width:100px" value="' + (o.remarks||'').replace(/"/g,'&quot;') + '" placeholder="Note\u2026" onchange="setRemark(\'' + o.id + '\',this.value)">'
       : '<span class="sub2">' + (o.remarks||'\u2014') + '</span>';
 
-    const customCells = buildFieldDataCells(customFields, o.id, canEdit);
-
-    return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a,select\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
-      + '<td class="stk" style="cursor:pointer"><span class="flag ' + (ms.length?'on':'') + '">\u200b</span>'
+    // Build cell HTML keyed by column key
+    var cellsByKey = {};
+    cellsByKey['_style'] = '<td' + frozenAttrs('_style') + ' style="cursor:pointer"><span class="flag ' + (ms.length?'on':'') + '">\u200b</span>'
       + '<span class="sty">' + o.style + '</span>'
-      + '<div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div></td>'
-      + '<td class="stk2" style="text-align:center">' + (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')) + '</td>'
-      + '<td class="stk3" style="font-size:11px;font-family:var(--mono);color:var(--muted)">' + (o.po_number||'\u2014') + '</td>'
-      + '<td class="stk4">' + o.buyer + '</td>'
-      + '<td style="font-size:10.5px">' + (o.house||'\u2014') + '</td>'
-      + '<td style="font-size:10.5px">' + (fmtGauge(o.gauge)||'\u2014') + '</td>'
-      + '<td style="font-size:10.5px">' + (o.color||'\u2014') + '</td>'
-      + '<td style="font-size:10.5px">' + (o.comp||'\u2014') + '</td>'
-      + '<td class="num">' + fmt(o.qty) + '</td>'
-      + '<td class="num">' + (o.fob||0).toFixed(2) + '</td>'
-      + '<td class="num">' + money((o.qty||0)*(o.fob||0)) + '</td>'
-      + '<td style="font-size:10.5px">' + short(o.ship_date) + '</td>'
-      + '<td class="num">' + dlSpan + '</td>'
-      + yarnCell
-      + '<td class="apv-col">' + acChip + '</td>'
-      + '<td class="apv-col">' + ldChip + '</td>'
+      + '<div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div></td>';
+    cellsByKey['_photo'] = '<td' + frozenAttrs('_photo') + ' style="text-align:center">' + (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')) + '</td>';
+    cellsByKey['_po'] = '<td' + frozenAttrs('_po') + ' style="font-size:11px;font-family:var(--mono);color:var(--muted)">' + (o.po_number||'\u2014') + '</td>';
+    cellsByKey['_buyer'] = '<td' + frozenAttrs('_buyer') + '>' + o.buyer + '</td>';
+    cellsByKey['_house'] = '<td' + frozenAttrs('_house') + ' style="font-size:10.5px">' + (o.house||'\u2014') + '</td>';
+    cellsByKey['_gauge'] = '<td' + frozenAttrs('_gauge') + ' style="font-size:10.5px">' + (fmtGauge(o.gauge)||'\u2014') + '</td>';
+    cellsByKey['_colour'] = '<td' + frozenAttrs('_colour') + ' style="font-size:10.5px">' + (o.color||'\u2014') + '</td>';
+    cellsByKey['_composition'] = '<td' + frozenAttrs('_composition') + ' style="font-size:10.5px">' + (o.comp||'\u2014') + '</td>';
+    cellsByKey['_qty'] = '<td' + frozenAttrs('_qty') + ' class="num">' + fmt(o.qty) + '</td>';
+    cellsByKey['_fob'] = '<td' + frozenAttrs('_fob') + ' class="num">' + (o.fob||0).toFixed(2) + '</td>';
+    cellsByKey['_value'] = '<td' + frozenAttrs('_value') + ' class="num">' + money((o.qty||0)*(o.fob||0)) + '</td>';
+    cellsByKey['_ship'] = '<td' + frozenAttrs('_ship') + ' style="font-size:10.5px">' + short(o.ship_date) + '</td>';
+    cellsByKey['_days'] = '<td' + frozenAttrs('_days') + ' class="num">' + dlSpan + '</td>';
+    cellsByKey['_yarn'] = '<td' + frozenAttrs('_yarn') + ' class="col-yarn">' + yarnInner
+      + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '')
+      + '</td>';
+    cellsByKey['_accessories'] = '<td' + frozenAttrs('_accessories') + ' class="apv-col">' + acChip + '</td>';
+    cellsByKey['_approvals'] =
+        '<td' + frozenAttrs('_approvals') + ' class="apv-col">' + ldChip + '</td>'
       + '<td class="apv-col">' + ftChip + '</td>'
       + '<td class="apv-col">' + ppChip + '</td>'
-      + '<td class="apv-col">' + ssChip + '</td>'
-      + prodCells
-      + '<td class="num" style="font-weight:600">' + fmt((o.qty||0)-(o.prod_packing||0)) + '</td>'
-      + '<td>' + remCell + '</td>'
-      + customCells
+      + '<td class="apv-col">' + ssChip + '</td>';
+    cellsByKey['_production'] = (frozenAttrs('_production')
+      ? prodTds.replace('<td>', '<td' + frozenAttrs('_production') + '>')
+      : prodTds);
+    cellsByKey['_balance'] = '<td' + frozenAttrs('_balance') + ' class="num" style="font-weight:600">' + fmt((o.qty||0)-(o.prod_packing||0)) + '</td>';
+    cellsByKey['_notes'] = '<td' + frozenAttrs('_notes') + '>' + remCell + '</td>';
+
+    customFieldItems.forEach(function(f) {
+      cellsByKey[f.key] = '<td' + frozenAttrs(f.key) + '>' + renderFieldCell(f, o.id, canEdit) + '</td>';
+    });
+
+    var rowCells = visItems.map(function(item){ return cellsByKey[item.key] || ''; }).join('');
+
+    return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a,select\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
+      + rowCells
       + '<td style="white-space:nowrap">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
@@ -2291,42 +2345,50 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFi
       + '</td></tr>';
   }).join('');
 
-  const customHeaderCells = buildFieldHeaderCells(customFields);
+  // ── Build two-row header ──
+  var topRow = '', bottomRow = '';
+  visItems.forEach(function(item) {
+    var key = item.key;
+    var attrs = frozenAttrs(key);
+    if (key === '_style') topRow += '<th' + attrs + ' rowspan="2">Style</th>';
+    else if (key === '_photo') topRow += '<th' + attrs + ' rowspan="2">Photo</th>';
+    else if (key === '_po') topRow += '<th' + attrs + ' rowspan="2">PO</th>';
+    else if (key === '_buyer') topRow += '<th' + attrs + ' rowspan="2">Buyer</th>';
+    else if (key === '_house') topRow += '<th' + attrs + ' rowspan="2">House</th>';
+    else if (key === '_gauge') topRow += '<th' + attrs + ' rowspan="2">Gauge</th>';
+    else if (key === '_colour') topRow += '<th' + attrs + ' rowspan="2">Colour</th>';
+    else if (key === '_composition') topRow += '<th' + attrs + ' rowspan="2">Composition</th>';
+    else if (key === '_qty') topRow += '<th' + attrs + ' rowspan="2" class="num">Qty</th>';
+    else if (key === '_fob') topRow += '<th' + attrs + ' rowspan="2" class="num">FOB</th>';
+    else if (key === '_value') topRow += '<th' + attrs + ' rowspan="2" class="num">Value</th>';
+    else if (key === '_ship') topRow += '<th' + attrs + ' rowspan="2">Ship</th>';
+    else if (key === '_days') topRow += '<th' + attrs + ' rowspan="2" class="num">Days</th>';
+    else if (key === '_yarn') topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' rowspan="2">' + matLabel + '<br>(' + unit + ')</th>';
+    else if (key === '_accessories') topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' rowspan="2">Accessories</th>';
+    else if (key === '_approvals') {
+      topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' colspan="4">Approvals</th>';
+      bottomRow += '<th class="grp" style="font-size:9px">Lab Dip</th><th class="grp" style="font-size:9px">Fit</th><th class="grp" style="font-size:9px">PP</th><th class="grp" style="font-size:9px">Size Set</th>';
+    }
+    else if (key === '_production') {
+      topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' colspan="' + VSTEPS.length + '">Production</th>';
+      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="font-size:9px">'+s.n+'</th>';}).join('');
+    }
+    else if (key === '_balance') topRow += '<th' + attrs + ' rowspan="2" class="num">Bal</th>';
+    else if (key === '_notes') topRow += '<th' + attrs + ' rowspan="2">Notes</th>';
+    else {
+      // custom field
+      var mf = getFieldByKey(key);
+      topRow += '<th' + attrs + ' rowspan="2" style="font-size:9.5px">' + (mf?mf.name:key) + '</th>';
+    }
+  });
+  topRow += '<th rowspan="2"></th>';
 
   return '<div class="card"><div class="scroller"><table>'
-    + '<thead><tr>'
-    + '<th class="stk" rowspan="2">Style</th>'
-    + '<th class="stk2" rowspan="2">Photo</th>'
-    + '<th class="stk3" rowspan="2">PO</th>'
-    + '<th class="stk4" rowspan="2">Buyer</th>'
-    + '<th rowspan="2">House</th>'
-    + '<th rowspan="2">Gauge</th>'
-    + '<th rowspan="2">Colour</th>'
-    + '<th rowspan="2">Composition</th>'
-    + '<th rowspan="2" class="num">Qty</th>'
-    + '<th rowspan="2" class="num">FOB</th>'
-    + '<th rowspan="2" class="num">Value</th>'
-    + '<th rowspan="2">Ship</th>'
-    + '<th rowspan="2" class="num">Days</th>'
-    + '<th class="grp" rowspan="2">' + matLabel + '<br>(' + unit + ')</th>'
-    + '<th class="grp" rowspan="2">Accessories</th>'
-    + '<th class="grp" colspan="4">Approvals</th>'
-    + '<th class="grp" colspan="' + VSTEPS.length + '">Production</th>'
-    + '<th rowspan="2" class="num">Bal</th>'
-    + '<th rowspan="2">Notes</th>'
-    + (customFields.length ? '<th class="grp" colspan="' + customFields.length + '" rowspan="1">Buyer Fields</th>' : '')
-    + '<th rowspan="2"></th>'
-    + '</tr><tr>'
-    + '<th class="grp" style="font-size:9px">Lab Dip</th>'
-    + '<th class="grp" style="font-size:9px">Fit</th>'
-    + '<th class="grp" style="font-size:9px">PP</th>'
-    + '<th class="grp" style="font-size:9px">Size Set</th>'
-    + VSTEPS.map(function(s){return '<th class="grp" style="font-size:9px">'+s.n+'</th>';}).join('')
-    + customHeaderCells
-    + '</tr></thead>'
+    + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
     + '<tbody>' + rows + '</tbody>'
     + '</table></div></div>';
 }
+
 
 
 
@@ -3559,7 +3621,8 @@ function renderAdminPage() {
   $('page-sub').innerHTML = 'User management &amp; assignments';
   $('stamp').innerHTML = '';
   $('act-row').innerHTML = '<button class="btn pri" onclick="openMerchantAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F517;</span> Merchant Assignment</button>'
-    + ' <button class="btn" onclick="openBuyerAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F6CD;</span> Buyer Assignment</button>';
+    + ' <button class="btn" onclick="openBuyerAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F6CD;</span> Buyer Assignment</button>'
+    + ' <button class="btn" onclick="openColumnManagerHub()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x2699;</span> Column Manager</button>';
 
   var inp = 'class="adm-inp"';
   var sel = 'class="adm-sel"';
@@ -5126,7 +5189,6 @@ function renderBuyerAssign() {
     if (myBuyers.length) {
       myBuyers.forEach(function(b) {
         html += '<span class="ba-buyer-chip">' + b.name;
-        html += '<button data-bid="' + b.id + '" onclick="openColumnManager(this.dataset.bid)" title="Manage Columns" style="background:rgba(255,255,255,.15)">&#x2699;</button>';
         html += '<button data-bid="' + b.id + '" data-mid="' + m.id + '" onclick="baRemove(this.dataset.bid,this.dataset.mid)" title="Remove">&#x2715;</button>';
         html += '</span>';
       });
@@ -5227,6 +5289,53 @@ function isHashed(str) { return !!(str && /^[0-9a-f]{64}$/.test(str)); }
 var WORLD_COUNTRIES_LIST = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Brazil','Bulgaria','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Egypt','Estonia','Finland','France','Germany','Greece','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Latvia','Lebanon','Lithuania','Luxembourg','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Serbia','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Thailand','Tunisia','Turkey','UAE','Ukraine','United Kingdom','United States','Vietnam'];
 var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 
+// === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
+var FIXED_BLOCKS = [
+  { key:'_style',       name:'Style',        width:140, mandatory:true  },
+  { key:'_photo',       name:'Photo',        width:62,  mandatory:false },
+  { key:'_po',          name:'PO',           width:115, mandatory:false },
+  { key:'_buyer',       name:'Buyer',        width:120, mandatory:false },
+  { key:'_house',       name:'House',        width:90,  mandatory:false },
+  { key:'_gauge',       name:'Gauge',        width:70,  mandatory:false },
+  { key:'_colour',      name:'Colour',       width:90,  mandatory:false },
+  { key:'_composition', name:'Composition',  width:110, mandatory:false },
+  { key:'_qty',         name:'Qty',          width:80,  mandatory:false },
+  { key:'_fob',         name:'FOB',          width:75,  mandatory:false },
+  { key:'_value',       name:'Value',        width:95,  mandatory:false },
+  { key:'_ship',        name:'Ship Date',    width:90,  mandatory:false },
+  { key:'_days',        name:'Days',         width:65,  mandatory:false },
+  { key:'_yarn',        name:'Yarn / Fabric',width:150, mandatory:false },
+  { key:'_accessories', name:'Accessories',  width:130, mandatory:false },
+  { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
+  { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
+  { key:'_balance',     name:'Balance',      width:80,  mandatory:false },
+  { key:'_notes',       name:'Notes',        width:120, mandatory:false },
+];
+
+
+function getBuyerFreezeCount(buyerId) {
+  var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
+  var n = buyer && buyer.freeze_count;
+  return (n===undefined || n===null) ? 1 : Math.max(1, n);
+}
+
+async function setBuyerFreezeCount(buyerId, n) {
+  n = Math.max(1, parseInt(n)||1);
+  var res = await db.from('buyers').update({ freeze_count: n }).eq('id', buyerId);
+  if (res.error) { toast('Error: '+res.error.message, 'err'); return; }
+  var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
+  if (buyer) buyer.freeze_count = n;
+}
+
+function getFixedBlockByKey(key) {
+  return FIXED_BLOCKS.find(function(fb){ return fb.key===key; });
+}
+
+function isFixedKey(key) {
+  return key && key.charAt(0) === '_';
+}
+
+
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
   { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, defLoc:{live:true,laying:false,shipped:false} },
@@ -5281,14 +5390,46 @@ async function loadFieldVisibility() {
 function getBuyerFieldConfig(buyerId, fieldKey) {
   var cfg = S.fieldVisibility[buyerId] && S.fieldVisibility[buyerId][fieldKey];
   if (cfg) return cfg;
-  // Fallback to master default if no override saved yet
+  // Fallback default
+  if (isFixedKey(fieldKey)) {
+    var fb = getFixedBlockByKey(fieldKey);
+    if (!fb) return null;
+    var defaultOrder = FIXED_BLOCKS.findIndex(function(x){ return x.key===fieldKey; });
+    return {
+      buyer_id: buyerId, field_key: fieldKey, visible: true,
+      in_live: true, in_laying: false, in_shipped: false,
+      col_order: defaultOrder
+    };
+  }
   var master = getFieldByKey(fieldKey);
   if (!master) return null;
+  var customOrder = FIXED_BLOCKS.length + MASTER_FIELDS.findIndex(function(x){ return x.key===fieldKey; });
   return {
     buyer_id: buyerId, field_key: fieldKey, visible: true,
     in_live: !!master.defLoc.live, in_laying: !!master.defLoc.laying, in_shipped: !!master.defLoc.shipped,
-    col_order: 0
+    col_order: customOrder
   };
+}
+
+function getUnifiedOrderedItems(buyerId) {
+  // Combine fixed blocks + custom fields into one ordered, filtered list
+  var items = [];
+  FIXED_BLOCKS.forEach(function(fb) {
+    var cfg = getBuyerFieldConfig(buyerId, fb.key);
+    items.push({ key: fb.key, isFixed: true, block: fb, cfg: cfg });
+  });
+  MASTER_FIELDS.forEach(function(mf) {
+    var cfg = getBuyerFieldConfig(buyerId, mf.key);
+    items.push({ key: mf.key, isFixed: false, master: mf, cfg: cfg });
+  });
+  return items.sort(function(a,b){ return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+}
+
+function getVisibleUnifiedItems(buyerId) {
+  return getUnifiedOrderedItems(buyerId).filter(function(item) {
+    if (item.block && item.block.mandatory) return true;
+    return item.cfg && item.cfg.visible;
+  });
 }
 
 function getVisibleFieldsForBuyer(buyerId, location) {
@@ -5332,6 +5473,17 @@ async function saveFieldValue(orderId, fieldKey, value) {
 
 // === COLUMN MANAGER ===
 var _cmTab = 'global';
+
+async function openColumnManagerHub() {
+  await loadBuyers();
+  var buyersWithMerchant = S.buyers.filter(function(b){ return S.buyerAssignments[b.id]; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+  if (!buyersWithMerchant.length) {
+    toast('Assign at least one buyer to a merchant first', 'err');
+    return;
+  }
+  openColumnManager(buyersWithMerchant[0].id);
+}
 
 async function openColumnManager(buyerId) {
   _cmTab = buyerId || 'global';
@@ -5381,30 +5533,60 @@ function renderGlobalDefaultsTable() {
 
 async function renderBuyerColumnTable(buyerId) {
   $('cm-body').innerHTML = '<div class="loading" style="padding:30px"><span class="spin"></span></div>';
-  var fields = MASTER_FIELDS.map(function(mf) {
-    var cfg = getBuyerFieldConfig(buyerId, mf.key);
-    return { master: mf, cfg: cfg };
-  }).sort(function(a,b) { return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+  var items = getUnifiedOrderedItems(buyerId);
+  var freezeCount = getBuyerFreezeCount(buyerId);
 
-  var rows = fields.map(function(item, idx) {
-    var mf = item.master, cfg = item.cfg;
-    return '<tr data-key="' + mf.key + '">'
-      + '<td><div class="cm-field-name">' + mf.name + '</div><div class="cm-field-type">' + mf.type.replace('special_','').replace('_',' ') + '</div></td>'
-      + '<td class="center"><button class="cm-toggle ' + (cfg.visible?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="visible" onclick="cmToggle(this)"></button></td>'
-      + '<td class="center"><button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_live" onclick="cmToggle(this)"></button></td>'
-      + '<td class="center"><button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_laying" onclick="cmToggle(this)"></button></td>'
-      + '<td class="center"><button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button></td>'
+  var rows = items.map(function(item, idx) {
+    var cfg = item.cfg;
+    var name = item.isFixed ? item.block.name : item.master.name;
+    var typeLabel = item.isFixed ? (item.block.isGroup ? 'fixed group' : 'fixed') : item.master.type.replace('special_','').replace('_',' ');
+    var isMandatory = item.isFixed && item.block.mandatory;
+    var isFrozen = idx < freezeCount;
+
+    var visToggle = isMandatory
+      ? '<span style="font-size:10px;color:var(--muted);font-style:italic">always on</span>'
+      : '<button class="cm-toggle ' + (cfg.visible?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="visible" onclick="cmToggle(this)"></button>';
+
+    var liveToggle, layingToggle, shippedToggle;
+    if (item.isFixed) {
+      liveToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
+      layingToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
+      shippedToggle = '<span style="font-size:10px;color:var(--muted)">&#x2014;</span>';
+    } else {
+      liveToggle = '<button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_live" onclick="cmToggle(this)"></button>';
+      layingToggle = '<button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_laying" onclick="cmToggle(this)"></button>';
+      shippedToggle = '<button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button>';
+    }
+
+    return '<tr data-key="' + item.key + '" style="' + (isFrozen?'background:var(--accent-soft)':'') + '">'
+      + '<td>' + (isFrozen ? '<span title="Frozen" style="margin-right:6px">&#x1F9CA;</span>' : '') + '<div class="cm-field-name">' + name + '</div><div class="cm-field-type">' + typeLabel + '</div></td>'
+      + '<td class="center">' + visToggle + '</td>'
+      + '<td class="center">' + liveToggle + '</td>'
+      + '<td class="center">' + layingToggle + '</td>'
+      + '<td class="center">' + shippedToggle + '</td>'
       + '<td class="center"><div class="cm-order-btns">'
-      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-dir="up" onclick="cmReorder(this)" ' + (idx===0?'disabled':'') + '>&#x25B2;</button>'
-      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-dir="down" onclick="cmReorder(this)" ' + (idx===fields.length-1?'disabled':'') + '>&#x25BC;</button>'
+      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + item.key + '" data-dir="up" onclick="cmReorder(this)" ' + (idx===0?'disabled':'') + '>&#x25B2;</button>'
+      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + item.key + '" data-dir="down" onclick="cmReorder(this)" ' + (idx===items.length-1?'disabled':'') + '>&#x25BC;</button>'
       + '</div></td>'
       + '</tr>';
   }).join('');
 
   var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
-  $('cm-body').innerHTML = '<div style="padding:12px 16px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly.</div>'
-    + '<table class="cm-table"><thead><tr><th>Field</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
+  var maxFreeze = items.length;
+  $('cm-body').innerHTML = '<div style="padding:12px 16px 8px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly. Fixed columns and custom fields share one order &mdash; reorder freely.</div>'
+    + '<div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px">'
+    + '<span style="font-size:12px;font-weight:600;color:var(--ink)">&#x1F9CA; Freeze first</span>'
+    + '<input type="number" min="1" max="' + maxFreeze + '" value="' + freezeCount + '" id="cm-freeze-input" data-bid="' + buyerId + '" onchange="cmSetFreeze(this)" style="width:60px;padding:5px 8px;border:1.5px solid var(--line);border-radius:7px;text-align:center;font-size:13px;font-weight:600">'
+    + '<span style="font-size:12px;color:var(--muted)">columns (from the left, in the order below). Style is always included.</span>'
+    + '</div>'
+    + '<table class="cm-table"><thead><tr><th>Column</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>';
+}
+
+async function cmSetFreeze(input) {
+  var buyerId = input.dataset.bid;
+  await setBuyerFreezeCount(buyerId, input.value);
+  renderBuyerColumnTable(buyerId);
 }
 
 async function cmToggle(btn) {
@@ -5423,15 +5605,13 @@ async function cmToggle(btn) {
 
 async function cmReorder(btn) {
   var buyerId = btn.dataset.bid, key = btn.dataset.key, dir = btn.dataset.dir;
-  var fields = MASTER_FIELDS.map(function(mf) {
-    return { key: mf.key, cfg: getBuyerFieldConfig(buyerId, mf.key) };
-  }).sort(function(a,b) { return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+  var items = getUnifiedOrderedItems(buyerId);
 
-  var idx = fields.findIndex(function(f){ return f.key===key; });
+  var idx = items.findIndex(function(it){ return it.key===key; });
   var swapIdx = dir === 'up' ? idx-1 : idx+1;
-  if (swapIdx < 0 || swapIdx >= fields.length) return;
+  if (swapIdx < 0 || swapIdx >= items.length) return;
 
-  var a = fields[idx], b = fields[swapIdx];
+  var a = items[idx], b = items[swapIdx];
   var aOrder = a.cfg.col_order || 0, bOrder = b.cfg.col_order || 0;
   if (aOrder === bOrder) { aOrder = idx; bOrder = swapIdx; }
 
