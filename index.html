@@ -875,6 +875,13 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
 [data-theme="dark"] tbody tr.r5  td.stk-dyn{background-color:#2E1E10!important}
 [data-theme="dark"] tbody tr.late td.stk-dyn{background-color:#2E1515!important}
 
+
+/* Dynamic buyer board table — locked widths prevent freeze overlap */
+table.dyn-board{table-layout:fixed}
+table.dyn-board th,table.dyn-board td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.dyn-board td.col-yarn,table.dyn-board td .cell{white-space:normal}
+table.dyn-board td:has(.style-thumb){overflow:visible}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -909,7 +916,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.4</p>
   </div>
 </div>
 
@@ -944,7 +951,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-3.2</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.4</div>
 </div>
 
 
@@ -2237,20 +2244,33 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   }
 
   // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
-  var visItems = buyerId ? getVisibleUnifiedItems(buyerId) : FIXED_BLOCKS.map(function(fb){
+  var visItems = buyerId ? getVisibleUnifiedItems(buyerId, 'live') : FIXED_BLOCKS.map(function(fb){
     return { key: fb.key, isFixed: true, block: fb, cfg: { visible:true, col_order:0 } };
   });
   var freezeCount = buyerId ? getBuyerFreezeCount(buyerId) : 1;
 
-  // Compute widths + cumulative left offsets for frozen items
+  // ── COMPREHENSIVE WIDTH MAP — every column type gets a locked, enforced pixel width ──
+  var CUSTOM_TYPE_WIDTHS = {
+    text: 130, text_memory: 150, number: 95, date: 120, dropdown: 130,
+    special_weight: 110, special_floor: 130, special_delay: 90
+  };
   function widthOf(item) {
     if (item.isFixed) {
       if (item.key === '_production') return VSTEPS.length * 90;
+      if (item.key === '_approvals') return 4 * 108;
       return item.block.width || 120;
     }
-    return 130; // default width for custom fields when frozen
+    return CUSTOM_TYPE_WIDTHS[item.master.type] || 130;
   }
-  var leftOffsets = {}; // key -> px
+  function subWidthOf(item, subIndex) {
+    // For group columns, each internal sub-column's own width (used for offset math past the group)
+    if (item.key === '_production') return 90;
+    if (item.key === '_approvals') return 108;
+    return widthOf(item);
+  }
+
+  // Compute left offsets for frozen items (cumulative width of all preceding frozen items)
+  var leftOffsets = {};
   var cum = 0;
   for (var i = 0; i < visItems.length && i < freezeCount; i++) {
     leftOffsets[visItems[i].key] = cum;
@@ -2258,14 +2278,24 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   }
   var lastFrozenKey = freezeCount > 0 && visItems.length ? visItems[Math.min(freezeCount, visItems.length) - 1].key : null;
 
-  function frozenAttrs(key) {
-    if (!(key in leftOffsets)) return '';
-    var isLast = key === lastFrozenKey;
-    return ' class="stk-dyn' + (isLast ? ' stk-last' : '') + '" style="left:' + leftOffsets[key] + 'px"';
+  function wStyle(item) {
+    var w = widthOf(item);
+    return 'width:' + w + 'px;min-width:' + w + 'px;max-width:' + w + 'px;';
+  }
+  function frozenStyle(item) {
+    if (!(item.key in leftOffsets)) return '';
+    return 'position:sticky;left:' + leftOffsets[item.key] + 'px;';
+  }
+  function frozenClass(item) {
+    if (!(item.key in leftOffsets)) return '';
+    var isLast = item.key === lastFrozenKey;
+    return ' stk-dyn' + (isLast ? ' stk-last' : '');
   }
 
   // ── Build custom field lookup for this buyer (live location) ──
   var customFieldItems = visItems.filter(function(it){ return !it.isFixed; }).map(function(it){ return it.master; });
+  var itemByKey = {};
+  visItems.forEach(function(it){ itemByKey[it.key] = it; });
 
   const rows = orders.map(function(o) {
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
@@ -2286,109 +2316,132 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:10px">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:10px">'+dl+'</span>' : dl;
 
-    const prodTds = VSTEPS.map(function(s) {
-      const v = o[s.k] || 0, full = v >= (o.qty||0) && (o.qty||0) > 0;
-      const pct = o.qty ? Math.min(100, 100*v/o.qty) : 0;
-      if (full && canEdit) return '<td style="text-align:center"><button class="ok-chip" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();openEditQty(\'' + o.id + '\',\'' + s.k + '\',' + v + ',' + o.qty + ',\'' + s.n + '\')">&#x2713; OK</button></td>';
-      return '<td><div class="cell"><span class="bar" style="width:38px"><i style="width:' + pct + '%"></i></span>'
-        + (canEdit ? '<input class="qtyin" type="number" min="0" max="' + o.qty + '" value="' + v + '" style="width:56px" onchange="setProd(\'' + o.id + '\',\'' + s.k + '\',this.value)">' : '<span style="font-family:var(--mono);font-size:11px">' + fmt(v) + '</span>')
-        + '</div></td>';
-    }).join('');
-
     const remCell = canEdit
-      ? '<input class="rem-in" style="width:100px" value="' + (o.remarks||'').replace(/"/g,'&quot;') + '" placeholder="Note\u2026" onchange="setRemark(\'' + o.id + '\',this.value)">'
+      ? '<input class="rem-in" style="width:100%" value="' + (o.remarks||'').replace(/"/g,'&quot;') + '" placeholder="Note\u2026" onchange="setRemark(\'' + o.id + '\',this.value)">'
       : '<span class="sub2">' + (o.remarks||'\u2014') + '</span>';
 
-    // Build cell HTML keyed by column key
+    // Build cell HTML keyed by column key — every cell carries width + frozen positioning
     var cellsByKey = {};
-    cellsByKey['_style'] = '<td' + frozenAttrs('_style') + ' style="cursor:pointer"><span class="flag ' + (ms.length?'on':'') + '">\u200b</span>'
-      + '<span class="sty">' + o.style + '</span>'
-      + '<div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div></td>';
-    cellsByKey['_photo'] = '<td' + frozenAttrs('_photo') + ' style="text-align:center">' + (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')) + '</td>';
-    cellsByKey['_po'] = '<td' + frozenAttrs('_po') + ' style="font-size:11px;font-family:var(--mono);color:var(--muted)">' + (o.po_number||'\u2014') + '</td>';
-    cellsByKey['_buyer'] = '<td' + frozenAttrs('_buyer') + '>' + o.buyer + '</td>';
-    cellsByKey['_house'] = '<td' + frozenAttrs('_house') + ' style="font-size:10.5px">' + (o.house||'\u2014') + '</td>';
-    cellsByKey['_gauge'] = '<td' + frozenAttrs('_gauge') + ' style="font-size:10.5px">' + (fmtGauge(o.gauge)||'\u2014') + '</td>';
-    cellsByKey['_colour'] = '<td' + frozenAttrs('_colour') + ' style="font-size:10.5px">' + (o.color||'\u2014') + '</td>';
-    cellsByKey['_composition'] = '<td' + frozenAttrs('_composition') + ' style="font-size:10.5px">' + (o.comp||'\u2014') + '</td>';
-    cellsByKey['_qty'] = '<td' + frozenAttrs('_qty') + ' class="num">' + fmt(o.qty) + '</td>';
-    cellsByKey['_fob'] = '<td' + frozenAttrs('_fob') + ' class="num">' + (o.fob||0).toFixed(2) + '</td>';
-    cellsByKey['_value'] = '<td' + frozenAttrs('_value') + ' class="num">' + money((o.qty||0)*(o.fob||0)) + '</td>';
-    cellsByKey['_ship'] = '<td' + frozenAttrs('_ship') + ' style="font-size:10.5px">' + short(o.ship_date) + '</td>';
-    cellsByKey['_days'] = '<td' + frozenAttrs('_days') + ' class="num">' + dlSpan + '</td>';
-    cellsByKey['_yarn'] = '<td' + frozenAttrs('_yarn') + ' class="col-yarn">' + yarnInner
-      + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '')
-      + '</td>';
-    cellsByKey['_accessories'] = '<td' + frozenAttrs('_accessories') + ' class="apv-col">' + acChip + '</td>';
-    cellsByKey['_approvals'] =
-        '<td' + frozenAttrs('_approvals') + ' class="apv-col">' + ldChip + '</td>'
-      + '<td class="apv-col">' + ftChip + '</td>'
-      + '<td class="apv-col">' + ppChip + '</td>'
-      + '<td class="apv-col">' + ssChip + '</td>';
-    cellsByKey['_production'] = (frozenAttrs('_production')
-      ? prodTds.replace('<td>', '<td' + frozenAttrs('_production') + '>')
-      : prodTds);
-    cellsByKey['_balance'] = '<td' + frozenAttrs('_balance') + ' class="num" style="font-weight:600">' + fmt((o.qty||0)-(o.prod_packing||0)) + '</td>';
-    cellsByKey['_notes'] = '<td' + frozenAttrs('_notes') + '>' + remCell + '</td>';
+
+    function singleTd(key, extraClass, innerHtml, extraStyle) {
+      var it = itemByKey[key];
+      var style = wStyle(it) + frozenStyle(it) + (extraStyle||'');
+      return '<td class="' + (extraClass||'') + frozenClass(it) + '" style="' + style + '">' + innerHtml + '</td>';
+    }
+
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span><div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
+    if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11px;font-family:var(--mono);color:var(--muted);');
+    if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
+    if (itemByKey['_house']) cellsByKey['_house'] = singleTd('_house', '', (o.house||'\u2014'), 'font-size:10.5px;');
+    if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:10.5px;');
+    if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:10.5px;');
+    if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:10.5px;');
+    if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty));
+    if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', (o.fob||0).toFixed(2));
+    if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)));
+    if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:10.5px;');
+    if (itemByKey['_days']) cellsByKey['_days'] = singleTd('_days', 'num', dlSpan);
+    if (itemByKey['_yarn']) {
+      var yarnHtml = yarnInner + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '');
+      cellsByKey['_yarn'] = singleTd('_yarn', 'col-yarn', yarnHtml);
+    }
+    if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
+
+    if (itemByKey['_approvals']) {
+      var apIt = itemByKey['_approvals'];
+      var apFrozenCls = frozenClass(apIt);
+      var apFrozenStyle = frozenStyle(apIt);
+      cellsByKey['_approvals'] =
+          '<td class="apv-col' + apFrozenCls + '" style="width:108px;min-width:108px;max-width:108px;' + apFrozenStyle + '">' + ldChip + '</td>'
+        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ftChip + '</td>'
+        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ppChip + '</td>'
+        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ssChip + '</td>';
+    }
+
+    if (itemByKey['_production']) {
+      var prIt = itemByKey['_production'];
+      var prFrozenCls = frozenClass(prIt);
+      var prFrozenStyle = frozenStyle(prIt);
+      cellsByKey['_production'] = VSTEPS.map(function(s, idx) {
+        const v = o[s.k] || 0, full = v >= (o.qty||0) && (o.qty||0) > 0;
+        const pct = o.qty ? Math.min(100, 100*v/o.qty) : 0;
+        var cls = idx === 0 ? prFrozenCls : '';
+        var stl = 'width:90px;min-width:90px;max-width:90px;' + (idx === 0 ? prFrozenStyle : '');
+        if (full && canEdit) return '<td class="' + cls + '" style="text-align:center;' + stl + '"><button class="ok-chip" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();openEditQty(\'' + o.id + '\',\'' + s.k + '\',' + v + ',' + o.qty + ',\'' + s.n + '\')">&#x2713; OK</button></td>';
+        return '<td class="' + cls + '" style="' + stl + '"><div class="cell"><span class="bar" style="width:38px"><i style="width:' + pct + '%"></i></span>'
+          + (canEdit ? '<input class="qtyin" type="number" min="0" max="' + o.qty + '" value="' + v + '" style="width:56px" onchange="setProd(\'' + o.id + '\',\'' + s.k + '\',this.value)">' : '<span style="font-family:var(--mono);font-size:11px">' + fmt(v) + '</span>')
+          + '</div></td>';
+      }).join('');
+    }
+
+    if (itemByKey['_balance']) cellsByKey['_balance'] = singleTd('_balance', 'num', fmt((o.qty||0)-(o.prod_packing||0)), 'font-weight:600;');
+    if (itemByKey['_notes']) cellsByKey['_notes'] = singleTd('_notes', '', remCell);
 
     customFieldItems.forEach(function(f) {
-      cellsByKey[f.key] = '<td' + frozenAttrs(f.key) + '>' + renderFieldCell(f, o.id, canEdit) + '</td>';
+      var it = itemByKey[f.key];
+      var style = wStyle(it) + frozenStyle(it);
+      cellsByKey[f.key] = '<td class="' + frozenClass(it) + '" style="' + style + '">' + renderFieldCell(f, o.id, canEdit) + '</td>';
     });
 
     var rowCells = visItems.map(function(item){ return cellsByKey[item.key] || ''; }).join('');
 
     return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a,select\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
       + rowCells
-      + '<td style="white-space:nowrap">'
+      + '<td style="white-space:nowrap;width:180px;min-width:180px">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
       + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + o.style + '\',\'' + o.buyer + '\')">&#x2715;</button>' : '')
       + '</td></tr>';
   }).join('');
 
-  // ── Build two-row header ──
+  // ── Build two-row header — same width/sticky logic as data cells ──
   var topRow = '', bottomRow = '';
   visItems.forEach(function(item) {
     var key = item.key;
-    var attrs = frozenAttrs(key);
-    if (key === '_style') topRow += '<th' + attrs + ' rowspan="2">Style</th>';
-    else if (key === '_photo') topRow += '<th' + attrs + ' rowspan="2">Photo</th>';
-    else if (key === '_po') topRow += '<th' + attrs + ' rowspan="2">PO</th>';
-    else if (key === '_buyer') topRow += '<th' + attrs + ' rowspan="2">Buyer</th>';
-    else if (key === '_house') topRow += '<th' + attrs + ' rowspan="2">House</th>';
-    else if (key === '_gauge') topRow += '<th' + attrs + ' rowspan="2">Gauge</th>';
-    else if (key === '_colour') topRow += '<th' + attrs + ' rowspan="2">Colour</th>';
-    else if (key === '_composition') topRow += '<th' + attrs + ' rowspan="2">Composition</th>';
-    else if (key === '_qty') topRow += '<th' + attrs + ' rowspan="2" class="num">Qty</th>';
-    else if (key === '_fob') topRow += '<th' + attrs + ' rowspan="2" class="num">FOB</th>';
-    else if (key === '_value') topRow += '<th' + attrs + ' rowspan="2" class="num">Value</th>';
-    else if (key === '_ship') topRow += '<th' + attrs + ' rowspan="2">Ship</th>';
-    else if (key === '_days') topRow += '<th' + attrs + ' rowspan="2" class="num">Days</th>';
-    else if (key === '_yarn') topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' rowspan="2">' + matLabel + '<br>(' + unit + ')</th>';
-    else if (key === '_accessories') topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' rowspan="2">Accessories</th>';
+    var w = widthOf(item);
+    var wStr = 'width:' + w + 'px;min-width:' + w + 'px;max-width:' + w + 'px;';
+    var fStyle = frozenStyle(item);
+    var fClass = frozenClass(item);
+
+    if (key === '_style') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style</th>';
+    else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
+    else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
+    else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
+    else if (key === '_house') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
+    else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Gauge</th>';
+    else if (key === '_colour') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Colour</th>';
+    else if (key === '_composition') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Composition</th>';
+    else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Qty</th>';
+    else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">FOB</th>';
+    else if (key === '_value') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Value</th>';
+    else if (key === '_ship') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Ship</th>';
+    else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Days</th>';
+    else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + matLabel + '<br>(' + unit + ')</th>';
+    else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Accessories</th>';
     else if (key === '_approvals') {
-      topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' colspan="4">Approvals</th>';
-      bottomRow += '<th class="grp" style="font-size:9px">Lab Dip</th><th class="grp" style="font-size:9px">Fit</th><th class="grp" style="font-size:9px">PP</th><th class="grp" style="font-size:9px">Size Set</th>';
+      topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">Approvals</th>';
+      bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th>';
     }
     else if (key === '_production') {
-      topRow += '<th class="grp' + (attrs?' stk-dyn'+(key===lastFrozenKey?' stk-last':''):'') + '" ' + (attrs?'style="left:'+leftOffsets[key]+'px"':'') + ' colspan="' + VSTEPS.length + '">Production</th>';
-      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="font-size:9px">'+s.n+'</th>';}).join('');
+      topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*90) + 'px;min-width:' + (VSTEPS.length*90) + 'px;max-width:' + (VSTEPS.length*90) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">Production</th>';
+      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:90px;min-width:90px;max-width:90px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_balance') topRow += '<th' + attrs + ' rowspan="2" class="num">Bal</th>';
-    else if (key === '_notes') topRow += '<th' + attrs + ' rowspan="2">Notes</th>';
+    else if (key === '_balance') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Bal</th>';
+    else if (key === '_notes') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Notes</th>';
     else {
-      // custom field
       var mf = getFieldByKey(key);
-      topRow += '<th' + attrs + ' rowspan="2" style="font-size:9.5px">' + (mf?mf.name:key) + '</th>';
+      topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (mf?mf.name:key) + '</th>';
     }
   });
-  topRow += '<th rowspan="2"></th>';
+  topRow += '<th rowspan="2" style="width:180px;min-width:180px"></th>';
 
-  return '<div class="card"><div class="scroller"><table>'
+  return '<div class="card"><div class="scroller"><table class="dyn-board">'
     + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
     + '<tbody>' + rows + '</tbody>'
     + '</table></div></div>';
 }
+
 
 
 
