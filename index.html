@@ -802,6 +802,63 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .ba-unassigned-pool{background:var(--amber-soft);border:1.5px solid #FDE68A;border-radius:12px;padding:14px 16px;margin-bottom:14px}
 .ba-add-box{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
 
+
+/* Custom Field / Column Manager */
+.cf-input{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:6px;
+  background:#FCFBF7;font-size:12px;color:var(--ink)}
+.cf-input:focus{outline:none;border-color:var(--accent);background:#fff}
+[data-theme="dark"] .cf-input{background:#2A2828;border-color:var(--line);color:var(--ink)}
+.cf-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;background:var(--panel);
+  color:var(--muted);border-color:var(--line);transition:all .12s;white-space:nowrap}
+.cf-chip:hover{border-color:var(--accent);color:var(--accent)}
+.cf-chip.has-val{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* Column Manager modal */
+.cm-modal{max-width:900px;width:96vw;max-height:88vh;display:flex;flex-direction:column}
+.cm-modal .m-b{padding:0;flex:1;overflow-y:auto;min-height:0}
+.cm-tabs{display:flex;gap:4px;padding:12px 16px 0;border-bottom:1px solid var(--line);flex-shrink:0}
+.cm-tab{padding:8px 16px;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:600;
+  cursor:pointer;background:none;border:none;color:var(--muted);transition:all .12s}
+.cm-tab.on{background:var(--panel);color:var(--accent);border-bottom:2px solid var(--accent)}
+.cm-table{width:100%;border-collapse:collapse}
+.cm-table th{padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);
+  background:var(--bg);position:sticky;top:0}
+.cm-table th.center{text-align:center}
+.cm-table td{padding:8px 12px;border-bottom:1px solid #F0EDE4;font-size:13px;vertical-align:middle}
+.cm-table td.center{text-align:center}
+.cm-field-name{font-weight:600;color:var(--ink)}
+.cm-field-type{font-size:10.5px;color:var(--muted);text-transform:capitalize}
+.cm-toggle{width:36px;height:20px;border-radius:20px;background:#D1D5DB;position:relative;
+  cursor:pointer;transition:background .15s;border:none;display:inline-block}
+.cm-toggle.on{background:var(--accent)}
+.cm-toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.cm-toggle.on::after{left:18px}
+.cm-order-btns{display:flex;flex-direction:column;gap:1px}
+.cm-order-btn{width:20px;height:15px;border:none;background:var(--bg);color:var(--muted);
+  cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;
+  border-radius:3px;transition:all .1s}
+.cm-order-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.cm-order-btn:disabled{opacity:.25;cursor:default}
+.cm-buyer-select{padding:8px 32px 8px 12px;border:1.5px solid var(--line);border-radius:9px;
+  background:var(--panel);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+
+/* Average Weight modal */
+.aw-big{text-align:center;padding:16px 0 20px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.aw-big .lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.aw-big .val{font-family:var(--serif);font-size:38px;font-weight:600;margin-top:4px}
+.aw-size-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0EDE4}
+.aw-size-row input{padding:5px 9px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+
+/* Production Floor modal */
+.pf-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;
+  border-bottom:1px solid #F0EDE4}
+.pf-row:last-child{border-bottom:none}
+.pf-step-name{font-weight:600;font-size:13px}
+.pf-select{padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:#FCFBF7;font-size:12.5px}
+
 @media print{
   html,body{height:auto}
   .shell,#app{display:block!important;height:auto!important;overflow:visible!important}
@@ -836,7 +893,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-2.8</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-3.0</p>
   </div>
 </div>
 
@@ -871,7 +928,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-2.8</div>
+  <div id="ver-stamp">v2026-08-31 WF-3.0</div>
 </div>
 
 
@@ -1181,6 +1238,51 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
   </div>
 </div>
 
+<!-- === COLUMN MANAGER MODAL === -->
+<div class="ov" id="ov-column-manager" onclick="if(event.target===this)closeModal('ov-column-manager')">
+  <div class="modal cm-modal">
+    <div class="m-h" style="flex-shrink:0">
+      <div><h3>Column Manager</h3><div class="msub" id="cm-sub">Configure which fields appear and where</div></div>
+      <button class="btn" onclick="closeModal('ov-column-manager')">Close</button>
+    </div>
+    <div class="cm-tabs" id="cm-tabs"></div>
+    <div class="m-b" id="cm-body"></div>
+  </div>
+</div>
+
+<!-- === AVERAGE WEIGHT MODAL === -->
+<div class="ov" id="ov-avg-weight" onclick="if(event.target===this)closeModal('ov-avg-weight')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3>Average Weight</h3><div class="msub" id="aw-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-avg-weight')">Close</button></div>
+    <div class="m-b" id="aw-body"></div>
+    <div class="m-f"><button class="btn" onclick="closeModal('ov-avg-weight')">Done</button></div>
+  </div>
+</div>
+
+<!-- === PRODUCTION FLOOR MODAL === -->
+<div class="ov" id="ov-prod-floor" onclick="if(event.target===this)closeModal('ov-prod-floor')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3>Production Floor</h3><div class="msub" id="pf-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-prod-floor')">Close</button></div>
+    <div class="m-b" id="pf-body"></div>
+    <div class="m-f"><button class="btn" onclick="closeModal('ov-prod-floor')">Done</button></div>
+  </div>
+</div>
+
+<!-- === SIMPLE FIELD DATE-HISTORY MODAL === -->
+<div class="ov" id="ov-field-date" onclick="if(event.target===this)closeModal('ov-field-date')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3 id="fd-title">Field</h3><div class="msub" id="fd-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-field-date')">Cancel</button></div>
+    <div class="m-b" id="fd-body"></div>
+    <div class="m-f">
+      <button class="btn" onclick="closeModal('ov-field-date')">Cancel</button>
+      <button class="btn pri" onclick="saveFieldDateModal()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MODAL: ADD NOTE ═══ -->
 <div class="ov" id="ov-note" onclick="if(event.target===this)closeModal('ov-note')">
   <div class="modal slim">
@@ -1301,6 +1403,8 @@ const S = {
   myAssignments: [],
   buyers: [],
   buyerAssignments: {},
+  fieldVisibility: {},
+  fieldValues: {},
   layingGoods: [],
   layingLoaded: false,
 };
@@ -1514,6 +1618,7 @@ async function startApp() {
   try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
   try { await loadBuyers(); } catch(e) { console.error('loadBuyers:', e); }
   try { await loadBuyerAssignments(); } catch(e) { console.error('loadBuyerAssignments:', e); }
+  try { await loadFieldVisibility(); } catch(e) { console.error('loadFieldVisibility:', e); }
   try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
 
   cleanOldArchive();
@@ -1936,7 +2041,6 @@ async function renderBoard(uid) {
   const merch = S.users.find(u => u.id === uid);
   if (!merch) { setView('dashboard'); return; }
 
-  // Show skeleton while data loads
   $('crumb').textContent = 'Merchandiser';
   $('page-title').textContent = merch.name;
   $('page-sub').innerHTML = '';
@@ -1951,16 +2055,17 @@ async function renderBoard(uid) {
   const os = (await loadBoardOrders(uid))
     .sort((a, b) => (daysTo(a.ship_date)||999) - (daysTo(b.ship_date)||999));
 
+  // Load custom field values for all visible orders
+  try { await loadFieldValues(os.map(function(o){ return o.id; })); } catch(e) { console.error('loadFieldValues:', e); }
+
   const stale = merch.updated_at && (Date.now() - new Date(merch.updated_at).getTime()) > 86400000;
   const isMgmt  = S.user.role === 'management';
-  const isMid   = ['hod','manager','audit'].includes(S.user.role);
   const canEdit = can('edit', uid);
   const canNote = can('send_notes');
 
-  $('crumb').textContent = 'Merchandiser';
   $('page-title').innerHTML = merch.name +
     `<span class="div-badge ${division}">${division === 'knit' ? 'Knit' : 'Sweater'}</span>`;
-  $('page-sub').innerHTML = `${merch.team||''} · ${os.length} live orders · ${fmt(os.reduce((s,o)=>s+(o.qty||0)-(o.prod_packing||0),0))} pcs remaining`;
+  $('page-sub').innerHTML = `${merch.team||''} \u00b7 ${os.length} live orders \u00b7 ${fmt(os.reduce((s,o)=>s+(o.qty||0)-(o.prod_packing||0),0))} pcs remaining`;
   $('stamp').innerHTML = `<div class="lab">Last updated</div>
     <div class="val ${stale?'stale':''}">${merch.updated_at ? ago(merch.updated_at) : 'Never'}</div>
     <div class="sub">${merch.updated_at ? new Date(merch.updated_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>`;
@@ -1980,21 +2085,21 @@ async function renderBoard(uid) {
     notesHtml = `<div class="notes-wrap">`;
     openNotes.forEach(n => {
       notesHtml += `<div class="note-card">
-        <div class="note-icon">📌</div>
+        <div class="note-icon">\u{1F4CC}</div>
         <div class="note-body">
-          <div class="note-meta">${n.created_by} · ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="note-meta">${n.created_by} \u00b7 ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
           <div class="note-text">${n.content}</div>
-          ${n.reply ? `<div class="note-reply-box"><div class="rl">Reply from ${n.replied_by||'Merchant'}</div>${n.reply}</div>` : (S.user.role==='merchant' && !n.is_closed ? `<div class="note-reply-form"><textarea rows="2" placeholder="Reply to this note..." id="rep-${n.id}"></textarea><button class="btn sm pri" onclick="submitNoteReply('${n.id}',$(\'rep-${n.id}\').value)">Send</button></div>` : '')}
-          ${canEdit ? `<div class="note-actions"><button class="btn sm pri" onclick="dismissNote('${n.id}')">✓ Mark as done</button>${n.reply&&isMgmt?`<button class="btn sm" onclick="resolveNote('${n.id}')">Resolve</button>`:''}</div>` : ''}
+          ${n.reply ? `<div class="note-reply-box"><div class="rl">Reply from ${n.replied_by||'Merchant'}</div>${n.reply}</div>` : (S.user.role==='merchant' && !n.is_closed ? `<div class="note-reply-form"><textarea rows="2" placeholder="Reply to this note..." id="rep-${n.id}"></textarea><button class="btn sm pri" onclick="submitNoteReply('${n.id}',$('rep-${n.id}').value)">Send</button></div>` : '')}
+          ${canEdit ? `<div class="note-actions"><button class="btn sm pri" onclick="dismissNote('${n.id}')">\u2713 Mark as done</button>${n.reply&&isMgmt?`<button class="btn sm" onclick="resolveNote('${n.id}')">Resolve</button>`:''}</div>` : ''}
         </div>
       </div>`;
     });
     if (closedNotes.length && canNote) {
       notesHtml += `<details style="margin-top:4px"><summary style="font-size:11.5px;color:var(--muted);cursor:pointer;padding:4px 0">${closedNotes.length} completed note${closedNotes.length>1?'s':''}</summary>`;
       closedNotes.forEach(n => {
-        notesHtml += `<div class="note-card closed"><div class="note-icon">✓</div>
+        notesHtml += `<div class="note-card closed"><div class="note-icon">\u2713</div>
           <div class="note-body">
-            <div class="note-meta">${n.created_by} · ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>
+            <div class="note-meta">${n.created_by} \u00b7 ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>
             <div class="note-text done">${n.content}</div>
           </div></div>`;
       });
@@ -2007,21 +2112,87 @@ async function renderBoard(uid) {
     $('content').innerHTML = notesHtml + `<div class="card"><div class="empty">
       <h4>No live orders</h4><div>Add the first order to start tracking against the TNA plan.</div>
       ${canEdit ? `<div style="margin-top:14px"><button class="btn pri" onclick="openOrder('${uid}')">+ New order</button></div>` : ''}
-    </div></div>`; return;
+    </div></div>`;
+    return;
   }
 
-    const sums = (S.boardSummaries[uid] || {});
+  // ── Group by buyer ────────────────────────────────────────────────────────
+  var myBuyers = getBuyersForMerchant(uid);
+  var grouped = {};
+  myBuyers.forEach(function(b){ grouped[b.id]=[]; });
+  var otherOrders = [];
+  os.forEach(function(o){
+    if(o.buyer_id && grouped[o.buyer_id]!==undefined) grouped[o.buyer_id].push(o);
+    else otherOrders.push(o);
+  });
+  myBuyers.forEach(function(b){
+    grouped[b.id].sort(function(a,b2){ return (a.confirm_date||'9999') < (b2.confirm_date||'9999') ? -1 : 1; });
+  });
+
+  if (!myBuyers.length && S.user.role === 'merchant') {
+    $('content').innerHTML = '<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin to get buyers assigned to your account.</p></div></div>';
+    return;
+  }
+
+  var allHtml = '';
+  myBuyers.forEach(function(b) {
+    var bOrders = grouped[b.id];
+    var sk = 'bbs_' + uid + '_' + b.id;
+    var open = localStorage.getItem(sk) !== '0';
+    var bQty = bOrders.reduce(function(s,o){ return s+(o.qty||0); }, 0);
+    var bVal = bOrders.reduce(function(s,o){ return s+(o.qty||0)*(o.fob||0); }, 0);
+    var customFields = getVisibleFieldsForBuyer(b.id, 'live');
+    allHtml += '<div style="margin-bottom:16px">'
+      + '<div class="buyer-section-hdr" data-sk="' + sk + '" onclick="toggleBuyerSection(this.dataset.sk)">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">' + b.name + '</span>'
+      + '<span class="chip" style="font-size:10px">' + bOrders.length + ' orders</span>'
+      + (bOrders.length ? '<span style="font-size:11px;color:var(--muted)">' + fmt(bQty) + ' pcs &middot; ' + money(bVal) + '</span>' : '')
+      + '</div><span class="rail-section-arrow' + (open?' open':'') + '" id="arr-' + sk + '">&#x25B6;</span></div>'
+      + '<div id="sec-' + sk + '" style="max-height:' + (open?'99999px':'0') + ';overflow:hidden;transition:max-height .3s ease">'
+      + (bOrders.length ? renderBuyerOrdersTable(bOrders, uid, division, canEdit, VSTEPS, customFields) : '<div class="card" style="padding:14px;color:var(--muted);font-size:13px">No orders for this buyer yet.</div>')
+      + '</div></div>';
+  });
+
+  if (otherOrders.length) {
+    var sk2 = 'bbs_' + uid + '_other';
+    var open2 = localStorage.getItem(sk2) !== '0';
+    allHtml += '<div style="margin-bottom:16px">'
+      + '<div class="buyer-section-hdr" data-sk="' + sk2 + '" onclick="toggleBuyerSection(this.dataset.sk)">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">Other</span>'
+      + '<span class="chip" style="font-size:10px">' + otherOrders.length + ' orders</span></div>'
+      + '<span class="rail-section-arrow' + (open2?' open':'') + '" id="arr-' + sk2 + '">&#x25B6;</span></div>'
+      + '<div id="sec-' + sk2 + '" style="max-height:' + (open2?'99999px':'0') + ';overflow:hidden;transition:max-height .3s ease">'
+      + renderBuyerOrdersTable(otherOrders, uid, division, canEdit, VSTEPS, [])
+      + '</div></div>';
+  }
+
+  $('content').innerHTML = notesHtml + allHtml
+    + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
+}
+
+// Fully self-contained table builder — computes everything it needs from its own params
+
+function toggleBuyerSection(key){
+  var el=document.getElementById('sec-'+key);
+  var arrow=document.getElementById('arr-'+key);
+  if(!el) return;
+  var open=el.style.maxHeight!=='0px'&&el.style.maxHeight!=='0';
+  el.style.maxHeight=open?'0':'99999px';
+  if(arrow) arrow.classList.toggle('open',!open);
+  localStorage.setItem(key,open?'0':'1');
+}
+
+function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, customFields) {
+  const sums = (S.boardSummaries[uid] || {});
   const unit = division === 'knit' ? 'kgs' : 'lbs';
   const matLabel = division === 'knit' ? 'Fabric' : 'Yarn';
   const isMerchant = S.user.id === uid;
 
   const ACC_ITEMS = [
-    {k:'hangtag', n:'Hang tag'},
-    {k:'main_label', n:'Main label'},
-    {k:'care_label', n:'Care label'},
-    {k:'hanger', n:'Hanger'},
-    {k:'sewing_thread', n:'Sewing thread'},
-    {k:'other', n:'Other'},
+    {k:'hangtag', n:'Hang tag'}, {k:'main_label', n:'Main label'}, {k:'care_label', n:'Care label'},
+    {k:'hanger', n:'Hanger'}, {k:'sewing_thread', n:'Sewing thread'}, {k:'other', n:'Other'},
   ];
 
   function apvChip(sum, type, ordId, div2, canUpd, planDate) {
@@ -2029,8 +2200,7 @@ async function renderBoard(uid) {
     const latest = rounds[rounds.length - 1];
     const oc = "event.stopPropagation();openApvFlow('" + ordId + "','" + type + "','" + div2 + "')";
     const approved = latest && latest.approved_on;
-    const tnaWarn = planDate && !approved && daysTo(planDate) < 0
-      ? ' <span style="color:var(--red);font-size:9px">\u26a0</span>' : '';
+    const tnaWarn = planDate && !approved && daysTo(planDate) < 0 ? ' <span style="color:var(--red);font-size:9px">\u26a0</span>' : '';
     if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">Not submitted' + tnaWarn + '</button>';
     if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
     if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
@@ -2044,29 +2214,23 @@ async function renderBoard(uid) {
     const inhoused = ACC_ITEMS.filter(function(it){ return acc[it.k] && acc[it.k].inhouse_on; });
     const total = ACC_ITEMS.length;
     const oc = "event.stopPropagation();openAccessoriesModal('" + ordId + "')";
-    if (inhoused.length === total && booked.length === total)
-      return '<button class="apv-chip approved" onclick="' + oc + '">All inhoused</button>';
-    if (booked.length === total && inhoused.length > 0)
-      return '<button class="apv-chip submitted" onclick="' + oc + '">Booked<br><span style="font-weight:400;font-size:9.5px">' + inhoused.length + '/' + total + ' inhoused</span></button>';
-    if (booked.length === total)
-      return '<button class="apv-chip approved" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7" onclick="' + oc + '">All booked</button>';
-    if (booked.length > 0)
-      return '<button class="apv-chip submitted" onclick="' + oc + '">Partial<br><span style="font-weight:400;font-size:9.5px">' + booked.length + '/' + total + ' booked</span></button>';
+    if (inhoused.length === total && booked.length === total) return '<button class="apv-chip approved" onclick="' + oc + '">All inhoused</button>';
+    if (booked.length === total && inhoused.length > 0) return '<button class="apv-chip submitted" onclick="' + oc + '">Booked<br><span style="font-weight:400;font-size:9.5px">' + inhoused.length + '/' + total + ' inhoused</span></button>';
+    if (booked.length === total) return '<button class="apv-chip approved" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7" onclick="' + oc + '">All booked</button>';
+    if (booked.length > 0) return '<button class="apv-chip submitted" onclick="' + oc + '">Partial<br><span style="font-weight:400;font-size:9.5px">' + booked.length + '/' + total + ' booked</span></button>';
     return '<button class="apv-chip not-sent" onclick="' + oc + '">Not booked</button>';
   }
 
-  const rows = os.map(function(o) {
+  const rows = orders.map(function(o) {
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
 
-    // Approval chips (after yarn/accessories)
     const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn);
     const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew);
     const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp);
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, o.plan_knit);
     const acChip = accChip(sum, o.id, isMerchant);
 
-    // Yarn column
     const totalBk = sum.bk, totalRc = sum.rc, bal = totalBk - totalRc;
     const yarnInner = totalBk > 0
       ? '<div class="row"><span class="k">Bkd</span><span class="v">' + fmt(totalBk) + '</span></div>'
@@ -2077,7 +2241,7 @@ async function renderBoard(uid) {
       + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '')
       + '</td>';
 
-    const dlSpan = dl==null ? '—' : dl<0 ? '<span class="chip bad" style="font-size:10px">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:10px">'+dl+'</span>' : dl;
+    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:10px">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:10px">'+dl+'</span>' : dl;
 
     const prodCells = VSTEPS.map(function(s) {
       const v = o[s.k] || 0, full = v >= (o.qty||0) && (o.qty||0) > 0;
@@ -2090,19 +2254,21 @@ async function renderBoard(uid) {
 
     const remCell = canEdit
       ? '<input class="rem-in" style="width:100px" value="' + (o.remarks||'').replace(/"/g,'&quot;') + '" placeholder="Note\u2026" onchange="setRemark(\'' + o.id + '\',this.value)">'
-      : '<span class="sub2">' + (o.remarks||'—') + '</span>';
+      : '<span class="sub2">' + (o.remarks||'\u2014') + '</span>';
 
-    return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
+    const customCells = buildFieldDataCells(customFields, o.id, canEdit);
+
+    return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a,select\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
       + '<td class="stk" style="cursor:pointer"><span class="flag ' + (ms.length?'on':'') + '">\u200b</span>'
       + '<span class="sty">' + o.style + '</span>'
       + '<div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div></td>'
       + '<td class="stk2" style="text-align:center">' + (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')) + '</td>'
-      + '<td class="stk3" style="font-size:11px;font-family:var(--mono);color:var(--muted)">' + (o.po_number||'—') + '</td>'
+      + '<td class="stk3" style="font-size:11px;font-family:var(--mono);color:var(--muted)">' + (o.po_number||'\u2014') + '</td>'
       + '<td class="stk4">' + o.buyer + '</td>'
-      + '<td style="font-size:10.5px">' + (o.house||'—') + '</td>'
-      + '<td style="font-size:10.5px">' + (fmtGauge(o.gauge)||'—') + '</td>'
-      + '<td style="font-size:10.5px">' + (o.color||'—') + '</td>'
-      + '<td style="font-size:10.5px">' + (o.comp||'—') + '</td>'
+      + '<td style="font-size:10.5px">' + (o.house||'\u2014') + '</td>'
+      + '<td style="font-size:10.5px">' + (fmtGauge(o.gauge)||'\u2014') + '</td>'
+      + '<td style="font-size:10.5px">' + (o.color||'\u2014') + '</td>'
+      + '<td style="font-size:10.5px">' + (o.comp||'\u2014') + '</td>'
       + '<td class="num">' + fmt(o.qty) + '</td>'
       + '<td class="num">' + (o.fob||0).toFixed(2) + '</td>'
       + '<td class="num">' + money((o.qty||0)*(o.fob||0)) + '</td>'
@@ -2117,6 +2283,7 @@ async function renderBoard(uid) {
       + prodCells
       + '<td class="num" style="font-weight:600">' + fmt((o.qty||0)-(o.prod_packing||0)) + '</td>'
       + '<td>' + remCell + '</td>'
+      + customCells
       + '<td style="white-space:nowrap">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
@@ -2124,76 +2291,9 @@ async function renderBoard(uid) {
       + '</td></tr>';
   }).join('');
 
+  const customHeaderCells = buildFieldHeaderCells(customFields);
 
-  // ── Group by buyer ────────────────────────────────────────────────────────
-  var myBuyers = getBuyersForMerchant(uid);
-  var grouped = {};
-  myBuyers.forEach(function(b){ grouped[b.id]=[]; });
-  var otherOrders = [];
-  orders.forEach(function(o){
-    if(o.buyer_id&&grouped[o.buyer_id]!==undefined) grouped[o.buyer_id].push(o);
-    else otherOrders.push(o);
-  });
-  myBuyers.forEach(function(b){
-    grouped[b.id].sort(function(a,b2){return (a.confirm_date||'9999')<(b2.confirm_date||'9999')?-1:1;});
-  });
-
-  if(!myBuyers.length&&S.user.role==='merchant'){
-    $('content').innerHTML='<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin.</p></div></div>';
-    return;
-  }
-  if(!orders.length){
-    $('content').innerHTML=notesHtml+'<div class="card"><div class="empty"><h4>No live orders</h4><p>'+(canEdit?'Click &ldquo;+ New order&rdquo; to add your first order.':'No orders yet.')+'</p></div></div>';
-    return;
-  }
-
-  var allHtml='';
-  myBuyers.forEach(function(b){
-    var bOrders=grouped[b.id];
-    var sk='bbs_'+uid+'_'+b.id;
-    var open=localStorage.getItem(sk)!=='0';
-    var bQty=bOrders.reduce(function(s,o){return s+(o.qty||0);},0);
-    var bVal=bOrders.reduce(function(s,o){return s+(o.qty||0)*(o.fob||0);},0);
-    allHtml+='<div style="margin-bottom:16px">'+
-      '<div class="buyer-section-hdr" onclick="toggleBuyerSection(\''+sk+'\')"> '+
-      '<div style="display:flex;align-items:center;gap:10px">'+
-      '<span style="font-family:var(--serif);font-size:16px;font-weight:600">'+b.name+'</span>'+
-      '<span class="chip" style="font-size:10px">'+bOrders.length+' orders</span>'+
-      (bOrders.length?'<span style="font-size:11px;color:var(--muted)">'+fmt(bQty)+' pcs &middot; '+money(bVal)+'</span>':'')+
-      '</div><span class="rail-section-arrow'+(open?' open':'')+'" id="arr-'+sk+'">&#x25B6;</span></div>'+
-      '<div id="sec-'+sk+'" style="max-height:'+(open?'99999px':'0')+';overflow:hidden;transition:max-height .3s ease">'+
-      (bOrders.length?buildBoardTableHTML(bOrders,uid,canEdit,''):'<div class="card" style="padding:14px;color:var(--muted);font-size:13px">No orders for this buyer yet.</div>')+
-      '</div></div>';
-  });
-  if(otherOrders.length){
-    var sk2='bbs_'+uid+'_other';
-    var open2=localStorage.getItem(sk2)!=='0';
-    allHtml+='<div style="margin-bottom:16px">'+
-      '<div class="buyer-section-hdr" onclick="toggleBuyerSection(\''+sk2+'\')"> '+
-      '<div style="display:flex;align-items:center;gap:10px">'+
-      '<span style="font-family:var(--serif);font-size:16px;font-weight:600">Other</span>'+
-      '<span class="chip" style="font-size:10px">'+otherOrders.length+' orders</span></div>'+
-      '<span class="rail-section-arrow'+(open2?' open':'')+'" id="arr-'+sk2+'">&#x25B6;</span></div>'+
-      '<div id="sec-'+sk2+'" style="max-height:'+(open2?'99999px':'0')+';overflow:hidden;transition:max-height .3s ease">'+
-      buildBoardTableHTML(otherOrders,uid,canEdit,'')+
-      '</div></div>';
-  }
-  $('content').innerHTML = notesHtml + allHtml;
-}
-
-function toggleBuyerSection(key){
-  var el=document.getElementById('sec-'+key);
-  var arrow=document.getElementById('arr-'+key);
-  if(!el) return;
-  var open=el.style.maxHeight!=='0px'&&el.style.maxHeight!=='0';
-  el.style.maxHeight=open?'0':'99999px';
-  if(arrow) arrow.classList.toggle('open',!open);
-  localStorage.setItem(key,open?'0':'1');
-}
-
-function buildBoardTableHTML(orders, uid, canEdit, notesHtml) {
-  notesHtml = notesHtml || '';
-  $('content').innerHTML = notesHtml + '<div class="card"><div class="scroller"><table>'
+  return '<div class="card"><div class="scroller"><table>'
     + '<thead><tr>'
     + '<th class="stk" rowspan="2">Style</th>'
     + '<th class="stk2" rowspan="2">Photo</th>'
@@ -2214,6 +2314,7 @@ function buildBoardTableHTML(orders, uid, canEdit, notesHtml) {
     + '<th class="grp" colspan="' + VSTEPS.length + '">Production</th>'
     + '<th rowspan="2" class="num">Bal</th>'
     + '<th rowspan="2">Notes</th>'
+    + (customFields.length ? '<th class="grp" colspan="' + customFields.length + '" rowspan="1">Buyer Fields</th>' : '')
     + '<th rowspan="2"></th>'
     + '</tr><tr>'
     + '<th class="grp" style="font-size:9px">Lab Dip</th>'
@@ -2221,11 +2322,12 @@ function buildBoardTableHTML(orders, uid, canEdit, notesHtml) {
     + '<th class="grp" style="font-size:9px">PP</th>'
     + '<th class="grp" style="font-size:9px">Size Set</th>'
     + VSTEPS.map(function(s){return '<th class="grp" style="font-size:9px">'+s.n+'</th>';}).join('')
+    + customHeaderCells
     + '</tr></thead>'
     + '<tbody>' + rows + '</tbody>'
-    + '</table></div></div>'
-    + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
+    + '</table></div></div>';
 }
+
 
 
 
@@ -4510,6 +4612,7 @@ async function loadLayingGoods(){
   var res=await q;
   S.layingGoods=res.data||[];
   S.layingLoaded=true;
+  try { await loadFieldValues(S.layingGoods.map(function(o){ return o.id; })); } catch(e) { console.error('loadFieldValues laying:', e); }
 }
 
 function openPackingList(ordId){
@@ -4596,6 +4699,16 @@ async function renderLayingGoods(){
 function setLGFilter(f){_lgFilter=f;renderLayingGoods();}
 
 function lgTable(orders,showM){
+  // Union of custom laying-goods fields across all buyers represented here
+  var buyerIdsInSet = orders.map(function(o){ return o.buyer_id; }).filter(function(v,i,a){ return v && a.indexOf(v)===i; });
+  var fieldKeysSeen = {};
+  var customFields = [];
+  buyerIdsInSet.forEach(function(bid){
+    getVisibleFieldsForBuyer(bid, 'laying').forEach(function(f){
+      if (!fieldKeysSeen[f.key]) { fieldKeysSeen[f.key] = true; customFields.push(f); }
+    });
+  });
+
   var rows=orders.map(function(o){
     var dl=daysTo(o.ship_date);
     var dlH=dl===null?'--':dl<0?'<span class="chip bad" style="font-size:10px">'+dl+'d</span>':dl<=10?'<span class="chip warn" style="font-size:10px">'+dl+'d</span>':'<span style="font-size:11px">'+dl+'d</span>';
@@ -4605,6 +4718,7 @@ function lgTable(orders,showM){
     var modeH='<span class="mode-chip '+(o.shipment_mode||'sea')+'">'+(o.shipment_mode==='air'?'Air':'Sea')+'</span>';
     var canAct=S.user.role==='admin'||S.user.id===o.merchant_id;
     var shortH=o.short_qty?'<span class="chip warn" style="font-size:10px;margin-left:4px">Short '+fmt(o.short_qty)+'</span>':'';
+    var customCells = buildFieldDataCells(customFields, o.id, canAct);
     return '<tr>'
       +'<td class="sty">'+o.style+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+o.po_number+'</div>':'')+'</td>'
       +'<td>'+(o.buyer||'--')+'</td>'
@@ -4618,14 +4732,16 @@ function lgTable(orders,showM){
       +'<td>'+inspH+'</td>'
       +'<td>'+modeH+'</td>'
       +'<td><button class="btn sm" data-uid="'+o.id+'" onclick="openLGDetails(this.dataset.uid)">Details</button></td>'
+      +customCells
       +'<td style="white-space:nowrap">'
       +(canAct?'<button class="btn sm" data-uid="'+o.id+'" onclick="openLayingEdit(this.dataset.uid)">Edit</button> ':'')
       +'<button class="btn sm danger" data-uid="'+o.id+'" onclick="undoToLive(this.dataset.uid)">Undo</button>'
       +(canAct?' <button class="btn sm pri" data-uid="'+o.id+'" onclick="openShipFromLaying(this.dataset.uid)">Ship</button>':'')
       +'</td></tr>';
   }).join('');
+  var customHeaders = buildFieldHeaderCells(customFields);
   return '<div class="card"><div class="scroller"><table>'
-    +'<thead><tr><th>Style/PO</th><th>Buyer</th><th class="num">PL Qty</th><th class="num">FOB</th><th class="num">Value</th><th class="num">CBM</th><th>Ship Date</th><th class="num">Days</th><th>FRI</th><th>Inspection</th><th>Mode</th><th></th><th></th></tr></thead>'
+    +'<thead><tr><th>Style/PO</th><th>Buyer</th><th class="num">PL Qty</th><th class="num">FOB</th><th class="num">Value</th><th class="num">CBM</th><th>Ship Date</th><th class="num">Days</th><th>FRI</th><th>Inspection</th><th>Mode</th><th></th>'+customHeaders+'<th></th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table></div></div>';
 }
 
@@ -5010,6 +5126,7 @@ function renderBuyerAssign() {
     if (myBuyers.length) {
       myBuyers.forEach(function(b) {
         html += '<span class="ba-buyer-chip">' + b.name;
+        html += '<button data-bid="' + b.id + '" onclick="openColumnManager(this.dataset.bid)" title="Manage Columns" style="background:rgba(255,255,255,.15)">&#x2699;</button>';
         html += '<button data-bid="' + b.id + '" data-mid="' + m.id + '" onclick="baRemove(this.dataset.bid,this.dataset.mid)" title="Remove">&#x2715;</button>';
         html += '</span>';
       });
@@ -5105,6 +5222,432 @@ async function hashPassword(plain) {
   return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
 }
 function isHashed(str) { return !!(str && /^[0-9a-f]{64}$/.test(str)); }
+
+// === MASTER FIELD DEFINITIONS (hardcoded) ===
+var WORLD_COUNTRIES_LIST = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Brazil','Bulgaria','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Egypt','Estonia','Finland','France','Germany','Greece','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Latvia','Lebanon','Lithuania','Luxembourg','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Serbia','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Thailand','Tunisia','Turkey','UAE','Ukraine','United Kingdom','United States','Vietnam'];
+var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
+
+var MASTER_FIELDS = [
+  // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
+  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'season',         name:'Season',         type:'text',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'department',     name:'Department',     type:'text',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'avg_weight',     name:'Average Weight', type:'special_weight', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'lid',            name:'LID',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'lrd',            name:'LRD',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'internal_pp',    name:'Internal PP Meeting', type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'buyer_pp',       name:'Buyer PP Meeting',    type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'khata_sign',     name:'Khata Sign Date',     type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'prod_floor',     name:'Production Floor',    type:'special_floor', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'knit_start',     name:'Knitting Start Date', type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'inline_insp',    name:'Inline Inspection', type:'date',  defLoc:{live:true,laying:false,shipped:false} },
+  { key:'spudi',          name:'Spudi',           type:'date',    defLoc:{live:true,laying:false,shipped:false} },
+
+  // ── LAYING GOODS FIELDS ─────────────────────────────────────────────────
+  { key:'spudi_collect',  name:'Spudi Test Sample Collect', type:'date', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'spudi_status',   name:'Spudi Test Sample Status',  type:'dropdown', options:['Passed','Failed','Pending'], defLoc:{live:false,laying:true,shipped:false} },
+  { key:'fri_offer',      name:'FRI Offer Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'delay',          name:'Delay',          type:'special_delay', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'carton_qty',     name:'Carton Quantity',type:'number', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'net_weight',     name:'Net Weight (kgs)',type:'number', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'gross_weight',   name:'Gross Weight (kgs)',type:'number', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'pre_final',      name:'Pre Final',      type:'date', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'apv_shipment',   name:'Approval of Shipment', type:'dropdown', options:['Approved','Pending','Rejected'], defLoc:{live:false,laying:true,shipped:false} },
+  { key:'ex_factory',     name:'Ex Factory',     type:'date', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'hand_over',      name:'Hand Over Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
+
+  // ── MULTI-MODULE FIELDS ─────────────────────────────────────────────────
+  { key:'sales_contract', name:'Sales Contract No', type:'text_memory', defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_no',          name:'LC No',          type:'text_memory', defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_status',      name:'LC Received Status', type:'dropdown', options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
+];
+
+function getFieldByKey(key) {
+  return MASTER_FIELDS.find(function(f){ return f.key===key; });
+}
+
+
+// === CUSTOM FIELD LOADING ===
+async function loadFieldVisibility() {
+  var res = await db.from('buyer_field_visibility').select('*');
+  S.fieldVisibility = {};
+  (res.data||[]).forEach(function(row) {
+    if (!S.fieldVisibility[row.buyer_id]) S.fieldVisibility[row.buyer_id] = {};
+    S.fieldVisibility[row.buyer_id][row.field_key] = row;
+  });
+}
+
+function getBuyerFieldConfig(buyerId, fieldKey) {
+  var cfg = S.fieldVisibility[buyerId] && S.fieldVisibility[buyerId][fieldKey];
+  if (cfg) return cfg;
+  // Fallback to master default if no override saved yet
+  var master = getFieldByKey(fieldKey);
+  if (!master) return null;
+  return {
+    buyer_id: buyerId, field_key: fieldKey, visible: true,
+    in_live: !!master.defLoc.live, in_laying: !!master.defLoc.laying, in_shipped: !!master.defLoc.shipped,
+    col_order: 0
+  };
+}
+
+function getVisibleFieldsForBuyer(buyerId, location) {
+  // location = 'live' | 'laying' | 'shipped'
+  var list = MASTER_FIELDS.map(function(mf) {
+    var cfg = getBuyerFieldConfig(buyerId, mf.key);
+    return { master: mf, cfg: cfg };
+  }).filter(function(item) {
+    if (!item.cfg || !item.cfg.visible) return false;
+    if (location === 'live') return !!item.cfg.in_live;
+    if (location === 'laying') return !!item.cfg.in_laying;
+    if (location === 'shipped') return !!item.cfg.in_shipped;
+    return false;
+  }).sort(function(a,b) { return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+  return list.map(function(item){ return item.master; });
+}
+
+async function loadFieldValues(orderIds) {
+  if (!orderIds || !orderIds.length) return;
+  var res = await db.from('order_field_values').select('*').in('order_id', orderIds);
+  (res.data||[]).forEach(function(row) {
+    if (!S.fieldValues[row.order_id]) S.fieldValues[row.order_id] = {};
+    S.fieldValues[row.order_id][row.field_key] = row.value;
+  });
+}
+
+function getFieldValue(orderId, fieldKey) {
+  return (S.fieldValues[orderId] && S.fieldValues[orderId][fieldKey]) || '';
+}
+
+async function saveFieldValue(orderId, fieldKey, value) {
+  if (!S.fieldValues[orderId]) S.fieldValues[orderId] = {};
+  S.fieldValues[orderId][fieldKey] = value;
+  var res = await db.from('order_field_values').upsert({
+    order_id: orderId, field_key: fieldKey, value: value,
+    updated_at: new Date().toISOString(), updated_by: S.user.name
+  }, { onConflict: 'order_id,field_key' });
+  if (res.error) { console.error('saveFieldValue error:', res.error); toast('Error saving field','err'); }
+}
+
+
+// === COLUMN MANAGER ===
+var _cmTab = 'global';
+
+async function openColumnManager(buyerId) {
+  _cmTab = buyerId || 'global';
+  openModal('ov-column-manager');
+  renderColumnManagerTabs();
+  await renderColumnManagerBody();
+}
+
+function renderColumnManagerTabs() {
+  var buyersWithMerchant = S.buyers.filter(function(b){ return S.buyerAssignments[b.id]; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+  var html = '<button class="cm-tab ' + (_cmTab==='global'?'on':'') + '" data-tab="global" onclick="switchCMTab(this.dataset.tab)">All Buyers (Defaults)</button>';
+  buyersWithMerchant.forEach(function(b) {
+    html += '<button class="cm-tab ' + (_cmTab===b.id?'on':'') + '" data-tab="' + b.id + '" onclick="switchCMTab(this.dataset.tab)">' + b.name + '</button>';
+  });
+  $('cm-tabs').innerHTML = html;
+}
+
+function switchCMTab(tab) {
+  _cmTab = tab;
+  renderColumnManagerTabs();
+  renderColumnManagerBody();
+}
+
+async function renderColumnManagerBody() {
+  if (_cmTab === 'global') {
+    renderGlobalDefaultsTable();
+  } else {
+    await renderBuyerColumnTable(_cmTab);
+  }
+}
+
+function renderGlobalDefaultsTable() {
+  var rows = MASTER_FIELDS.map(function(mf) {
+    return '<tr>'
+      + '<td><div class="cm-field-name">' + mf.name + '</div><div class="cm-field-type">' + mf.type.replace('special_','').replace('_',' ') + '</div></td>'
+      + '<td class="center">' + (mf.defLoc.live ? '&#x2713;' : '&#x2014;') + '</td>'
+      + '<td class="center">' + (mf.defLoc.laying ? '&#x2713;' : '&#x2014;') + '</td>'
+      + '<td class="center">' + (mf.defLoc.shipped ? '&#x2713;' : '&#x2014;') + '</td>'
+      + '</tr>';
+  }).join('');
+  $('cm-body').innerHTML = '<div style="padding:12px 16px;font-size:12px;color:var(--muted)">These are the built-in defaults for every new buyer. Select a buyer tab above to customize.</div>'
+    + '<table class="cm-table"><thead><tr><th>Field</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table>';
+}
+
+async function renderBuyerColumnTable(buyerId) {
+  $('cm-body').innerHTML = '<div class="loading" style="padding:30px"><span class="spin"></span></div>';
+  var fields = MASTER_FIELDS.map(function(mf) {
+    var cfg = getBuyerFieldConfig(buyerId, mf.key);
+    return { master: mf, cfg: cfg };
+  }).sort(function(a,b) { return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+
+  var rows = fields.map(function(item, idx) {
+    var mf = item.master, cfg = item.cfg;
+    return '<tr data-key="' + mf.key + '">'
+      + '<td><div class="cm-field-name">' + mf.name + '</div><div class="cm-field-type">' + mf.type.replace('special_','').replace('_',' ') + '</div></td>'
+      + '<td class="center"><button class="cm-toggle ' + (cfg.visible?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="visible" onclick="cmToggle(this)"></button></td>'
+      + '<td class="center"><button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_live" onclick="cmToggle(this)"></button></td>'
+      + '<td class="center"><button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_laying" onclick="cmToggle(this)"></button></td>'
+      + '<td class="center"><button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button></td>'
+      + '<td class="center"><div class="cm-order-btns">'
+      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-dir="up" onclick="cmReorder(this)" ' + (idx===0?'disabled':'') + '>&#x25B2;</button>'
+      + '<button class="cm-order-btn" data-bid="' + buyerId + '" data-key="' + mf.key + '" data-dir="down" onclick="cmReorder(this)" ' + (idx===fields.length-1?'disabled':'') + '>&#x25BC;</button>'
+      + '</div></td>'
+      + '</tr>';
+  }).join('');
+
+  var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
+  $('cm-body').innerHTML = '<div style="padding:12px 16px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly.</div>'
+    + '<table class="cm-table"><thead><tr><th>Field</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table>';
+}
+
+async function cmToggle(btn) {
+  var buyerId = btn.dataset.bid, key = btn.dataset.key, field = btn.dataset.field;
+  var cfg = getBuyerFieldConfig(buyerId, key);
+  var newVal = !cfg[field];
+  var updated = Object.assign({}, cfg);
+  updated[field] = newVal;
+  updated.buyer_id = buyerId; updated.field_key = key;
+  var res = await db.from('buyer_field_visibility').upsert(updated, { onConflict: 'buyer_id,field_key' });
+  if (res.error) { toast('Error: ' + res.error.message, 'err'); return; }
+  if (!S.fieldVisibility[buyerId]) S.fieldVisibility[buyerId] = {};
+  S.fieldVisibility[buyerId][key] = updated;
+  btn.classList.toggle('on', newVal);
+}
+
+async function cmReorder(btn) {
+  var buyerId = btn.dataset.bid, key = btn.dataset.key, dir = btn.dataset.dir;
+  var fields = MASTER_FIELDS.map(function(mf) {
+    return { key: mf.key, cfg: getBuyerFieldConfig(buyerId, mf.key) };
+  }).sort(function(a,b) { return (a.cfg.col_order||0) - (b.cfg.col_order||0); });
+
+  var idx = fields.findIndex(function(f){ return f.key===key; });
+  var swapIdx = dir === 'up' ? idx-1 : idx+1;
+  if (swapIdx < 0 || swapIdx >= fields.length) return;
+
+  var a = fields[idx], b = fields[swapIdx];
+  var aOrder = a.cfg.col_order || 0, bOrder = b.cfg.col_order || 0;
+  if (aOrder === bOrder) { aOrder = idx; bOrder = swapIdx; }
+
+  var updA = Object.assign({}, a.cfg, { buyer_id: buyerId, field_key: a.key, col_order: bOrder });
+  var updB = Object.assign({}, b.cfg, { buyer_id: buyerId, field_key: b.key, col_order: aOrder });
+
+  await db.from('buyer_field_visibility').upsert(updA, { onConflict: 'buyer_id,field_key' });
+  await db.from('buyer_field_visibility').upsert(updB, { onConflict: 'buyer_id,field_key' });
+
+  if (!S.fieldVisibility[buyerId]) S.fieldVisibility[buyerId] = {};
+  S.fieldVisibility[buyerId][a.key] = updA;
+  S.fieldVisibility[buyerId][b.key] = updB;
+
+  renderBuyerColumnTable(buyerId);
+}
+
+
+// === FIELD CELL RENDERING ===
+function renderFieldCell(field, orderId, canEdit) {
+  var val = getFieldValue(orderId, field.key);
+  if (field.type === 'text') {
+    return canEdit
+      ? '<input class="cf-input" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'').replace(/"/g,'&quot;') + '" onchange="onFieldInputChange(this)">'
+      : '<span>' + (val||'&mdash;') + '</span>';
+  }
+  if (field.type === 'text_memory') {
+    var dlId = 'dl_' + field.key;
+    return canEdit
+      ? '<input class="cf-input" list="' + dlId + '" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'').replace(/"/g,'&quot;') + '" onchange="onFieldInputChange(this)">'
+      : '<span>' + (val||'&mdash;') + '</span>';
+  }
+  if (field.type === 'number') {
+    return canEdit
+      ? '<input class="cf-input" type="number" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'') + '" onchange="onFieldInputChange(this)">'
+      : '<span>' + (val||'&mdash;') + '</span>';
+  }
+  if (field.type === 'date') {
+    return canEdit
+      ? '<input class="cf-input" type="date" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'') + '" onchange="onFieldInputChange(this)">'
+      : '<span>' + (val?short(val):'&mdash;') + '</span>';
+  }
+  if (field.type === 'dropdown') {
+    var opts = field.options || [];
+    var optsHtml = '<option value="">--</option>' + opts.map(function(o){
+      return '<option value="' + o + '"' + (o===val?' selected':'') + '>' + o + '</option>';
+    }).join('');
+    return canEdit
+      ? '<select class="cf-input" data-oid="' + orderId + '" data-key="' + field.key + '" onchange="onFieldInputChange(this)">' + optsHtml + '</select>'
+      : '<span>' + (val||'&mdash;') + '</span>';
+  }
+  if (field.type === 'special_weight') {
+    var display = val ? val + ' lbs' : 'Set weight';
+    return '<button class="cf-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openAvgWeightModal(this.dataset.oid)">' + display + '</button>';
+  }
+  if (field.type === 'special_floor') {
+    var display2 = val ? val : 'Set floors';
+    return '<button class="cf-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openProdFloorModal(this.dataset.oid)">' + display2 + '</button>';
+  }
+  if (field.type === 'special_delay') {
+    return renderDelayCell(orderId);
+  }
+  return '<span>&mdash;</span>';
+}
+
+function renderDelayCell(orderId) {
+  var o = findOrderAnywhere(orderId);
+  if (!o) return '<span>&mdash;</span>';
+  var planFRI = o.plan_ship;
+  var actualOffer = getFieldValue(orderId, 'fri_offer');
+  if (!planFRI || !actualOffer) return '<span style="color:var(--muted);font-size:11px">--</span>';
+  var diff = Math.round((toDate(actualOffer) - toDate(planFRI)) / 86400000);
+  var color = diff <= 0 ? 'var(--green)' : 'var(--red)';
+  var sign = diff > 0 ? '+' : '';
+  return '<span style="color:' + color + ';font-weight:700;font-family:var(--mono);font-size:12px">' + sign + diff + 'd</span>';
+}
+
+function findOrderAnywhere(orderId) {
+  var found = null;
+  Object.keys(S.boardCache).forEach(function(mid){
+    if (!found) found = (S.boardCache[mid]||[]).find(function(x){ return x.id===orderId; });
+  });
+  if (!found) found = (S.layingGoods||[]).find(function(x){ return x.id===orderId; });
+  if (!found) found = (S.archive||[]).find(function(x){ return x.id===orderId; });
+  return found;
+}
+
+async function onFieldInputChange(el) {
+  var orderId = el.dataset.oid, key = el.dataset.key, val = el.value;
+  await saveFieldValue(orderId, key, val);
+  // Refresh delay cells if fri_offer changed
+  if (key === 'fri_offer') {
+    if (S.view === 'laying-goods') renderLayingGoods();
+  }
+}
+
+// Build header cells for a set of fields
+function buildFieldHeaderCells(fields) {
+  return fields.map(function(f) {
+    return '<th style="font-size:9.5px">' + f.name + '</th>';
+  }).join('');
+}
+
+// Build data cells for a set of fields for one order
+function buildFieldDataCells(fields, orderId, canEdit) {
+  return fields.map(function(f) {
+    return '<td>' + renderFieldCell(f, orderId, canEdit) + '</td>';
+  }).join('');
+}
+
+
+// === AVERAGE WEIGHT MODAL ===
+var _awOrderId = null;
+var _awSizes = []; // [{size:'XS', weight:2.5}, ...]
+
+function openAvgWeightModal(orderId) {
+  _awOrderId = orderId;
+  var raw = getFieldValue(orderId, 'avg_weight_detail');
+  try { _awSizes = raw ? JSON.parse(raw) : []; } catch(e) { _awSizes = []; }
+  renderAvgWeightModal();
+  openModal('ov-avg-weight');
+}
+
+function renderAvgWeightModal() {
+  var avg = calcAvgWeight();
+  var rows = _awSizes.map(function(s, i) {
+    return '<div class="aw-size-row">'
+      + '<input type="text" placeholder="Size (e.g. XS, 8-9Y)" value="' + (s.size||'').replace(/"/g,'&quot;') + '" data-idx="' + i + '" data-field="size" onchange="updAwSize(this)" style="flex:1">'
+      + '<input type="number" step="0.01" placeholder="Weight (lbs)" value="' + (s.weight||'') + '" data-idx="' + i + '" data-field="weight" onchange="updAwSize(this)" style="width:100px">'
+      + '<button class="btn sm danger" data-idx="' + i + '" onclick="removeAwSize(this)" style="padding:3px 8px">&#x2715;</button>'
+      + '</div>';
+  }).join('');
+
+  $('aw-body').innerHTML = '<div class="aw-big"><div class="lbl">Average Weight</div><div class="val">' + avg + ' lbs</div></div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">Size-wise breakdown</div>'
+    + '<div id="aw-size-list">' + (rows || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No sizes added yet</div>') + '</div>'
+    + '<button class="btn sm" onclick="addAwSize()" style="margin-top:10px;width:100%">+ Add size</button>';
+}
+
+function calcAvgWeight() {
+  var valid = _awSizes.filter(function(s){ return s.weight && !isNaN(parseFloat(s.weight)); });
+  if (!valid.length) return '0.00';
+  var sum = valid.reduce(function(s,x){ return s + parseFloat(x.weight); }, 0);
+  return (sum / valid.length).toFixed(2);
+}
+
+function addAwSize() {
+  _awSizes.push({ size:'', weight:'' });
+  renderAvgWeightModal();
+}
+function removeAwSize(btn) {
+  var idx = parseInt(btn.dataset.idx);
+  _awSizes.splice(idx, 1);
+  saveAwSizes();
+  renderAvgWeightModal();
+}
+function updAwSize(input) {
+  var idx = parseInt(input.dataset.idx), field = input.dataset.field;
+  _awSizes[idx][field] = input.value;
+  saveAwSizes();
+  // Only re-render the big number, not the whole list (avoid losing focus)
+  var avg = calcAvgWeight();
+  var bigVal = document.querySelector('#ov-avg-weight .aw-big .val');
+  if (bigVal) bigVal.textContent = avg + ' lbs';
+}
+
+async function saveAwSizes() {
+  var avg = calcAvgWeight();
+  await saveFieldValue(_awOrderId, 'avg_weight', avg);
+  await saveFieldValue(_awOrderId, 'avg_weight_detail', JSON.stringify(_awSizes));
+  // Refresh board chip
+  if (S.view && S.boardCache[S.view]) renderBoard(S.view);
+}
+
+// === PRODUCTION FLOOR MODAL ===
+var _pfOrderId = null;
+var PF_STEPS = [
+  {key:'knitting', label:'Knitting'},
+  {key:'linking',  label:'Linking'},
+  {key:'mending',  label:'Mending'},
+  {key:'wash',     label:'Wash'},
+  {key:'iron',     label:'Iron'},
+  {key:'packing',  label:'Packing'}
+];
+
+function openProdFloorModal(orderId) {
+  _pfOrderId = orderId;
+  var raw = getFieldValue(orderId, 'prod_floor_detail');
+  var data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch(e) { data = {}; }
+
+  var rows = PF_STEPS.map(function(step) {
+    var val = data[step.key] || '';
+    var opts = '<option value="">--</option>' + PROD_FLOOR_OPTIONS.map(function(o){
+      return '<option value="' + o + '"' + (o===val?' selected':'') + '>' + o + '</option>';
+    }).join('');
+    return '<div class="pf-row"><span class="pf-step-name">' + step.label + '</span>'
+      + '<select class="pf-select" data-step="' + step.key + '" onchange="updPfFloor(this)">' + opts + '</select></div>';
+  }).join('');
+
+  $('pf-body').innerHTML = rows;
+  openModal('ov-prod-floor');
+}
+
+async function updPfFloor(sel) {
+  var raw = getFieldValue(_pfOrderId, 'prod_floor_detail');
+  var data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch(e) { data = {}; }
+  data[sel.dataset.step] = sel.value;
+  await saveFieldValue(_pfOrderId, 'prod_floor_detail', JSON.stringify(data));
+  // Update the summary chip value (comma list of set floors)
+  var summary = Object.keys(data).filter(function(k){return data[k];}).map(function(k){return data[k];});
+  var uniqueSummary = summary.filter(function(v,i,a){return a.indexOf(v)===i;});
+  await saveFieldValue(_pfOrderId, 'prod_floor', uniqueSummary.join(', '));
+  if (S.view && S.boardCache[S.view]) renderBoard(S.view);
+}
+
 
 // ─── START ───
 init();
