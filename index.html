@@ -925,7 +925,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.2</p>
   </div>
 </div>
 
@@ -960,7 +960,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-4.1</div>
+  <div id="ver-stamp">v2026-08-31 WF-4.2</div>
 </div>
 
 
@@ -971,40 +971,84 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h"><div><h3>New order</h3><div class="msub" id="ord-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-order')">Cancel</button></div>
     <div class="m-b">
+
+      <div class="card-h" style="padding:0 0 10px;border:0"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">Order Details</h3></div>
+
       <div class="grid3" style="margin-bottom:10px">
         <div class="f"><label>Style / SKU</label><input id="o_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. KB-7742"></div>
         <div class="f"><label>PO Number</label><input id="o_po" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. PO-2026-001"></div>
         <div class="f"><label>Order Confirm Date</label><input id="o_confirm_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+      </div>
+      <div class="grid3" style="margin-bottom:10px">
         <div class="f"><label>Buyer</label><select id="o_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select buyer --</option></select></div>
         <div class="f"><label>Buying house</label><input id="o_house" list="dl_house" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
+        <div class="f"><label>Shipment Date</label><input id="o_ship_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="syncShipDateToTNA()"></div>
       </div>
+
       <div class="f" style="margin-bottom:10px"><label>Product Photo <span style="font-size:11px;color:var(--muted);font-weight:400">(optional - shared across all POs of this style)</span></label>
         <div class="img-upload-area" id="order-img-drop"><input type="file" id="o_image" accept="image/*" onchange="handleOrderImageUpload(this)"><div id="order-img-placeholder" style="font-size:13px;color:var(--muted)">&#x1F4F7; Click to upload product photo<br><span style="font-size:11px">Auto-compressed to under 200KB</span></div><img id="order-img-preview" class="img-upload-preview" alt="Preview"></div></div>
+
       <div class="grid3" style="margin-bottom:10px">
-        <div class="f"><label>Gauge</label><input id="o_gauge" list="dl_gauge" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off" placeholder="e.g. 12" onblur="if(this.value&&!this.value.toLowerCase().includes('gg'))this.value=this.value+'GG'"><div class="hint" style="font-size:10px;margin-top:2px">GG added automatically</div></div>
-        <div class="f"><label>Colour</label><input id="o_color" list="dl_color" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
-        <div class="f"><label>Composition</label><input id="o_comp" list="dl_comp" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off" placeholder="e.g. 100% Cotton"></div>
-      </div>
-      <div class="grid3" style="margin-bottom:10px">
+        <div class="f"><label>Gauge</label>
+          <select id="o_gauge" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)">
+            <option value="">-- Select --</option>
+            <option value="3GG">3GG</option><option value="5GG">5GG</option><option value="7GG">7GG</option>
+            <option value="Multi">Multi</option>
+            <option value="9GG">9GG</option><option value="10GG">10GG</option><option value="12GG">12GG</option>
+            <option value="14GG">14GG</option><option value="16GG">16GG</option>
+          </select>
+        </div>
         <div class="f"><label>Order qty (pcs)</label><input id="o_qty" type="number" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
         <div class="f"><label>FOB (USD)</label><input id="o_fob" type="number" step="0.01" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
+      </div>
+      <div class="grid3" style="margin-bottom:14px">
         <div class="f"><label>Total value (USD)</label><input id="o_total" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" readonly></div>
       </div>
-      <div class="card-h" style="padding:6px 0 10px;border:0"><h3 style="font-size:13px">TNA Plan dates</h3></div>
-      <div class="grid3" style="margin-bottom:4px">
-        <div class="f"><label>Ship date</label><input id="p_ship" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Yarn inhouse</label><input id="p_yarn" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>PP approval</label><input id="p_pp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+
+      <div class="grid2" style="margin-bottom:14px">
+        <div class="f">
+          <label>Colours</label>
+          <div style="display:flex;gap:6px">
+            <input id="o_color_new" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="Type a colour, press Add" onkeydown="if(event.key==='Enter'){event.preventDefault();addColourTag();}">
+            <button type="button" class="btn sm" onclick="addColourTag()">+ Add</button>
+          </div>
+          <div id="o_colors_list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
+        <div class="f">
+          <label>Compositions</label>
+          <div style="display:flex;gap:6px">
+            <input id="o_comp_new" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. 100% Cotton, press Add" onkeydown="if(event.key==='Enter'){event.preventDefault();addCompTag();}">
+            <button type="button" class="btn sm" onclick="addCompTag()">+ Add</button>
+          </div>
+          <div id="o_comps_list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="f" style="margin-bottom:14px;background:var(--amber-soft);border:1px solid #FDE68A;border-radius:9px;padding:12px 14px">
+        <label style="margin-bottom:8px">Contains recycled yarn? <span style="color:var(--red)">*</span></label>
+        <div style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_recycled" value="yes" onchange="onRecycledChange(this)"> Yes</label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_recycled" value="no" onchange="onRecycledChange(this)" checked> No</label>
+        </div>
+        <div id="o_tc_display" style="display:none;margin-top:8px;font-size:12.5px;color:var(--amber);font-weight:600"></div>
+      </div>
+
+      <div class="card-h" style="padding:14px 0 10px;border-top:1px solid var(--line)"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">TNA Plan Dates</h3></div>
+      <div class="grid3" style="margin-bottom:10px">
+        <div class="f"><label>Yarn Inhouse</label><input id="p_yarn" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>PP Approval</label><input id="p_pp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Sewing Item Inhouse</label><input id="p_sew" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
       </div>
       <div class="grid3">
-        <div class="f"><label>Sewing start</label><input id="p_sew" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Knitting done</label><input id="p_knit" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Final inspection</label><input id="p_insp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Packing Item Inhouse</label><input id="p_pack" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Knitting Start</label><input id="p_knit" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Final Inspection Date</label><input id="p_insp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
       </div>
-      <div class="grid3">
-        <div class="f"><label>Packing items inhouse</label><input id="p_pack" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+      <div class="grid3" style="margin-top:10px">
+        <div class="f"><label>Ship Date <span style="font-size:10px;color:var(--muted);font-weight:400">(synced from above)</span></label><input id="p_ship" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#F3F1EA;color:var(--muted)" readonly></div>
       </div>
-      <div class="form-err" id="ord-err" style="display:none"></div>
+
+      <div class="form-err" id="ord-err" style="display:none;margin-top:14px"></div>
     </div>
     <div class="m-f">
       <button class="btn" onclick="closeModal('ov-order')">Cancel</button>
@@ -1012,6 +1056,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
   </div>
 </div>
+
 
 <!-- ═══ MODAL: TNA ═══ -->
 <div class="ov" id="ov-tna" onclick="if(event.target===this)closeModal('ov-tna')">
@@ -1390,9 +1435,9 @@ const STEPS = [
   {k:'prod_wash',n:'Wash'},{k:'prod_iron',n:'Iron'},{k:'prod_packing',n:'Packing'}
 ];
 const MILES = [
-  {k:'yarn',n:'Bulk yarn inhouse'},{k:'pp',n:'PP approval'},
-  {k:'sew',n:'Sewing / trims inhouse'},{k:'pack',n:'Packing items inhouse'},
-  {k:'knit',n:'Knitting complete'},{k:'insp',n:'Final inspection'},{k:'ship',n:'Shipment'}
+  {k:'yarn',n:'Yarn Inhouse'},{k:'pp',n:'PP Approval'},
+  {k:'sew',n:'Sewing Item Inhouse'},{k:'pack',n:'Packing Item Inhouse'},
+  {k:'knit',n:'Knitting Start'},{k:'insp',n:'Final Inspection Date'},{k:'ship',n:'Shipment'}
 ];
 
 function getSteps(division) {
@@ -1407,7 +1452,7 @@ function getSteps(division) {
   ];
 }
 function yarnLabel(division) {
-  return division === 'knit' ? 'Fabric inhouse' : 'Bulk yarn inhouse';
+  return division === 'knit' ? 'Fabric Inhouse' : 'Yarn Inhouse';
 }
 function getMiles(division) {
   return MILES.map(m => m.k === 'yarn' ? {...m, n: yarnLabel(division)} : m);
@@ -2527,12 +2572,13 @@ async function openOrder(mid) {
   const m = S.users.find(u => u.id === mid);
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
   $('ord-err').style.display = 'none';
-  ['o_house','o_buyer','o_style','o_gauge','o_color','o_comp','o_qty','o_fob',
+  ['o_house','o_buyer','o_style','o_gauge','o_qty','o_fob',
    'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_knit','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
   $('o_total').value = '';
   var prev=$('order-img-preview');if(prev){prev.src='';prev.style.display='none';}
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
   var fi=$('o_image');if(fi)fi.value='';
+  resetOrderFormExtras();
   // Populate buyer dropdown
   if(!S.buyers||!S.buyers.length){ try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){} }
   var buyerSel=$('o_buyer');
@@ -2574,22 +2620,30 @@ async function saveOrder() {
   var buyerObj = S.buyers.find(function(b){ return b.id === buyerVal; });
   var buyerName = buyerObj ? buyerObj.name : buyerVal;
 
+  var shipDateVal = ($('o_ship_date')&&$('o_ship_date').value) || $('p_ship').value || null;
+  var colorStr = _orderColors.join(', ');
+  var compStr = _orderComps.join(', ');
+
   const row = {
     merchant_id: orderForMerchant,
     house: $('o_house').value, buyer: buyerName,
     po_number: ($('o_po')&&$('o_po').value.trim())||null,
     confirm_date: ($('o_confirm_date')&&$('o_confirm_date').value)||null,
     buyer_id: buyerVal,
-    style, gauge: $('o_gauge').value, color: $('o_color').value,
-    comp: $('o_comp').value, qty, fob: Number($('o_fob').value)||0,
-    ship_date: $('p_ship').value || null,
+    style, gauge: $('o_gauge').value, color: colorStr,
+    comp: compStr, qty, fob: Number($('o_fob').value)||0,
+    ship_date: shipDateVal,
+    colours_json: JSON.stringify(_orderColors),
+    compositions_json: JSON.stringify(_orderComps),
+    contains_recycled: (document.querySelector('input[name="o_recycled"]:checked')||{}).value === 'yes',
+    needs_tc: _needsTC,
     plan_yarn: $('p_yarn').value||null, plan_pp: $('p_pp').value||null,
     plan_sew: $('p_sew')&&$('p_sew').value||null, plan_pack: $('p_pack')&&$('p_pack').value||null,
     plan_knit: $('p_knit').value||null, plan_insp: $('p_insp').value||null,
-    plan_ship: $('p_ship').value||null,
+    plan_ship: shipDateVal,
     updated_by: S.user.name, updated_at: new Date().toISOString()
   };
-  if (!_editOrderId) row.stage = 'live';
+  if (!_editOrderId) { row.stage = 'live'; row.created_at = new Date().toISOString(); }
 
   var error;
   if (_editOrderId) {
@@ -2601,7 +2655,7 @@ async function saveOrder() {
   }
 
   if (!error) {
-    for (const [f, v] of [['house',row.house],['buyer',row.buyer],['gauge',row.gauge],['color',row.color],['comp',row.comp]]) {
+    for (const [f, v] of [['house',row.house],['buyer',row.buyer]]) {
       if (v) saveMemo(f, v);
     }
     await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
@@ -2639,21 +2693,33 @@ async function editOrder(orderId) {
   $('o_style').value = o.style || '';
   $('o_house').value = o.house || '';
   $('o_gauge').value = o.gauge || '';
-  $('o_color').value = o.color || '';
-  $('o_comp').value = o.comp || '';
   $('o_qty').value = o.qty || '';
   $('o_fob').value = o.fob || '';
   if ($('o_po')) $('o_po').value = o.po_number || '';
   if ($('o_confirm_date')) $('o_confirm_date').value = o.confirm_date || '';
+  if ($('o_ship_date')) $('o_ship_date').value = o.ship_date || '';
   calcTotal();
 
-  $('p_ship').value = o.plan_ship || o.ship_date || '';
+  // Restore colours/compositions as tags
+  try { _orderColors = o.colours_json ? JSON.parse(o.colours_json) : (o.color ? o.color.split(',').map(function(s){return s.trim();}).filter(Boolean) : []); } catch(e) { _orderColors = []; }
+  try { _orderComps = o.compositions_json ? JSON.parse(o.compositions_json) : (o.comp ? o.comp.split(',').map(function(s){return s.trim();}).filter(Boolean) : []); } catch(e) { _orderComps = []; }
+  renderColourTags();
+  renderCompTags();
+
+  // Restore recycled/TC
+  _needsTC = !!o.needs_tc;
+  var recycledVal = o.contains_recycled ? 'yes' : 'no';
+  document.getElementsByName('o_recycled').forEach(function(r){ r.checked = (r.value === recycledVal); });
+  if (o.contains_recycled) finalizeTC();
+  else { var d0 = $('o_tc_display'); if (d0) d0.style.display = 'none'; }
+
   $('p_yarn').value = o.plan_yarn || '';
   $('p_pp').value = o.plan_pp || '';
   if ($('p_sew')) $('p_sew').value = o.plan_sew || '';
   if ($('p_pack')) $('p_pack').value = o.plan_pack || '';
   $('p_knit').value = o.plan_knit || '';
   $('p_insp').value = o.plan_insp || '';
+  $('p_ship').value = o.plan_ship || o.ship_date || '';
 
   var prev=$('order-img-preview');
   var existingImg = getStyleImage(o.merchant_id, o.style);
@@ -2735,9 +2801,17 @@ function openTNA(ordId, division) {
     else if(!tnaLocked&&(isMerchant||isMgmt)){planCell='<input type="date" value="'+(p||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setPlanDate(\''+o.id+'\',\'plan_'+x.k+'\',this.value,\''+division+'\''+')">';}
     else{planCell=short(p);}
     var actCell=(isMerchant||isMgmt)?'<input type="date" value="'+(a||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setAct(\''+o.id+'\',\''+x.k+'\',this.value,\''+division+'\')">':short(a);
-    return '<tr><td class="sty">'+x.n+'</td><td>'+planCell+'</td><td>'+actCell+'</td><td class="num '+cls+'">'+delay+'</td><td>'+st+'</td></tr>';
+    var daysLeftCell;
+    if (a) { daysLeftCell = '<span style="color:var(--green);font-size:11px;font-weight:600">&#x2713; Done</span>'; }
+    else if (p) {
+      var dLeft = daysTo(p);
+      daysLeftCell = dLeft < 0
+        ? '<span style="color:var(--red);font-weight:700">' + Math.abs(dLeft) + 'd overdue</span>'
+        : '<span style="color:' + (dLeft<=3?'var(--amber)':'var(--muted)') + ';font-weight:600">' + dLeft + 'd left</span>';
+    } else { daysLeftCell = '<span style="color:var(--muted)">&#x2014;</span>'; }
+    return '<tr><td class="sty">'+x.n+'</td><td>'+planCell+'</td><td>'+actCell+'</td><td class="num">'+daysLeftCell+'</td><td class="num '+cls+'">'+delay+'</td><td>'+st+'</td></tr>';
   }).join('');
-  $('tna-body').innerHTML='<div class="tna-kpis"><div><div class="k">Shipment</div><div class="v">'+short(o.ship_date)+'</div></div><div><div class="k">Days left</div><div class="v" style="'+( dl!=null&&dl<=5?'color:var(--red)':'')+'">'+(dl!=null?dl:'\u2014')+'</div></div><div><div class="k">Packed</div><div class="v">'+pctPacked(o)+'%</div></div><div><div class="k">TNA lock</div><div class="v">'+(tnaLocked?'<span class="chip warn">Locked</span>':'<span class="chip ok">Open</span>')+'</div></div></div>'+lockBanner+'<table class="tna-t"><thead><tr><th>Milestone</th><th>Plan date</th><th>Actual date</th><th class="num">Delay</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  $('tna-body').innerHTML='<div class="tna-kpis"><div><div class="k">Shipment</div><div class="v">'+short(o.ship_date)+'</div></div><div><div class="k">Days left</div><div class="v" style="'+( dl!=null&&dl<=5?'color:var(--red)':'')+'">'+(dl!=null?dl:'\u2014')+'</div></div><div><div class="k">Packed</div><div class="v">'+pctPacked(o)+'%</div></div><div><div class="k">TNA lock</div><div class="v">'+(tnaLocked?'<span class="chip warn">Locked</span>':'<span class="chip ok">Open</span>')+'</div></div></div>'+lockBanner+'<table class="tna-t"><thead><tr><th>Milestone</th><th>Plan date</th><th>Actual date</th><th class="num">Days Left</th><th class="num">Delay</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
   openModal('ov-tna');
 }
 
@@ -6014,6 +6088,111 @@ function applyStickyHeaderOffsets() {
       th.style.top = row1Height + 'px';
     });
   });
+}
+
+// === COLOUR / COMPOSITION MULTI-TAG SYSTEM ===
+var _orderColors = [];
+var _orderComps = [];
+
+function addColourTag() {
+  var inp = $('o_color_new');
+  var val = (inp.value||'').trim();
+  if (!val) return;
+  if (!_orderColors.includes(val)) _orderColors.push(val);
+  inp.value = '';
+  renderColourTags();
+  saveMemo('color', val);
+}
+function removeColourTag(idx) {
+  _orderColors.splice(idx, 1);
+  renderColourTags();
+}
+function renderColourTags() {
+  var el = $('o_colors_list');
+  if (!el) return;
+  el.innerHTML = _orderColors.map(function(c, i) {
+    return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600">' + c
+      + '<button type="button" data-idx="' + i + '" onclick="removeColourTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button></span>';
+  }).join('');
+}
+
+function addCompTag() {
+  var inp = $('o_comp_new');
+  var val = (inp.value||'').trim();
+  if (!val) return;
+  if (!_orderComps.includes(val)) _orderComps.push(val);
+  inp.value = '';
+  renderCompTags();
+  saveMemo('comp', val);
+}
+function removeCompTag(idx) {
+  _orderComps.splice(idx, 1);
+  renderCompTags();
+}
+function renderCompTags() {
+  var el = $('o_comps_list');
+  if (!el) return;
+  el.innerHTML = _orderComps.map(function(c, i) {
+    return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600">' + c
+      + '<button type="button" data-idx="' + i + '" onclick="removeCompTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button></span>';
+  }).join('');
+}
+
+// === RECYCLED YARN + TC ===
+var _needsTC = false;
+
+function onRecycledChange(radio) {
+  if (radio.value === 'yes') {
+    openRecycledTCModal();
+  } else {
+    _needsTC = false;
+    var d = $('o_tc_display'); if (d) d.style.display = 'none';
+  }
+}
+
+function openRecycledTCModal() {
+  var existing = document.getElementById('tc-modal-inline');
+  if (existing) existing.remove();
+  var lb = document.createElement('div');
+  lb.id = 'tc-modal-inline';
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;display:flex;align-items:center;justify-content:center';
+  lb.innerHTML = '<div style="background:var(--panel);border-radius:14px;padding:24px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+    + '<h3 style="font-family:var(--serif);font-size:18px;margin-bottom:6px">Recycled Yarn</h3>'
+    + '<p style="font-size:13px;color:var(--muted);margin-bottom:16px">Does this order need a Transaction Certificate (TC)?</p>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button id="tc-yes-btn" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700;cursor:pointer">Yes</button>'
+    + '<button id="tc-no-btn" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--line);background:none;color:var(--ink);font-weight:700;cursor:pointer">No</button>'
+    + '</div></div>';
+  document.body.appendChild(lb);
+  document.getElementById('tc-yes-btn').onclick = function() { _needsTC = true; finalizeTC(); lb.remove(); };
+  document.getElementById('tc-no-btn').onclick = function() { _needsTC = false; finalizeTC(); lb.remove(); };
+}
+
+function finalizeTC() {
+  var d = $('o_tc_display');
+  if (d) {
+    d.style.display = 'block';
+    d.textContent = _needsTC ? '\u2713 Transaction Certificate (TC) required' : 'No TC required';
+  }
+}
+
+// === SHIP DATE SYNC (main order field -> TNA plan field) ===
+function syncShipDateToTNA() {
+  var mainShip = $('o_ship_date');
+  var tnaShip = $('p_ship');
+  if (mainShip && tnaShip) tnaShip.value = mainShip.value;
+}
+
+function resetOrderFormExtras() {
+  _orderColors = [];
+  _orderComps = [];
+  _needsTC = false;
+  renderColourTags();
+  renderCompTags();
+  var d = $('o_tc_display'); if (d) d.style.display = 'none';
+  var radios = document.getElementsByName('o_recycled');
+  radios.forEach(function(r){ r.checked = (r.value === 'no'); });
+  var shipDate = $('o_ship_date'); if (shipDate) shipDate.value = '';
 }
 
 // ─── START ───
