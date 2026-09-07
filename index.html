@@ -925,7 +925,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.3</p>
   </div>
 </div>
 
@@ -960,7 +960,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-4.2</div>
+  <div id="ver-stamp">v2026-08-31 WF-4.3</div>
 </div>
 
 
@@ -2019,6 +2019,10 @@ function renderDashboard() {
   if (can('inbox') && S.alerts && S.alerts.length) {
     alertHtml = '<div class="alert-cards"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Shipment alerts — ' + S.alerts.length + ' unresolved</div>' +
       S.alerts.map(function(a) {
+        if (a.alert_type === 'pp_late') {
+          const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
+          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + a.style + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">PP approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+        }
         const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
         const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
         let detail = '';
@@ -2786,7 +2790,8 @@ function openTNA(ordId, division) {
   const boardSums=(S.boardSummaries[o.merchant_id]||{})[o.id]||{ap:{}};
   const fitApproved=(boardSums.ap.fit||[]).some(function(r){return r.approved_on;});
   const isMerchant=S.user.id===o.merchant_id, isMgmt=S.user.role==='management';
-  const tnaLocked=fitApproved&&!isMgmt;
+  const orderAgeDays = o.created_at ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 999;
+  const tnaLocked=(fitApproved || orderAgeDays >= 5)&&!isMgmt;
   const pendingFields=S.tnaRequests.filter(function(r){return r.order_id===ordId&&r.status==='pending';}).map(function(r){return r.field_name;});
   $('tna-title').textContent='TNA \u2014 '+o.style+(tnaLocked?' \uD83D\uDD12':'');
   $('tna-sub').textContent=o.buyer+' \u00b7 '+o.house+' \u00b7 '+fmt(o.qty)+' pcs \u00b7 ships '+short(o.ship_date);
@@ -3472,6 +3477,23 @@ async function apvDoResult(outcome) {
   var upd = outcome === 'approve' ? { approved_on: date } : { rejected_on: date };
   var { error } = await db.from('approvals').update(upd).eq('id', latest.id);
   if (error) { toast('Error saving', 'err'); return; }
+
+  // If this is a PP approval and it came in AFTER the TNA plan date, notify managers/seniors
+  if (outcome === 'approve' && S_apv.type === 'pp') {
+    var ord = null;
+    Object.keys(S.boardCache).forEach(function(m){ if(!ord) ord=(S.boardCache[m]||[]).find(function(x){return x.id===S_apv.ordId;}); });
+    if (ord && ord.plan_pp && date > ord.plan_pp) {
+      var daysLatePP = Math.round((new Date(date) - new Date(ord.plan_pp)) / 86400000);
+      await db.from('shipment_alerts').insert({
+        order_id: ord.id, style: ord.style, buyer: ord.buyer, merchant_id: ord.merchant_id,
+        alert_type: 'pp_late', days_late: daysLatePP,
+        shipped_qty: null, short_qty: null, value_lost: null
+      });
+      await loadAlerts();
+      renderRail();
+    }
+  }
+
   toast(outcome === 'approve' ? 'Approved!' : 'Rejection recorded', outcome === 'approve' ? 'ok-t' : '');
   await reloadSummaries(S.view);
   renderBoard(S.view);
@@ -3485,7 +3507,11 @@ async function apvDoResult(outcome) {
 // ─── TNA LOCK + REQUEST ───
 function isTNALocked(ordId, merchantId) {
   const sums = (S.boardSummaries[merchantId] || {})[ordId] || {ap:{}};
-  return (sums.ap.fit || []).some(function(r){ return r.approved_on; });
+  const fitApproved = (sums.ap.fit || []).some(function(r){ return r.approved_on; });
+  var o = null;
+  Object.keys(S.boardCache).forEach(function(m){ if(!o) o=(S.boardCache[m]||[]).find(function(x){return x.id===ordId;}); });
+  const orderAgeDays = (o && o.created_at) ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 0;
+  return fitApproved || orderAgeDays >= 5;
 }
 
 var _tnareq = { ordId: null, field: null, label: null, current: null };
