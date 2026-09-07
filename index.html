@@ -925,7 +925,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.3</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.4</p>
   </div>
 </div>
 
@@ -960,7 +960,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-4.3</div>
+  <div id="ver-stamp">v2026-08-31 WF-4.4</div>
 </div>
 
 
@@ -982,7 +982,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <div class="grid3" style="margin-bottom:10px">
         <div class="f"><label>Buyer</label><select id="o_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select buyer --</option></select></div>
         <div class="f"><label>Buying house</label><input id="o_house" list="dl_house" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
-        <div class="f"><label>Shipment Date</label><input id="o_ship_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="syncShipDateToTNA()"></div>
+        <div class="f"><label>Shipment Date</label><input id="o_ship_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="syncShipDateToTNA()"><div id="o_ship_request_link" style="display:none;margin-top:4px"></div></div>
       </div>
 
       <div class="f" style="margin-bottom:10px"><label>Product Photo <span style="font-size:11px;color:var(--muted);font-weight:400">(optional - shared across all POs of this style)</span></label>
@@ -2694,6 +2694,29 @@ async function editOrder(orderId) {
   $('ord-sub').textContent = 'Editing ' + o.style;
   $('ord-err').style.display = 'none';
 
+  // Check if shipment date is locked (fit approved OR order 5+ days old) for merchants
+  var isMgmtRole = S.user.role === 'management';
+  var shipLocked = !isMgmtRole && isTNALocked(orderId, o.merchant_id);
+  var shipInput = $('o_ship_date');
+  var shipLinkEl = $('o_ship_request_link');
+  if (shipInput) {
+    shipInput.disabled = shipLocked;
+    shipInput.style.background = shipLocked ? '#F3F1EA' : '#FCFBF7';
+    shipInput.style.cursor = shipLocked ? 'not-allowed' : '';
+  }
+  if (shipLinkEl) {
+    if (shipLocked) {
+      var pendingShipReq = S.tnaRequests.find(function(r){ return r.order_id===orderId && r.field_name==='ship_date' && r.status==='pending'; });
+      shipLinkEl.style.display = 'block';
+      shipLinkEl.innerHTML = pendingShipReq
+        ? '<span class="chip warn" style="font-size:10px;padding:2px 8px">Extension request pending review</span>'
+        : '<button type="button" class="tna-lock" data-oid="' + orderId + '" data-cur="' + (o.ship_date||'') + '" onclick="openShipExtensionRequest(this.dataset.oid,this.dataset.cur)">&#x1F512; Request shipment extension</button>';
+    } else {
+      shipLinkEl.style.display = 'none';
+      shipLinkEl.innerHTML = '';
+    }
+  }
+
   $('o_style').value = o.style || '';
   $('o_house').value = o.house || '';
   $('o_gauge').value = o.gauge || '';
@@ -2800,9 +2823,10 @@ function openTNA(ordId, division) {
     var p=o['plan_'+x.k],a=o['act_'+x.k];
     var delay='\u2014',st='<span class="chip run">No plan</span>',cls='';
     if(p){if(a){var dd=Math.round((toDate(a)-toDate(p))/86400000);delay=dd>0?'+'+dd+'d':dd+'d';st=dd>0?'<span class="chip bad">Late</span>':'<span class="chip ok">On time</span>';cls=dd>0?'late-c':'early-c';}else{var dd2=daysTo(p);delay=dd2<0?'+'+(- dd2)+'d overdue':dd2+'d left';st=dd2<0?'<span class="chip bad">Overdue</span>':dd2<=3?'<span class="chip warn">Due soon</span>':'<span class="chip run">Pending</span>';cls=dd2<0?'late-c':'';}}
-    var hasPend=pendingFields.includes('plan_'+x.k);
+    var hasPend=pendingFields.includes(x.k==='ship'?'ship_date':('plan_'+x.k));
     var planCell;
-    if(tnaLocked&&isMerchant){planCell=(p?'<span style="font-family:var(--mono);font-size:12px">'+short(p)+'</span> ':'')+(hasPend?'<span class="chip warn" style="font-size:10px;padding:1px 6px">Pending review</span>':'<button class="tna-lock" onclick="openTNARequestForm(\''+o.id+'\',\'plan_'+x.k+'\',\''+x.n+'\','+(p?'\''+p+'\'':'null')+')">&#x1F512; Request change</button>');}
+    var reqFieldKey = x.k === 'ship' ? 'ship_date' : ('plan_'+x.k);
+    if(tnaLocked&&isMerchant){planCell=(p?'<span style="font-family:var(--mono);font-size:12px">'+short(p)+'</span> ':'')+(hasPend?'<span class="chip warn" style="font-size:10px;padding:1px 6px">Pending review</span>':'<button class="tna-lock" onclick="openTNARequestForm(\''+o.id+'\',\''+reqFieldKey+'\',\''+x.n+'\','+(p?'\''+p+'\'':'null')+')">&#x1F512; Request change</button>');}
     else if(!tnaLocked&&(isMerchant||isMgmt)){planCell='<input type="date" value="'+(p||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setPlanDate(\''+o.id+'\',\'plan_'+x.k+'\',this.value,\''+division+'\''+')">';}
     else{planCell=short(p);}
     var actCell=(isMerchant||isMgmt)?'<input type="date" value="'+(a||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setAct(\''+o.id+'\',\''+x.k+'\',this.value,\''+division+'\')">':short(a);
@@ -3516,6 +3540,11 @@ function isTNALocked(ordId, merchantId) {
 
 var _tnareq = { ordId: null, field: null, label: null, current: null };
 
+function openShipExtensionRequest(ordId, currentShipDate) {
+  closeModal('ov-order');
+  openTNARequestForm(ordId, 'ship_date', 'Shipment Date (Buyer Extension)', currentShipDate);
+}
+
 function openTNARequestForm(ordId, fieldName, fieldLabel, currentVal) {
   _tnareq = { ordId: ordId, field: fieldName, label: fieldLabel, current: currentVal };
   $('tnareq-field').textContent = fieldLabel;
@@ -3615,12 +3644,17 @@ async function reviewRequest(reqId, decision, ordId, fieldName, proposedVal) {
   if (error) { toast('Error', 'err'); return; }
 
   if (decision === 'approved' && proposedVal) {
-    // Auto-update the TNA field
-    await db.from('orders').update({
+    var updatePayload = {
       [fieldName]: proposedVal,
       updated_at: new Date().toISOString(),
       updated_by: S.user.name
-    }).eq('id', ordId);
+    };
+    // Shipment date affects two columns that must stay in sync
+    if (fieldName === 'ship_date' || fieldName === 'plan_ship') {
+      updatePayload.ship_date = proposedVal;
+      updatePayload.plan_ship = proposedVal;
+    }
+    await db.from('orders').update(updatePayload).eq('id', ordId);
     // Invalidate board cache
     Object.keys(S.boardCache).forEach(function(mid){
       if ((S.boardCache[mid]||[]).find(function(o){return o.id===ordId;})) delete S.boardCache[mid];
