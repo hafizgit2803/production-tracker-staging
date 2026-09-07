@@ -925,7 +925,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.8</p>
   </div>
 </div>
 
@@ -960,7 +960,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-4.4</div>
+  <div id="ver-stamp">v2026-08-31 WF-4.8</div>
 </div>
 
 
@@ -1315,6 +1315,17 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   </div>
 </div>
 
+<!-- === JUNIOR MERCHANDISER ASSIGNMENT MODAL === -->
+<div class="ov" id="ov-jm-assign" onclick="if(event.target===this)closeModal('ov-jm-assign')">
+  <div class="modal" style="max-width:860px;width:96vw;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0">
+      <div><h3>Junior Merchandiser Assignment</h3><div class="msub">Assign a junior merchandiser to help each merchant. One JM per merchant, a JM can help multiple merchants.</div></div>
+      <button class="btn" onclick="closeModal('ov-jm-assign')">Close</button>
+    </div>
+    <div class="m-b" id="jma-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
 <!-- === COLUMN MANAGER MODAL === -->
 <div class="ov" id="ov-column-manager" onclick="if(event.target===this)closeModal('ov-column-manager')">
   <div class="modal cm-modal">
@@ -1480,6 +1491,9 @@ const S = {
   myAssignments: [],
   buyers: [],
   buyerAssignments: {},
+  jmAssignments: {}, // merchantId -> jmId (one JM per merchant, mirrors managerAssignments shape but inverted)
+  myJMMerchants: [], // when logged in as a JM, list of merchant IDs assigned to me
+  allJMAssignments: {}, // merchantId -> jmId (used in the admin JM Assignment modal)
   fieldVisibility: {},
   fieldValues: {},
   layingGoods: [],
@@ -1495,22 +1509,29 @@ const DASH_COLS = [
 
 // ─── Helpers ───
 const $ = id => document.getElementById(id);
-var ROLE_ORDER = { management:1, audit:2, hod:3, manager:4, merchant:5 };
+var ROLE_ORDER = { management:1, audit:2, hod:3, manager:4, merchant:5, jm:6 };
 const ROLE_LABELS = {
   admin: 'Administrator', management: 'Management', hod: 'Head of Dept',
-  manager: 'Manager', audit: 'Audit', merchant: 'Merchandiser'
+  manager: 'Manager', audit: 'Audit', merchant: 'Merchandiser', jm: 'Junior Merchandiser'
 };
 const roleLabel = function(r) { return ROLE_LABELS[r] || r; };
+
+function actsAsMerchant(merchantId) {
+  if (!S.user || !merchantId) return false;
+  if (S.user.role === 'merchant' && S.user.id === merchantId) return true;
+  if (S.user.role === 'jm' && S.myJMMerchants && S.myJMMerchants.includes(merchantId)) return true;
+  return false;
+}
 
 function can(action, merchantId) {
   if (!S.user) return false;
   var r = S.user.role;
   var uid = merchantId || S.view;
   switch(action) {
-    case 'edit':        return r === 'admin' || (r === 'merchant' && S.user.id === uid);
+    case 'edit':        return r === 'admin' || actsAsMerchant(uid);
     case 'view_board':  return ['admin','management','hod','audit'].includes(r) ||
                                (r === 'manager' && S.myAssignments && S.myAssignments.includes(uid)) ||
-                               (r === 'merchant' && S.user.id === uid);
+                               actsAsMerchant(uid);
     case 'send_notes':  return ['admin','management','hod','manager'].includes(r);
     case 'inbox':       return ['admin','management','hod','manager'].includes(r);
     case 'requests':    return ['admin','hod','manager'].includes(r);
@@ -1688,6 +1709,7 @@ async function startApp() {
   $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading…</div>';
 
   try { await loadMyAssignments(); } catch(e) { console.error('loadMyAssignments:', e); }
+  try { await loadMyJMAssignments(); } catch(e) { console.error('loadMyJMAssignments:', e); }
   try { await loadDashOrders(); } catch(e) { console.error('loadDashOrders:', e); }
   try { await loadNotes(); } catch(e) { console.error('loadNotes:', e); }
   try { await loadMemo(); } catch(e) { console.error('loadMemo:', e); }
@@ -1813,6 +1835,8 @@ async function loadArchiveData() {
   let q = db.from('orders').select('*').eq('stage', 'shipped')
     .order('shipped_on', { ascending: false });
   if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
+  else if (S.user.role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if (S.user.role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
   const { data } = await q;
   S.archive = data || [];
   S.archiveLoaded = true;
@@ -1920,6 +1944,13 @@ function setView(v) {
       return;
     }
   }
+  if (S.user.role === 'jm' &&
+      !['dashboard','shipped','requests','my-requests','admin','laying-goods'].includes(v)) {
+    if (!S.myJMMerchants || !S.myJMMerchants.includes(v)) {
+      toast('You are not assigned to this merchant');
+      return;
+    }
+  }
   S.view = v;
   renderRail();
   if (v === 'dashboard') renderDashboard();
@@ -1937,6 +1968,13 @@ async function loadMyAssignments() {
   const { data } = await db.from('manager_assignments')
     .select('merchant_id').eq('manager_id', S.user.id);
   S.myAssignments = (data || []).map(function(a){ return a.merchant_id; });
+}
+
+async function loadMyJMAssignments() {
+  if (S.user.role !== 'jm') { S.myJMMerchants = []; return; }
+  const { data } = await db.from('jm_assignments')
+    .select('merchant_id').eq('jm_id', S.user.id);
+  S.myJMMerchants = (data || []).map(function(a){ return a.merchant_id; });
 }
 
 // ─── ASSIGNMENT MODAL (Admin only) ───
@@ -2189,6 +2227,14 @@ async function renderBoard(uid) {
     notesHtml += `</div>`;
   }
 
+  // ── Group by buyer (moved before no-orders check so buyer-status is checked first) ──
+  var myBuyers = getBuyersForMerchant(uid);
+
+  if (!myBuyers.length && S.user.role === 'merchant') {
+    $('content').innerHTML = notesHtml + '<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin to get buyers assigned to your account.</p></div></div>';
+    return;
+  }
+
   if (!os.length) {
     $('content').innerHTML = notesHtml + `<div class="card"><div class="empty">
       <h4>No live orders</h4><div>Add the first order to start tracking against the TNA plan.</div>
@@ -2196,9 +2242,6 @@ async function renderBoard(uid) {
     </div></div>`;
     return;
   }
-
-  // ── Group by buyer ────────────────────────────────────────────────────────
-  var myBuyers = getBuyersForMerchant(uid);
   var grouped = {};
   myBuyers.forEach(function(b){ grouped[b.id]=[]; });
   var otherOrders = [];
@@ -2209,11 +2252,6 @@ async function renderBoard(uid) {
   myBuyers.forEach(function(b){
     grouped[b.id].sort(function(a,b2){ return (a.confirm_date||'9999') < (b2.confirm_date||'9999') ? -1 : 1; });
   });
-
-  if (!myBuyers.length && S.user.role === 'merchant') {
-    $('content').innerHTML = '<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin to get buyers assigned to your account.</p></div></div>';
-    return;
-  }
 
   var allHtml = '';
   myBuyers.forEach(function(b) {
@@ -2269,7 +2307,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   const sums = (S.boardSummaries[uid] || {});
   const unit = division === 'knit' ? 'kgs' : 'lbs';
   const matLabel = division === 'knit' ? 'Fabric' : 'Yarn';
-  const isMerchant = S.user.id === uid;
+  const isMerchant = actsAsMerchant(uid);
 
   const ACC_ITEMS = [
     {k:'hangtag', n:'Hang tag'}, {k:'main_label', n:'Main label'}, {k:'care_label', n:'Care label'},
@@ -2584,7 +2622,7 @@ async function openOrder(mid) {
   var fi=$('o_image');if(fi)fi.value='';
   resetOrderFormExtras();
   // Populate buyer dropdown
-  if(!S.buyers||!S.buyers.length){ try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){} }
+  try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){ console.error('buyer reload failed:', e); }
   var buyerSel=$('o_buyer');
   if(buyerSel){
     var myB = getBuyersForMerchant(mid);
@@ -2758,7 +2796,7 @@ async function editOrder(orderId) {
   var fi=$('o_image'); if(fi) fi.value='';
 
   // Populate buyer dropdown, pre-select current buyer, then LOCK it (buyer cannot change after order creation)
-  if(!S.buyers||!S.buyers.length){ try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){} }
+  try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){ console.error('buyer reload failed:', e); }
   var buyerSel=$('o_buyer');
   if(buyerSel){
     var myB = getBuyersForMerchant(o.merchant_id);
@@ -2812,7 +2850,7 @@ function openTNA(ordId, division) {
   const ms = missedMiles(o), dl = daysTo(o.ship_date);
   const boardSums=(S.boardSummaries[o.merchant_id]||{})[o.id]||{ap:{}};
   const fitApproved=(boardSums.ap.fit||[]).some(function(r){return r.approved_on;});
-  const isMerchant=S.user.id===o.merchant_id, isMgmt=S.user.role==='management';
+  const isMerchant=actsAsMerchant(o.merchant_id), isMgmt=S.user.role==='management';
   const orderAgeDays = o.created_at ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 999;
   const tnaLocked=(fitApproved || orderAgeDays >= 5)&&!isMgmt;
   const pendingFields=S.tnaRequests.filter(function(r){return r.order_id===ordId&&r.status==='pending';}).map(function(r){return r.field_name;});
@@ -3907,7 +3945,8 @@ function renderAdminPage() {
   $('stamp').innerHTML = '';
   $('act-row').innerHTML = '<button class="btn pri" onclick="openMerchantAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F517;</span> Merchant Assignment</button>'
     + ' <button class="btn" onclick="openBuyerAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F6CD;</span> Buyer Assignment</button>'
-    + ' <button class="btn" onclick="openColumnManagerHub()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x2699;</span> Column Manager</button>';
+    + ' <button class="btn" onclick="openColumnManagerHub()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x2699;</span> Column Manager</button>'
+    + ' <button class="btn" onclick="openJMAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F9D1;&#x200D;&#x1F4BC;</span> Junior Merchandiser Assignment</button>';
 
   var inp = 'class="adm-inp"';
   var sel = 'class="adm-sel"';
@@ -3936,6 +3975,7 @@ function renderAdminPage() {
   + '<div class="adm-field"><label class="adm-lbl">Role</label>'
   + '<select id="a_type" ' + sel + ' onchange="handleProfileType()">'
   + '<option value="merchant">Merchant</option>'
+  + '<option value="jm">Junior Merchandiser</option>'
   + '<option value="manager">Manager</option>'
   + '<option value="hod">HOD</option>'
   + '<option value="audit">Audit</option>'
@@ -3998,7 +4038,7 @@ function editUser(uid) {
 }
 
 function renderAdminList() {
-  var roleOrder = { management:1, audit:2, hod:3, manager:4, merchant:5 };
+  var roleOrder = { management:1, audit:2, hod:3, manager:4, merchant:5, jm:6 };
   var staff = S.users.filter(function(u){ return u.role !== 'admin'; })
     .sort(function(a,b){
       var ra = roleOrder[a.role]||9, rb = roleOrder[b.role]||9;
@@ -4007,9 +4047,9 @@ function renderAdminList() {
   var roleColors = {
     management:'background:#EDE9FE;color:#5B21B6', hod:'background:#FEF3C7;color:#92400E',
     manager:'background:#D1FAE5;color:#065F46', audit:'background:#E0F2FE;color:#0369A1',
-    merchant:'background:#F3F4F6;color:#374151'
+    jm:'background:#FCE7F3;color:#9D174D', merchant:'background:#F3F4F6;color:#374151'
   };
-  var avColors = { management:'#7C3AED', hod:'#D97706', manager:'#059669', audit:'#0284C7', merchant:'#6B7280' };
+  var avColors = { management:'#7C3AED', hod:'#D97706', manager:'#059669', audit:'#0284C7', jm:'#DB2777', merchant:'#6B7280' };
 
   if (!staff.length) {
     $('admin-list').innerHTML = '<div style="color:var(--muted);padding:16px 4px;font-size:13px">No users yet.</div>';
@@ -4057,7 +4097,7 @@ function renderAdminList() {
       + '<button class="pwd-eye" tabindex="-1" onmousedown="showPwdEl(this,true)" onmouseup="showPwdEl(this,false)" onmouseleave="showPwdEl(this,false)">&#x1F441;</button></div></div>'
       + '<div class="adm-field"><label class="adm-lbl">Role</label>'
       + '<select id="eu-role-' + m.id + '" class="adm-sel">'
-      + ['merchant','manager','hod','audit','management'].map(function(r){
+      + ['merchant','jm','manager','hod','audit','management'].map(function(r){
           return '<option value="' + r + '"' + (m.role===r?' selected':'') + '>' + roleLabel(r) + '</option>';
         }).join('')
       + '</select></div>'
@@ -4146,7 +4186,7 @@ function renderODDetails() {
   const div = S.detail.division;
   const VSTEPS = getSteps(div);
   const VMILES = getMiles(div);
-  const canEdit = S.user.role === 'management' || S.user.id === o.merchant_id;
+  const canEdit = S.user.role === 'management' || actsAsMerchant(o.merchant_id);
   const ms = missedMiles(o);
   const dl = daysTo(o.ship_date);
 
@@ -4201,7 +4241,7 @@ function renderODMaterial() {
   const div = S.detail.division;
   const unit = div === 'knit' ? 'kgs' : 'lbs';
   const matLabel = div === 'knit' ? 'Fabric' : 'Yarn';
-  const canEdit = S.user.role === 'management' || S.user.id === o.merchant_id;
+  const canEdit = S.user.role === 'management' || actsAsMerchant(o.merchant_id);
   const bk = S.detail.bookings, rc = S.detail.receipts;
   const totalBooked = bk.reduce(function(s,x){return s+(x.qty||0);},0);
   const totalRecvd  = rc.reduce(function(s,x){return s+(x.qty||0);},0);
@@ -4235,7 +4275,7 @@ function renderODMaterial() {
 
 function renderODApprovals() {
   const o = S.detail.order;
-  const canEdit = S.user.role === 'management' || S.user.id === o.merchant_id;
+  const canEdit = S.user.role === 'management' || actsAsMerchant(o.merchant_id);
   const AP = S.detail.approvals;
 
   function sec(type, label) {
@@ -4690,7 +4730,7 @@ function renderRail() {
   var u=S.user; if(!u) return;
   var r=u.role;
   var isAdmin=r==='admin', isMgmt=r==='management', isHOD=r==='hod';
-  var isAudit=r==='audit', isManager=r==='manager', isMerchant=r==='merchant';
+  var isAudit=r==='audit', isManager=r==='manager', isMerchant=r==='merchant', isJM=r==='jm';
   var seeAll=isAdmin||isMgmt||isHOD||isAudit;
   var rb=$('rail-body'); if(!rb) return;
   var tb=$('theme-btn');
@@ -4721,6 +4761,10 @@ function renderRail() {
   } else if(isManager){
     var asgn=S.users.filter(function(u2){return u2.role==='merchant'&&S.myAssignments.includes(u2.id);});
     if(asgn.length){html+='<div class="rail-label">My Merchants</div>';asgn.forEach(function(m){html+=mBtn(m);});}
+    else html+='<div class="rail-label" style="color:var(--muted)">No merchants assigned</div>';
+  } else if(isJM){
+    var jmAsgn=S.users.filter(function(u2){return u2.role==='merchant'&&S.myJMMerchants&&S.myJMMerchants.includes(u2.id);});
+    if(jmAsgn.length){html+='<div class="rail-label">My Merchants</div>';jmAsgn.forEach(function(m){html+=mBtn(m);});}
     else html+='<div class="rail-label" style="color:var(--muted)">No merchants assigned</div>';
   } else if(isMerchant){
     html+=ni(u.id,'&#x1F4CB;','My Board');
@@ -4957,6 +5001,8 @@ var _plOrdId=null, _lgFilter='all', _inspOrdId=null, _layingEditId=null;
 async function loadLayingGoods(){
   var r=S.user.role, q=db.from('orders').select('*').eq('stage','laying').order('ship_date',{ascending:true});
   if(r==='merchant') q=q.eq('merchant_id',S.user.id);
+  else if(r==='jm') q=q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if(r==='manager') q=q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
   var res=await q;
   S.layingGoods=res.data||[];
   S.layingLoaded=true;
@@ -5064,7 +5110,7 @@ function lgTable(orders,showM){
     var irLabel={pass:'Pass',fail:'Fail',hold:'Hold',pending:'Pending'}[ir]||ir;
     var inspH='<button class="insp-chip '+ir+'" data-uid="'+o.id+'" onclick="openInspection(this.dataset.uid)">'+irLabel+'</button>';
     var modeH='<span class="mode-chip '+(o.shipment_mode||'sea')+'">'+(o.shipment_mode==='air'?'Air':'Sea')+'</span>';
-    var canAct=S.user.role==='admin'||S.user.id===o.merchant_id;
+    var canAct=S.user.role==='admin'||actsAsMerchant(o.merchant_id);
     var shortH=o.short_qty?'<span class="chip warn" style="font-size:10px;margin-left:4px">Short '+fmt(o.short_qty)+'</span>':'';
     var customCells = buildFieldDataCells(customFields, o.id, canAct);
     return '<tr>'
@@ -5526,6 +5572,8 @@ function renderBuyerAssign() {
 async function baAddBuyer() {
   var name = ($('ba-new-name').value||'').trim();
   if (!name) { $('ba-err').textContent='Enter a buyer name.'; $('ba-err').style.display='block'; return; }
+  var dup = S.buyers.find(function(b){ return b.name.toLowerCase() === name.toLowerCase(); });
+  if (dup) { $('ba-err').textContent = 'Buyer already exists as "' + dup.name + '".'; $('ba-err').style.display='block'; return; }
   var { data, error } = await db.from('buyers').insert({ name: name }).select().single();
   if (error) {
     $('ba-err').textContent = error.code==='23505' ? 'Buyer already exists.' : error.message;
@@ -6253,6 +6301,98 @@ function resetOrderFormExtras() {
   var radios = document.getElementsByName('o_recycled');
   radios.forEach(function(r){ r.checked = (r.value === 'no'); });
   var shipDate = $('o_ship_date'); if (shipDate) shipDate.value = '';
+}
+
+// === JUNIOR MERCHANDISER ASSIGNMENT MODULE ===
+async function openJMAssign() {
+  $('jma-body').innerHTML = '<div class="loading"><span class="spin"></span> Loading...</div>';
+  openModal('ov-jm-assign');
+  await loadUsers();
+  await loadAllJMAssignments();
+  renderJMAssign();
+}
+
+async function loadAllJMAssignments() {
+  var res = await db.from('jm_assignments').select('jm_id,merchant_id');
+  S.allJMAssignments = {};
+  (res.data || []).forEach(function(row) { S.allJMAssignments[row.merchant_id] = row.jm_id; });
+}
+
+function renderJMAssign() {
+  var merchants = S.users.filter(function(u){ return u.role === 'merchant'; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+  var jms = S.users.filter(function(u){ return u.role === 'jm'; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+  if (!jms.length) {
+    $('jma-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No Junior Merchandisers yet. Add one via Add User (role: Junior Merchandiser) first.</div>';
+    return;
+  }
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;padding:16px">';
+
+  merchants.forEach(function(m) {
+    var assignedJmId = S.allJMAssignments[m.id];
+    var assignedJm = assignedJmId ? jms.find(function(j){ return j.id === assignedJmId; }) : null;
+    var divColors = { sweater:'#7C3AED', knit:'#059669' };
+    var dot = divColors[m.division] || '#6B7280';
+
+    html += '<div class="ba-card">';
+    html += '<div class="ba-card-hdr">';
+    html += '<div style="flex:1"><div style="display:flex;align-items:center;gap:7px">';
+    html += '<span style="width:9px;height:9px;border-radius:50%;background:' + dot + ';display:inline-block;flex-shrink:0"></span>';
+    html += '<span style="font-weight:700;font-size:14px">' + m.name + '</span></div>';
+    html += '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-left:16px">' + (m.division||'') + '</span></div>';
+    html += '</div>';
+
+    html += '<div class="ba-chip-area">';
+    if (assignedJm) {
+      html += '<span class="ba-buyer-chip" style="background:#DB2777">' + assignedJm.name;
+      html += '<button data-mid="' + m.id + '" onclick="jmRemove(this.dataset.mid)" title="Remove">&#x2715;</button></span>';
+    } else {
+      html += '<span style="color:var(--muted);font-size:12.5px;font-style:italic">No JM assigned</span>';
+    }
+    html += '</div>';
+
+    html += '<div class="ba-add-row">';
+    if (!assignedJm) {
+      html += '<select id="jma-sel-' + m.id + '" style="flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer">';
+      html += '<option value="">Choose JM...</option>';
+      jms.forEach(function(j){ html += '<option value="' + j.id + '">' + j.name + '</option>'; });
+      html += '</select>';
+      html += '<button class="ba-assign-btn" data-mid="' + m.id + '" onclick="jmAssign(this.dataset.mid)">Assign</button>';
+    } else {
+      html += '<span style="color:var(--muted);font-size:12px;font-style:italic">Remove current JM to reassign</span>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  $('jma-body').innerHTML = html;
+}
+
+async function jmAssign(merchantId) {
+  var sel = document.getElementById('jma-sel-' + merchantId);
+  if (!sel || !sel.value) return;
+  var jmId = sel.value;
+  var jm = S.users.find(function(u){ return u.id === jmId; });
+  var { error } = await db.from('jm_assignments').upsert({ jm_id: jmId, merchant_id: merchantId }, { onConflict: 'merchant_id' });
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  S.allJMAssignments[merchantId] = jmId;
+  toast((jm ? jm.name : 'JM') + ' assigned');
+  if (S.user.id === jmId) { await loadMyJMAssignments(); renderRail(); }
+  renderJMAssign();
+}
+
+async function jmRemove(merchantId) {
+  var jmId = S.allJMAssignments[merchantId];
+  var jm = jmId ? S.users.find(function(u){ return u.id === jmId; }) : null;
+  var { error } = await db.from('jm_assignments').delete().eq('merchant_id', merchantId);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  delete S.allJMAssignments[merchantId];
+  toast((jm ? jm.name : 'JM') + ' unassigned');
+  if (jmId && S.user.id === jmId) { await loadMyJMAssignments(); renderRail(); }
+  renderJMAssign();
 }
 
 // ─── START ───
