@@ -727,7 +727,7 @@ button.apv-chip{font-family:inherit}
 
 
 /* Product image feature */
-.style-thumb{width:38px;height:38px;object-fit:cover;border-radius:6px;cursor:zoom-in;
+.style-thumb{width:46px;height:46px;object-fit:cover;border-radius:6px;cursor:zoom-in;
   vertical-align:middle;border:1px solid var(--line);transition:transform .15s;display:block;
   transform-origin:center center;margin:0 auto}
 .style-thumb:hover{transform:scale(2.4);z-index:60;position:relative;
@@ -888,7 +888,9 @@ table.dyn-board{table-layout:fixed}
 table.dyn-board th,table.dyn-board td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 table.dyn-board td.col-yarn,table.dyn-board td .cell{white-space:normal}
 table.dyn-board td.wrap2,table.dyn-board th.wrap2{white-space:normal;line-height:1.25;overflow:visible}
-table.dyn-board td:has(.style-thumb){overflow:visible}
+table.dyn-board th{white-space:normal;line-height:1.3}
+table.dyn-board th.num{font-family:inherit;font-weight:800;letter-spacing:.05em}
+table.dyn-board td:has(.style-thumb:hover){overflow:visible}
 
 
 /* Sticky header rows for dynamic buyer table */
@@ -930,7 +932,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-5.0</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-5.1</p>
   </div>
 </div>
 
@@ -965,7 +967,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-5.0</div>
+  <div id="ver-stamp">v2026-08-31 WF-5.1</div>
 </div>
 
 
@@ -2520,11 +2522,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     var fStyle = frozenStyle(item);
     var fClass = frozenClass(item);
 
-    if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style</th>';
+    if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style Number</th>';
     else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
     else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
     else if (key === '_serial') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">#</th>';
-    else if (key === '_confirm_date') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Confirm</th>';
+    else if (key === '_confirm_date') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Order Confirmed Date</th>';
     else if (key === '_attachments') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Files</th>';
     else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
     else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
@@ -5649,19 +5651,19 @@ var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 // === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
 var FIXED_BLOCKS = [
   { key:'_serial',       name:'#',            width:40,  mandatory:false },
-  { key:'_style',       name:'Style',        width:130, wrap:true, mandatory:true  },
-  { key:'_photo',       name:'Photo',        width:56,  mandatory:false },
+  { key:'_style',       name:'Style Number', width:130, wrap:true, mandatory:true  },
+  { key:'_photo',       name:'Photo',        width:66,  mandatory:false },
   { key:'_po',          name:'PO',           width:90,  mandatory:false },
-  { key:'_confirm_date',name:'Confirm Date', width:85,  mandatory:false },
+  { key:'_confirm_date',name:'Order Confirmed Date', width:100, mandatory:false },
   { key:'_attachments', name:'Attachments',  width:100, mandatory:false },
   { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
   { key:'_house',       name:'House',        width:80,  wrap:true, mandatory:false },
   { key:'_gauge',       name:'Gauge',        width:58,  mandatory:false },
   { key:'_colour',      name:'Colour',       width:78,  wrap:true, mandatory:false },
   { key:'_composition', name:'Composition',  width:88,  wrap:true, mandatory:false },
-  { key:'_qty',         name:'Qty',          width:65,  mandatory:false },
-  { key:'_fob',         name:'FOB',          width:60,  mandatory:false },
-  { key:'_value',       name:'Value',        width:80,  mandatory:false },
+  { key:'_qty',         name:'Qty',          width:72,  mandatory:false },
+  { key:'_fob',         name:'FOB',          width:48,  mandatory:false },
+  { key:'_value',       name:'Value',        width:96,  mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:75,  mandatory:false },
   { key:'_days',        name:'Days',         width:52,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
