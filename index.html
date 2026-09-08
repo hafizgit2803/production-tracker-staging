@@ -347,6 +347,11 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
   font-weight:600;margin-left:8px;vertical-align:middle}
 .div-badge.sweater{background:#EDE9FE;color:#5B21B6}
 .div-badge.knit{background:#D1FAE5;color:#065F46}
+.jm-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:20px;
+  font-size:11.5px;font-weight:600;margin-left:10px;vertical-align:middle;
+  background:#FCE7F3;color:#9D174D;border:1px solid #F9A8D4;cursor:pointer;transition:opacity .12s}
+.jm-badge:hover{opacity:.8}
+.jm-badge .jm-icon{font-size:12px}
 
 .pdf-wrap{font-family:var(--sans);color:#191817;background:#fff}
 .pdf-header{display:flex;justify-content:space-between;align-items:flex-end;
@@ -925,7 +930,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-4.8</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-5.0</p>
   </div>
 </div>
 
@@ -960,7 +965,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-4.8</div>
+  <div id="ver-stamp">v2026-08-31 WF-5.0</div>
 </div>
 
 
@@ -1710,6 +1715,7 @@ async function startApp() {
 
   try { await loadMyAssignments(); } catch(e) { console.error('loadMyAssignments:', e); }
   try { await loadMyJMAssignments(); } catch(e) { console.error('loadMyJMAssignments:', e); }
+  try { await loadAllJMAssignments(); } catch(e) { console.error('loadAllJMAssignments:', e); }
   try { await loadDashOrders(); } catch(e) { console.error('loadDashOrders:', e); }
   try { await loadNotes(); } catch(e) { console.error('loadNotes:', e); }
   try { await loadMemo(); } catch(e) { console.error('loadMemo:', e); }
@@ -1928,15 +1934,17 @@ function render() {
   else if (S.view === 'my-requests') renderMyRequests();
   else if (S.view === 'laying-goods') renderLayingGoods();
   else if (S.view === 'admin') renderAdminPage();
+  else if (typeof S.view === 'string' && S.view.indexOf('jm_') === 0) renderJMOverview(S.view.slice(3));
   else renderBoard(S.view);
 }
 
 function setView(v) {
+  var isJMOverview = typeof v === 'string' && v.indexOf('jm_') === 0;
   if (v === 'admin' && S.user.role !== 'admin') {
     toast('Access restricted to Admin only');
     return;
   }
-  if (S.user.role === 'manager' &&
+  if (!isJMOverview && S.user.role === 'manager' &&
       !['dashboard','shipped','requests','my-requests','admin'].includes(v) &&
       v !== S.user.id) {
     if (!S.myAssignments.includes(v)) {
@@ -1944,7 +1952,7 @@ function setView(v) {
       return;
     }
   }
-  if (S.user.role === 'jm' &&
+  if (!isJMOverview && S.user.role === 'jm' &&
       !['dashboard','shipped','requests','my-requests','admin','laying-goods'].includes(v)) {
     if (!S.myJMMerchants || !S.myJMMerchants.includes(v)) {
       toast('You are not assigned to this merchant');
@@ -1959,6 +1967,7 @@ function setView(v) {
   else if (v === 'my-requests') renderMyRequests();
   else if (v === 'laying-goods') { renderLayingGoods(); return; }
   else if (v === 'admin') { try { renderAdminPage(); } catch(e) { console.error('renderAdminPage error:',e); $('content').innerHTML='<div style="padding:20px;color:red">Admin page error: '+e.message+'</div>'; } }
+  else if (isJMOverview) { renderJMOverview(v.slice(3)); }
   else renderBoard(v);
 }
 
@@ -2182,8 +2191,13 @@ async function renderBoard(uid) {
   const canEdit = can('edit', uid);
   const canNote = can('send_notes');
 
+  var jmForThisMerchant = S.allJMAssignments ? S.allJMAssignments[uid] : null;
+  var jmUser = jmForThisMerchant ? S.users.find(function(u){ return u.id === jmForThisMerchant; }) : null;
+  var jmBadgeHtml = jmUser
+    ? `<span class="jm-badge" onclick="setView('jm_${jmUser.id}')" title="Click to view ${jmUser.name}'s activity"><span class="jm-icon">&#x1F9D1;&#x200D;&#x1F4BC;</span>Working with ${jmUser.name}</span>`
+    : '';
   $('page-title').innerHTML = merch.name +
-    `<span class="div-badge ${division}">${division === 'knit' ? 'Knit' : 'Sweater'}</span>`;
+    `<span class="div-badge ${division}">${division === 'knit' ? 'Knit' : 'Sweater'}</span>` + jmBadgeHtml;
   $('page-sub').innerHTML = `${merch.team||''} \u00b7 ${os.length} live orders \u00b7 ${fmt(os.reduce((s,o)=>s+(o.qty||0)-(o.prod_packing||0),0))} pcs remaining`;
   $('stamp').innerHTML = `<div class="lab">Last updated</div>
     <div class="val ${stale?'stale':''}">${merch.updated_at ? ago(merch.updated_at) : 'Never'}</div>
@@ -4118,10 +4132,12 @@ async function saveEditUser(uid) {
   var pwd  = pwdEl  ? pwdEl.value.trim()  : '';
   var role = roleEl ? roleEl.value : null;
   if (!name) { toast('Name cannot be empty', 'err'); return; }
+  var dupUser2 = S.users.find(function(u){ return u.id !== uid && u.name.toLowerCase() === name.toLowerCase(); });
+  if (dupUser2) { toast('A user named "' + dupUser2.name + '" already exists', 'err'); return; }
   var desigEl = $('eu-desig-' + uid);
   var desig = desigEl ? desigEl.value.trim() : '';
   var update = { name: name, title: desig||null };
-  if (pwd)  update.password = pwd;
+  if (pwd)  update.password = await hashPassword(pwd);
   if (role) update.role = role;
   var { error } = await db.from('users').update(update).eq('id', uid);
   if (error) { toast('Error: ' + error.message, 'err'); return; }
@@ -4460,6 +4476,8 @@ async function addMerchant() {
   errEl.style.display = 'none';
   if (!name) { errEl.textContent='Name is required.'; errEl.style.display='block'; return; }
   if (!pwd)  { errEl.textContent='Password is required.'; errEl.style.display='block'; return; }
+  var dupUser = S.users.find(function(u){ return u.name.toLowerCase() === name.toLowerCase(); });
+  if (dupUser) { errEl.textContent = 'A user named "' + dupUser.name + '" already exists.'; errEl.style.display='block'; return; }
   const division = type === 'merchant' && $('a_div') ? $('a_div').value : null;
   const designation = ($('a_designation').value||'').trim();
   const { error } = await db.from('users').insert({ name, role: type, password: pwd, division, title: designation||null });
@@ -4747,17 +4765,23 @@ function renderRail() {
     var b=(S.notes||[]).filter(function(n){return !n.is_closed&&n.merchant_id===m.id;}).length;
     return '<button class="ni '+on+'" onclick="setView(\''+m.id+'\')"><div class="av">'+initials(m.name)+'</div><div class="nm">'+m.name+'</div>'+(b?'<span class="badge">'+b+'</span>':'')+'</button>';
   }
-  function sec(key,label,list){
+  function sec(key,label,list,builder){
     if(!list.length) return '';
+    builder = builder || mBtn;
     var open=localStorage.getItem('pt_sb_'+key)!=='0';
     return '<div class="rail-section-hdr" onclick="toggleSection(\''+key+'\')"><div class="rail-label" style="padding:0;margin:0">'+label+'</div><span class="rail-section-arrow'+(open?' open':'')+'">&#x25B6;</span></div>'
-      +'<div class="rail-section-body" id="sec-'+key+'" style="max-height:'+(open?'2000px':'0')+'">'+list.map(mBtn).join('')+'</div>';
+      +'<div class="rail-section-body" id="sec-'+key+'" style="max-height:'+(open?'2000px':'0')+'">'+list.map(builder).join('')+'</div>';
+  }
+  function jmBtn(j){
+    var on=S.view==='jm_'+j.id?'on':'';
+    return '<button class="ni '+on+'" onclick="setView(\'jm_'+j.id+'\')" style="color:#DB2777"><span class="av" style="font-size:11px;background:#FCE7F3;color:#DB2777">'+initials(j.name)+'</span><span class="nm">'+j.name+'</span></button>';
   }
   var html=ni('dashboard','&#x2302;','Dashboard');
   if(seeAll){
     var sw=S.users.filter(function(u2){return u2.role==='merchant'&&u2.division!=='knit';});
     var kn=S.users.filter(function(u2){return u2.role==='merchant'&&u2.division==='knit';});
-    html+=sec('sweater','Sweater',sw)+sec('knit','Knit',kn);
+    var jmList=S.users.filter(function(u2){return u2.role==='jm';}).sort(function(a,b){return a.name.localeCompare(b.name);});
+    html+=sec('sweater','Sweater',sw)+sec('knit','Knit',kn)+sec('jrmerch','Junior Merchandisers',jmList,jmBtn);
   } else if(isManager){
     var asgn=S.users.filter(function(u2){return u2.role==='merchant'&&S.myAssignments.includes(u2.id);});
     if(asgn.length){html+='<div class="rail-label">My Merchants</div>';asgn.forEach(function(m){html+=mBtn(m);});}
@@ -6393,6 +6417,74 @@ async function jmRemove(merchantId) {
   toast((jm ? jm.name : 'JM') + ' unassigned');
   if (jmId && S.user.id === jmId) { await loadMyJMAssignments(); renderRail(); }
   renderJMAssign();
+}
+
+// === JUNIOR MERCHANDISER OVERVIEW PAGE ===
+async function renderJMOverview(jmId) {
+  var jm = S.users.find(function(u){ return u.id === jmId; });
+  if (!jm) { setView('dashboard'); return; }
+
+  $('crumb').textContent = 'Junior Merchandiser';
+  $('page-title').innerHTML = jm.name + '<span class="jm-badge" style="cursor:default" title="Junior Merchandiser"><span class="jm-icon">&#x1F9D1;&#x200D;&#x1F4BC;</span>Junior Merchandiser</span>';
+  $('page-sub').innerHTML = '';
+  $('stamp').innerHTML = '';
+  $('act-row').innerHTML = '';
+  $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading activity...</div>';
+
+  // Find all merchants this JM is assigned to
+  var assignedMerchantIds = Object.keys(S.allJMAssignments || {}).filter(function(mid){
+    return S.allJMAssignments[mid] === jmId;
+  });
+  var assignedMerchants = S.users.filter(function(u){ return assignedMerchantIds.includes(u.id); });
+
+  // Fetch recent activity: orders touched by this JM (updated_by matches their name)
+  var res = await db.from('orders').select('id,style,po_number,buyer,merchant_id,updated_at,updated_by,stage')
+    .eq('updated_by', jm.name)
+    .order('updated_at', { ascending: false })
+    .limit(40);
+  var activity = res.data || [];
+
+  var merchantCardsHtml = assignedMerchants.length
+    ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px">'
+      + assignedMerchants.map(function(m) {
+          var divColors = { sweater:'#7C3AED', knit:'#059669' };
+          var dot = divColors[m.division] || '#6B7280';
+          return '<div class="ba-card" style="cursor:pointer;padding:14px 16px" data-mid="' + m.id + '" onclick="setView(this.dataset.mid)">'
+            + '<div style="display:flex;align-items:center;gap:8px">'
+            + '<span style="width:9px;height:9px;border-radius:50%;background:' + dot + ';flex-shrink:0"></span>'
+            + '<span style="font-weight:700;font-size:14px">' + m.name + '</span></div>'
+            + '<div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;margin-left:17px">' + (m.division||'') + ' &middot; Open board &rarr;</div>'
+            + '</div>';
+        }).join('')
+      + '</div>'
+    : '<div class="card" style="padding:20px;text-align:center;color:var(--muted);margin-bottom:24px">Not assigned to any merchants yet.</div>';
+
+  var activityHtml;
+  if (!activity.length) {
+    activityHtml = '<div class="card"><div class="empty"><h4>No activity yet</h4><p>Orders edited by ' + jm.name + ' will appear here.</p></div></div>';
+  } else {
+    var rows = activity.map(function(a) {
+      var merch = S.users.find(function(u){ return u.id === a.merchant_id; });
+      var stageLabel = { live: 'Live', laying: 'Laying Goods', shipped: 'Shipped' }[a.stage] || a.stage;
+      var stageColor = { live: '#065F46', laying: '#92400E', shipped: '#1E40AF' }[a.stage] || 'var(--muted)';
+      return '<tr>'
+        + '<td style="font-size:11px;color:var(--muted);white-space:nowrap">' + ago(a.updated_at) + '</td>'
+        + '<td class="sty">' + a.style + (a.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + a.po_number + '</div>' : '') + '</td>'
+        + '<td>' + (a.buyer||'&mdash;') + '</td>'
+        + '<td>' + (merch ? merch.name : '&mdash;') + '</td>'
+        + '<td><span style="font-size:10.5px;font-weight:700;color:' + stageColor + '">' + stageLabel + '</span></td>'
+        + '</tr>';
+    }).join('');
+    activityHtml = '<div class="card"><div class="scroller"><table>'
+      + '<thead><tr><th>When</th><th>Style / PO</th><th>Buyer</th><th>Merchant</th><th>Stage</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div></div>';
+  }
+
+  $('content').innerHTML =
+    '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Assigned Merchants</div>'
+    + merchantCardsHtml
+    + '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Recent Activity <span style="font-weight:400;text-transform:none;letter-spacing:0">(last 40 edits)</span></div>'
+    + activityHtml;
 }
 
 // ─── START ───
