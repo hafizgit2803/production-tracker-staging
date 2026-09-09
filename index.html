@@ -3216,8 +3216,11 @@ async function toggleRowExpand(ordId, division) {
       }).join('')
     + '</div></div>';
 
-  // Panel 3: TNA
-  var tnaHTML = '<div class="exp-panel"><div class="exp-panel-title">TNA — Plan vs Actual</div>'
+  // Panel 3: TNA — read-only display of plan vs actual; editing only happens through
+  // the TNA pill/modal (same lock rules as everywhere else — see isTNALocked)
+  var tnaBypass = S.user.role === 'management' || S.user.role === 'admin';
+  var tnaRowsLocked = !tnaBypass && isTNALocked(ordId, o.merchant_id);
+  var tnaHTML = '<div class="exp-panel"><div class="exp-panel-title">TNA — Plan vs Actual' + (tnaRowsLocked ? ' <span style="font-weight:400;font-size:9.5px;color:var(--muted)">(locked — use the TNA pill)</span>' : '') + '</div>'
     + VMILES.map(function(x){
       var p = o['plan_'+x.k], a = o['act_'+x.k];
       var delay = '', stCls = '';
@@ -3225,7 +3228,7 @@ async function toggleRowExpand(ordId, division) {
       else if (p && !a) { var dd2=daysTo(p); if(dd2<0) delay='<span style="font-size:10px;color:var(--red)">+'+(-dd2)+'d</span>'; }
       return '<div class="exp-tna-row"><div class="exp-tna-lbl">' + x.n + '</div>'
         + '<div class="exp-tna-plan">' + short(p) + '</div>'
-        + '<div class="exp-tna-actual">' + (canEdit
+        + '<div class="exp-tna-actual">' + (canEdit && !tnaRowsLocked
           ? '<input class="exp-tna-inp" type="date" value="'+(a||'')+'" onchange="setActExp(\''+o.id+'\',\''+x.k+'\',this.value,\''+div+'\')">'
           : '<span style="font-family:var(--mono);font-size:11px">' + short(a) + '</span>')
         + '</div>' + delay + '</div>';
