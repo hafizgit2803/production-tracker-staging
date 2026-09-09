@@ -68,19 +68,19 @@ a{color:var(--accent);text-decoration:none}
 .lo-btn:hover{background:rgba(0,0,0,.07);color:var(--ink)}
 
 .main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.top{padding:20px 24px 0;flex:0 0 auto;border-bottom:1px solid var(--line);padding-bottom:14px}
-.crumb{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:4px}
-.pagehead h2{font-family:var(--serif);font-size:32px;font-weight:600;letter-spacing:-.6px;margin-top:2px}
-.stamp .lab{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right}
-.stamp .val{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.3px;margin-top:1px;text-align:right}
+.top{padding:11px 24px 0;flex:0 0 auto;border-bottom:1px solid var(--line);padding-bottom:8px}
+.crumb{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:1px}
+.pagehead h2{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.4px;margin-top:1px}
+.stamp .lab{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right}
+.stamp .val{font-family:var(--serif);font-size:14px;font-weight:600;letter-spacing:-.2px;margin-top:0;text-align:right}
 .stamp .val.stale{color:var(--red)}
-.stamp .sub{font-size:11px;color:var(--muted);text-align:right}
-.act-row{display:flex;gap:8px;margin:14px 0 0;flex-wrap:wrap}
-.content{flex:1;overflow-y:auto;padding:20px 24px 60px}
+.stamp .sub{font-size:10px;color:var(--muted);text-align:right}
+.act-row{display:flex;gap:8px;margin:8px 0 0;flex-wrap:wrap}
+.content{flex:1;overflow-y:auto;padding:12px 24px 60px}
 
 /* ── BUTTONS ── */
-.btn{border:1px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:8px;
+.btn{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px;
   font-weight:500;transition:background .1s}
 .btn:hover{background:#F4F2EB}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -783,7 +783,7 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 
 /* Buyer section headers in board */
 .buyer-section-hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:10px 4px;cursor:pointer;user-select:none;border-bottom:2px solid var(--line);margin-bottom:8px}
+  padding:7px 4px;cursor:pointer;user-select:none;border-bottom:2px solid var(--line);margin-bottom:6px}
 .buyer-section-hdr:hover span:first-child{opacity:.8}
 
 
@@ -2353,7 +2353,7 @@ async function renderBoard(uid) {
     var open = localStorage.getItem(sk) !== '0';
     var bQty = bOrders.reduce(function(s,o){ return s+(o.qty||0); }, 0);
     var bVal = bOrders.reduce(function(s,o){ return s+(o.qty||0)*(o.fob||0); }, 0);
-    allHtml += '<div style="margin-bottom:16px">'
+    allHtml += '<div style="margin-bottom:12px">'
       + '<div class="buyer-section-hdr" data-sk="' + sk + '" onclick="toggleBuyerSection(this.dataset.sk)">'
       + '<div style="display:flex;align-items:center;gap:10px">'
       + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">' + b.name + '</span>'
@@ -2368,7 +2368,7 @@ async function renderBoard(uid) {
   if (otherOrders.length) {
     var sk2 = 'bbs_' + uid + '_other';
     var open2 = localStorage.getItem(sk2) !== '0';
-    allHtml += '<div style="margin-bottom:16px">'
+    allHtml += '<div style="margin-bottom:12px">'
       + '<div class="buyer-section-hdr" data-sk="' + sk2 + '" onclick="toggleBuyerSection(this.dataset.sk)">'
       + '<div style="display:flex;align-items:center;gap:10px">'
       + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">Other</span>'
