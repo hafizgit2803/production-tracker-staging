@@ -885,6 +885,23 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
 [data-theme="dark"] tbody tr.late td.stk-dyn{background-color:#2E1515!important}
 
 
+/* Repeat order badge + history card */
+.repeat-badge{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;
+  background:var(--accent-soft);border:1px solid #E8CFC2;color:var(--accent);font-size:9.5px;margin-left:5px;
+  cursor:pointer;vertical-align:middle;transition:transform .15s ease,box-shadow .15s ease;line-height:1}
+.repeat-badge:hover{transform:scale(1.18);box-shadow:0 2px 8px rgba(201,100,66,.35)}
+[data-theme="dark"] .repeat-badge{background:#3A2C24;border-color:#5A4335}
+.rh-card{background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:12px;padding:14px 16px}
+.rh-card + .rh-card{margin-top:10px}
+.rh-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rh-card-icon{width:26px;height:26px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rh-card-style{font-family:var(--serif);font-size:15.5px;font-weight:700;color:var(--accent)}
+.rh-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.rh-lbl{color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:600}
+.rh-val{font-weight:600;font-size:13px}
+[data-theme="dark"] .rh-card{background:#2A211B;border-color:#4A3A2E}
+[data-theme="dark"] .rh-card-icon{background:#252325}
+
 /* Dynamic buyer board table — locked widths prevent freeze overlap */
 table.dyn-board{table-layout:fixed}
 table.dyn-board th,table.dyn-board td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -981,6 +998,24 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <button class="btn" onclick="closeModal('ov-order')">Cancel</button></div>
     <div class="m-b">
 
+      <div class="f" id="o_repeat_box" style="margin-bottom:14px;background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:9px;padding:12px 14px">
+        <label style="margin-bottom:8px">Is this a repeat order? <span style="font-size:11px;color:var(--muted);font-weight:400">(same style carried over from a previous season)</span></label>
+        <div style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_repeat" value="yes" onchange="onRepeatChange(this)"> Yes</label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_repeat" value="no" onchange="onRepeatChange(this)" checked> No</label>
+        </div>
+        <div id="o_repeat_fields" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #E8CFC2">
+          <div class="grid2" style="margin-bottom:10px">
+            <div class="f"><label>Previous Style Number <span style="color:var(--red)">*</span></label><input id="o_repeat_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. KB-6210"></div>
+            <div class="f"><label>Previous Season</label><input id="o_repeat_season" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. Fall/Winter 2025"></div>
+          </div>
+          <div class="grid2">
+            <div class="f"><label>Previous Price (FOB, USD)</label><input id="o_repeat_price" type="number" step="0.01" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. 4.25"></div>
+            <div class="f"><label>Previous Quantity (pcs)</label><input id="o_repeat_qty" type="number" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. 12000"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="card-h" style="padding:0 0 10px;border:0"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">Order Details</h3></div>
 
       <div class="grid3" style="margin-bottom:10px">
@@ -1050,10 +1085,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
       <div class="grid3">
         <div class="f"><label>Packing Item Inhouse</label><input id="p_pack" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Knitting Start</label><input id="p_knit" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
         <div class="f"><label>Final Inspection Date</label><input id="p_insp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-      </div>
-      <div class="grid3" style="margin-top:10px">
         <div class="f"><label>Ship Date <span style="font-size:10px;color:var(--muted);font-weight:400">(synced from above)</span></label><input id="p_ship" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#F3F1EA;color:var(--muted)" readonly></div>
       </div>
 
@@ -1063,6 +1095,16 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <button class="btn" onclick="closeModal('ov-order')">Cancel</button>
       <button class="btn pri" id="save-order-btn" onclick="saveOrder()">Save order</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL: REPEAT ORDER HISTORY ═══ -->
+<div class="ov" id="ov-repeat-history" onclick="if(event.target===this)closeModal('ov-repeat-history')">
+  <div class="modal" style="max-width:420px">
+    <div class="m-h"><div><h3>&#x1F501; Repeat Order History</h3><div class="msub" id="rh-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-repeat-history')">Close</button></div>
+    <div class="m-b" id="rh-body"></div>
   </div>
 </div>
 
@@ -1457,7 +1499,7 @@ const STEPS = [
 const MILES = [
   {k:'yarn',n:'Yarn Inhouse'},{k:'pp',n:'PP Approval'},
   {k:'sew',n:'Sewing Item Inhouse'},{k:'pack',n:'Packing Item Inhouse'},
-  {k:'knit',n:'Knitting Start'},{k:'insp',n:'Final Inspection Date'},{k:'ship',n:'Shipment'}
+  {k:'insp',n:'Final Inspection Date'},{k:'ship',n:'Shipment'}
 ];
 
 function getSteps(division) {
@@ -2439,7 +2481,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn);
     const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew);
     const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp);
-    const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, o.plan_knit);
+    const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
 
     const totalBk = sum.bk, totalRc = sum.rc, bal = totalBk - totalRc;
@@ -2465,7 +2507,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
-    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span><div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:10px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:11px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:10.5px;');
     if (itemByKey['_attachments']) cellsByKey['_attachments'] = singleTd('_attachments', '', '<button class="btn sm ghost" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();toast(\'Attachments coming soon\')">&#x1F4CE; 0</button>');
@@ -2653,7 +2695,7 @@ async function openOrder(mid) {
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
   $('ord-err').style.display = 'none';
   ['o_house','o_buyer','o_style','o_gauge','o_qty','o_fob',
-   'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_knit','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
+   'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
   $('o_total').value = '';
   var prev=$('order-img-preview');if(prev){prev.src='';prev.style.display='none';}
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
@@ -2694,6 +2736,35 @@ async function saveOrder() {
     $('ord-err').textContent = 'Style number and order quantity are required.';
     $('ord-err').style.display = 'block'; return;
   }
+  var isRepeat = (document.querySelector('input[name="o_repeat"]:checked')||{}).value === 'yes';
+  var repeatHistoryJSON = null;
+  if (isRepeat) {
+    var prevStyle = ($('o_repeat_style').value||'').trim();
+    if (!prevStyle) {
+      $('ord-err').textContent = 'Previous style number is required for a repeat order.';
+      $('ord-err').style.display = 'block';
+      $('o_repeat_style').focus();
+      return;
+    }
+    var newEntry = {
+      prev_style: prevStyle,
+      season: ($('o_repeat_season').value||'').trim() || null,
+      price: $('o_repeat_price').value ? Number($('o_repeat_price').value) : null,
+      qty: $('o_repeat_qty').value ? Number($('o_repeat_qty').value) : null,
+      recorded_at: new Date().toISOString()
+    };
+    var priorHistory = [];
+    if (_editOrderId) {
+      var existingOrd = S.boardCache[S.view] ? S.boardCache[S.view].find(function(x){return x.id===_editOrderId;}) : null;
+      if (existingOrd && existingOrd.repeat_history) {
+        try { priorHistory = JSON.parse(existingOrd.repeat_history) || []; } catch(e) { priorHistory = []; }
+      }
+    }
+    // Editing the same repeat entry just updates it rather than duplicating
+    if (priorHistory.length) { priorHistory[0] = newEntry; } else { priorHistory = [newEntry]; }
+    repeatHistoryJSON = JSON.stringify(priorHistory);
+  }
+  $('ord-err').style.display = 'none';
   $('save-order-btn').disabled = true;
   $('save-order-btn').textContent = _editOrderId ? 'Saving\u2026' : 'Saving\u2026';
 
@@ -2717,9 +2788,11 @@ async function saveOrder() {
     compositions_json: JSON.stringify(_orderComps),
     contains_recycled: (document.querySelector('input[name="o_recycled"]:checked')||{}).value === 'yes',
     needs_tc: _needsTC,
+    is_repeat: isRepeat,
+    repeat_history: repeatHistoryJSON,
     plan_yarn: $('p_yarn').value||null, plan_pp: $('p_pp').value||null,
     plan_sew: $('p_sew')&&$('p_sew').value||null, plan_pack: $('p_pack')&&$('p_pack').value||null,
-    plan_knit: $('p_knit').value||null, plan_insp: $('p_insp').value||null,
+    plan_insp: $('p_insp').value||null,
     plan_ship: shipDateVal,
     updated_by: S.user.name, updated_at: new Date().toISOString()
   };
@@ -2816,11 +2889,27 @@ async function editOrder(orderId) {
   if (o.contains_recycled) finalizeTC();
   else { var d0 = $('o_tc_display'); if (d0) d0.style.display = 'none'; }
 
+  // Restore repeat-order info
+  var repeatVal = o.is_repeat ? 'yes' : 'no';
+  document.getElementsByName('o_repeat').forEach(function(r){ r.checked = (r.value === repeatVal); });
+  var rf0 = $('o_repeat_fields');
+  if (o.is_repeat) {
+    if (rf0) rf0.style.display = 'block';
+    var histEntry = null;
+    try { var h0 = o.repeat_history ? JSON.parse(o.repeat_history) : []; histEntry = h0[0] || null; } catch(e) { histEntry = null; }
+    if ($('o_repeat_style')) $('o_repeat_style').value = histEntry ? (histEntry.prev_style||'') : '';
+    if ($('o_repeat_season')) $('o_repeat_season').value = histEntry ? (histEntry.season||'') : '';
+    if ($('o_repeat_price')) $('o_repeat_price').value = histEntry && histEntry.price!=null ? histEntry.price : '';
+    if ($('o_repeat_qty')) $('o_repeat_qty').value = histEntry && histEntry.qty!=null ? histEntry.qty : '';
+  } else {
+    if (rf0) rf0.style.display = 'none';
+    ['o_repeat_style','o_repeat_season','o_repeat_price','o_repeat_qty'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+  }
+
   $('p_yarn').value = o.plan_yarn || '';
   $('p_pp').value = o.plan_pp || '';
   if ($('p_sew')) $('p_sew').value = o.plan_sew || '';
   if ($('p_pack')) $('p_pack').value = o.plan_pack || '';
-  $('p_knit').value = o.plan_knit || '';
   $('p_insp').value = o.plan_insp || '';
   $('p_ship').value = o.plan_ship || o.ship_date || '';
 
@@ -2888,13 +2977,14 @@ function openTNA(ordId, division) {
   const ms = missedMiles(o), dl = daysTo(o.ship_date);
   const boardSums=(S.boardSummaries[o.merchant_id]||{})[o.id]||{ap:{}};
   const fitApproved=(boardSums.ap.fit||[]).some(function(r){return r.approved_on;});
-  const isMerchant=actsAsMerchant(o.merchant_id), isMgmt=S.user.role==='management';
+  const isMerchant=actsAsMerchant(o.merchant_id), isMgmt=S.user.role==='management', isAdmin=S.user.role==='admin';
   const orderAgeDays = o.created_at ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 999;
-  const tnaLocked=(fitApproved || orderAgeDays >= 5)&&!isMgmt;
+  const isShipped = o.stage === 'shipped';
+  const tnaLocked=(fitApproved || orderAgeDays >= 5 || isShipped)&&!isMgmt&&!isAdmin;
   const pendingFields=S.tnaRequests.filter(function(r){return r.order_id===ordId&&r.status==='pending';}).map(function(r){return r.field_name;});
   $('tna-title').textContent='TNA \u2014 '+o.style+(tnaLocked?' \uD83D\uDD12':'');
   $('tna-sub').textContent=o.buyer+' \u00b7 '+o.house+' \u00b7 '+fmt(o.qty)+' pcs \u00b7 ships '+short(o.ship_date);
-  var lockBanner=tnaLocked?'<div style="background:var(--amber-soft);border:1px solid #F6D860;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12.5px">&#x1F512; <strong>TNA Locked</strong> \u2014 Fit approved. Plan dates require HOD/Manager approval to change.</div>':'';
+  var lockBanner=tnaLocked?('<div style="background:var(--amber-soft);border:1px solid #F6D860;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12.5px">&#x1F512; <strong>TNA Locked</strong> \u2014 '+(isShipped?'Order has shipped. Dates are view-only.':'Fit approved. Plan dates require HOD/Manager approval to change.')+'</div>'):'';
   var rows=VMILES.map(function(x){
     var p=o['plan_'+x.k],a=o['act_'+x.k];
     var delay='\u2014',st='<span class="chip run">No plan</span>',cls='';
@@ -2902,10 +2992,17 @@ function openTNA(ordId, division) {
     var hasPend=pendingFields.includes(x.k==='ship'?'ship_date':('plan_'+x.k));
     var planCell;
     var reqFieldKey = x.k === 'ship' ? 'ship_date' : ('plan_'+x.k);
-    if(tnaLocked&&isMerchant){planCell=(p?'<span style="font-family:var(--mono);font-size:12px">'+short(p)+'</span> ':'')+(hasPend?'<span class="chip warn" style="font-size:10px;padding:1px 6px">Pending review</span>':'<button class="tna-lock" onclick="openTNARequestForm(\''+o.id+'\',\''+reqFieldKey+'\',\''+x.n+'\','+(p?'\''+p+'\'':'null')+')">&#x1F512; Request change</button>');}
-    else if(!tnaLocked&&(isMerchant||isMgmt)){planCell='<input type="date" value="'+(p||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setPlanDate(\''+o.id+'\',\'plan_'+x.k+'\',this.value,\''+division+'\''+')">';}
+    if(tnaLocked&&isMerchant){planCell=(p?'<span style="font-family:var(--mono);font-size:12px">'+short(p)+'</span> ':'')+(hasPend||isShipped?(hasPend?'<span class="chip warn" style="font-size:10px;padding:1px 6px">Pending review</span>':''):'<button class="tna-lock" onclick="openTNARequestForm(\''+o.id+'\',\''+reqFieldKey+'\',\''+x.n+'\','+(p?'\''+p+'\'':'null')+')">&#x1F512; Request change</button>');}
+    else if(!tnaLocked&&(isMerchant||isMgmt||isAdmin)){planCell='<input type="date" value="'+(p||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setPlanDate(\''+o.id+'\',\'plan_'+x.k+'\',this.value,\''+division+'\''+')">';}
     else{planCell=short(p);}
-    var actCell=(isMerchant||isMgmt)?'<input type="date" value="'+(a||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setAct(\''+o.id+'\',\''+x.k+'\',this.value,\''+division+'\')">':short(a);
+    var actCell;
+    if (tnaLocked && isMerchant) {
+      actCell = a ? '<span style="font-family:var(--mono);font-size:12px">'+short(a)+'</span>' : '<span style="color:var(--muted)">&#x2014;</span>';
+    } else if (!tnaLocked && (isMerchant||isMgmt||isAdmin)) {
+      actCell = '<input type="date" value="'+(a||'')+'" style="padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px;color:var(--ink)" onchange="setAct(\''+o.id+'\',\''+x.k+'\',this.value,\''+division+'\')">';
+    } else {
+      actCell = short(a);
+    }
     var daysLeftCell;
     if (a) { daysLeftCell = '<span style="color:var(--green);font-size:11px;font-weight:600">&#x2713; Done</span>'; }
     else if (p) {
@@ -3404,7 +3501,7 @@ var _ldOrdId = null, _ldDiv = null;
 // ─── APPROVAL FLOW MODAL ───
 var S_apv = { ordId: null, type: null, division: null, rounds: [], step: null };
 var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' };
-var APV_PLAN_KEY = { labdip: 'plan_yarn', sizeset: 'plan_knit', fit: 'plan_sew', pp: 'plan_pp' };
+var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' };
 
 async function openApvFlow(ordId, type, division) {
   try {
@@ -6349,6 +6446,42 @@ function resetOrderFormExtras() {
   var radios = document.getElementsByName('o_recycled');
   radios.forEach(function(r){ r.checked = (r.value === 'no'); });
   var shipDate = $('o_ship_date'); if (shipDate) shipDate.value = '';
+  var repRadios = document.getElementsByName('o_repeat');
+  repRadios.forEach(function(r){ r.checked = (r.value === 'no'); });
+  var rf = $('o_repeat_fields'); if (rf) rf.style.display = 'none';
+  ['o_repeat_style','o_repeat_season','o_repeat_price','o_repeat_qty'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+}
+
+function openRepeatHistoryModal(orderId) {
+  var o = null;
+  Object.keys(S.boardCache).forEach(function(mid){ if(!o) o=(S.boardCache[mid]||[]).find(function(x){return x.id===orderId;}); });
+  if (!o) o = S.archive.find(function(x){return x.id===orderId;});
+  if (!o) return;
+  var hist = [];
+  try { hist = o.repeat_history ? JSON.parse(o.repeat_history) : []; } catch(e) { hist = []; }
+  $('rh-sub').textContent = 'Current style: ' + o.style;
+  if (!hist.length) {
+    $('rh-body').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No repeat history recorded for this order.</div>';
+  } else {
+    $('rh-body').innerHTML = hist.map(function(h){
+      return '<div class="rh-card">'
+        + '<div class="rh-card-hdr"><div class="rh-card-icon">&#x1F501;</div><span class="rh-card-style">' + (h.prev_style||'\u2014') + '</span></div>'
+        + '<div class="rh-grid">'
+        + '<div><div class="rh-lbl">Season</div><div class="rh-val">' + (h.season||'\u2014') + '</div></div>'
+        + '<div><div class="rh-lbl">Quantity</div><div class="rh-val">' + (h.qty!=null?fmt(h.qty)+' pcs':'\u2014') + '</div></div>'
+        + '<div><div class="rh-lbl">Price (FOB)</div><div class="rh-val">' + (h.price!=null?'$'+Number(h.price).toFixed(2):'\u2014') + '</div></div>'
+        + '<div><div class="rh-lbl">Recorded</div><div class="rh-val">' + (h.recorded_at?short(h.recorded_at.slice(0,10)):'\u2014') + '</div></div>'
+        + '</div></div>';
+    }).join('');
+  }
+  openModal('ov-repeat-history');
+}
+
+function onRepeatChange(radio) {
+  var rf = $('o_repeat_fields');
+  if (!rf) return;
+  rf.style.display = radio.value === 'yes' ? 'block' : 'none';
+  if (radio.value === 'yes') { var s=$('o_repeat_style'); if (s) s.focus(); }
 }
 
 // === JUNIOR MERCHANDISER ASSIGNMENT MODULE ===
