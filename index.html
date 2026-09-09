@@ -871,7 +871,9 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 /* Dynamic frozen columns (Column Manager freeze feature) */
 td.stk-dyn, th.stk-dyn{position:sticky;z-index:20;background-color:var(--panel)}
 th.stk-dyn{background-color:#F7F5EF;z-index:30}
-td.stk-last, th.stk-last{box-shadow:4px 0 8px -3px rgba(0,0,0,.10);border-right:1px solid var(--line)}
+td.stk-last, th.stk-last{box-shadow:6px 0 10px -4px rgba(0,0,0,.22);border-right:2px solid #C7C2B4}
+th.stk-last{border-right:2px solid #B5AFA0}
+[data-theme="dark"] td.stk-last, [data-theme="dark"] th.stk-last{box-shadow:6px 0 10px -4px rgba(0,0,0,.5);border-right:2px solid #46433E}
 tbody tr:hover td.stk-dyn{background-color:var(--panel)!important}
 tbody tr.r10 td.stk-dyn{background-color:#FDF8EA!important}
 tbody tr.r5  td.stk-dyn{background-color:#FDF0E0!important}
@@ -932,7 +934,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-5.1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-08-31 WF-5.2</p>
   </div>
 </div>
 
@@ -967,7 +969,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-08-31 WF-5.1</div>
+  <div id="ver-stamp">v2026-08-31 WF-5.2</div>
 </div>
 
 
@@ -2171,6 +2173,16 @@ async function renderBoard(uid) {
   const merch = S.users.find(u => u.id === uid);
   if (!merch) { setView('dashboard'); return; }
 
+  // Preserve scroll position across in-place refreshes (e.g. after editing a cell).
+  // Only when re-rendering the SAME board that's already open — a fresh navigation
+  // to a different merchant should still land at the top.
+  const contentEl0 = $('content');
+  const isBoardRefresh = S._lastBoardUid === uid;
+  const savedTop = isBoardRefresh && contentEl0 ? contentEl0.scrollTop : 0;
+  const savedScroller0 = isBoardRefresh && contentEl0 ? contentEl0.querySelector('.scroller') : null;
+  const savedLeft = savedScroller0 ? savedScroller0.scrollLeft : 0;
+  S._lastBoardUid = uid;
+
   $('crumb').textContent = 'Merchandiser';
   $('page-title').textContent = merch.name;
   $('page-sub').innerHTML = '';
@@ -2305,6 +2317,16 @@ async function renderBoard(uid) {
   $('content').innerHTML = notesHtml + allHtml
     + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
   requestAnimationFrame(applyStickyHeaderOffsets);
+
+  if (isBoardRefresh) {
+    requestAnimationFrame(function () {
+      const c = $('content');
+      if (!c) return;
+      c.scrollTop = savedTop;
+      const s = c.querySelector('.scroller');
+      if (s) s.scrollLeft = savedLeft;
+    });
+  }
 }
 
 // Fully self-contained table builder — computes everything it needs from its own params
@@ -5650,11 +5672,11 @@ var PROD_FLOOR_OPTIONS = ['MT','Banga','JM'];
 
 // === FIXED BLOCK DEFINITIONS (hardcoded structural columns) ===
 var FIXED_BLOCKS = [
-  { key:'_serial',       name:'#',            width:40,  mandatory:false },
+  { key:'_serial',       name:'#',            width:40,  mandatory:false, defaultHidden:true },
   { key:'_style',       name:'Style Number', width:130, wrap:true, mandatory:true  },
   { key:'_photo',       name:'Photo',        width:66,  mandatory:false },
   { key:'_po',          name:'PO',           width:90,  mandatory:false },
-  { key:'_confirm_date',name:'Order Confirmed Date', width:100, mandatory:false },
+  { key:'_confirm_date',name:'Order Confirmed Date', width:85,  wrap:true, mandatory:false },
   { key:'_attachments', name:'Attachments',  width:100, mandatory:false },
   { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
   { key:'_house',       name:'House',        width:80,  wrap:true, mandatory:false },
@@ -5777,8 +5799,8 @@ function getBuyerFieldConfig(buyerId, fieldKey) {
     var fb = getFixedBlockByKey(fieldKey);
     if (!fb) return null;
     return {
-      buyer_id: buyerId, field_key: fieldKey, visible: true,
-      in_live: true, in_laying: false, in_shipped: false,
+      buyer_id: buyerId, field_key: fieldKey, visible: !fb.defaultHidden,
+      in_live: !fb.defaultHidden, in_laying: false, in_shipped: false,
       col_order: getDefaultColOrder(fieldKey)
     };
   }
