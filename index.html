@@ -1078,6 +1078,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
 
       <div class="card-h" style="padding:14px 0 10px;border-top:1px solid var(--line)"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">TNA Plan Dates</h3></div>
+      <div id="o_tna_lock_note" style="display:none;margin-bottom:10px;background:var(--amber-soft);border:1px solid #F6D860;border-radius:8px;padding:9px 12px;font-size:12.5px">&#x1F512; <strong>TNA Locked</strong> &mdash; these dates can no longer be edited here. Use the TNA pill on the order row to request a change.</div>
       <div class="grid3" style="margin-bottom:10px">
         <div class="f"><label>Yarn Inhouse</label><input id="p_yarn" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
         <div class="f"><label>PP Approval</label><input id="p_pp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
@@ -2696,6 +2697,17 @@ async function openOrder(mid) {
   $('ord-err').style.display = 'none';
   ['o_house','o_buyer','o_style','o_gauge','o_qty','o_fob',
    'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  // A prior edit session may have greyed these out — a brand new order is never locked
+  ['o_ship_date','p_yarn','p_pp','p_sew','p_pack','p_insp'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.disabled = false;
+    el.style.background = '#FCFBF7';
+    el.style.color = 'var(--ink)';
+    el.style.cursor = '';
+  });
+  const shipLinkReset = $('o_ship_request_link'); if (shipLinkReset) { shipLinkReset.style.display='none'; shipLinkReset.innerHTML=''; }
+  const tnaNoteReset = $('o_tna_lock_note'); if (tnaNoteReset) tnaNoteReset.style.display = 'none';
   $('o_total').value = '';
   var prev=$('order-img-preview');if(prev){prev.src='';prev.style.display='none';}
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
@@ -2843,9 +2855,10 @@ async function editOrder(orderId) {
   $('ord-sub').textContent = 'Editing ' + o.style;
   $('ord-err').style.display = 'none';
 
-  // Check if shipment date is locked (fit approved OR order 5+ days old) for merchants
-  var isMgmtRole = S.user.role === 'management';
-  var shipLocked = !isMgmtRole && isTNALocked(orderId, o.merchant_id);
+  // Check if shipment date / TNA plan dates are locked (fit approved, order 5+ days old,
+  // or order shipped) for merchants — mirrors the lock logic in the TNA pill exactly.
+  var bypassLock = S.user.role === 'management' || S.user.role === 'admin';
+  var shipLocked = !bypassLock && isTNALocked(orderId, o.merchant_id);
   var shipInput = $('o_ship_date');
   var shipLinkEl = $('o_ship_request_link');
   if (shipInput) {
@@ -2865,6 +2878,19 @@ async function editOrder(orderId) {
       shipLinkEl.innerHTML = '';
     }
   }
+
+  // TNA Plan Dates — same lock, so this form can never edit around the TNA pill's rules
+  var tnaPlanLocked = shipLocked;
+  var tnaNote = $('o_tna_lock_note');
+  if (tnaNote) tnaNote.style.display = tnaPlanLocked ? 'block' : 'none';
+  ['p_yarn','p_pp','p_sew','p_pack','p_insp'].forEach(function(id){
+    var el = $(id);
+    if (!el) return;
+    el.disabled = tnaPlanLocked;
+    el.style.background = tnaPlanLocked ? '#F3F1EA' : '#FCFBF7';
+    el.style.color = tnaPlanLocked ? 'var(--muted)' : 'var(--ink)';
+    el.style.cursor = tnaPlanLocked ? 'not-allowed' : '';
+  });
 
   $('o_style').value = o.style || '';
   $('o_house').value = o.house || '';
@@ -2978,9 +3004,8 @@ function openTNA(ordId, division) {
   const boardSums=(S.boardSummaries[o.merchant_id]||{})[o.id]||{ap:{}};
   const fitApproved=(boardSums.ap.fit||[]).some(function(r){return r.approved_on;});
   const isMerchant=actsAsMerchant(o.merchant_id), isMgmt=S.user.role==='management', isAdmin=S.user.role==='admin';
-  const orderAgeDays = o.created_at ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 999;
   const isShipped = o.stage === 'shipped';
-  const tnaLocked=(fitApproved || orderAgeDays >= 5 || isShipped)&&!isMgmt&&!isAdmin;
+  const tnaLocked=isTNALocked(ordId, o.merchant_id)&&!isMgmt&&!isAdmin;
   const pendingFields=S.tnaRequests.filter(function(r){return r.order_id===ordId&&r.status==='pending';}).map(function(r){return r.field_name;});
   $('tna-title').textContent='TNA \u2014 '+o.style+(tnaLocked?' \uD83D\uDD12':'');
   $('tna-sub').textContent=o.buyer+' \u00b7 '+o.house+' \u00b7 '+fmt(o.qty)+' pcs \u00b7 ships '+short(o.ship_date);
@@ -3708,7 +3733,8 @@ function isTNALocked(ordId, merchantId) {
   var o = null;
   Object.keys(S.boardCache).forEach(function(m){ if(!o) o=(S.boardCache[m]||[]).find(function(x){return x.id===ordId;}); });
   const orderAgeDays = (o && o.created_at) ? Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000) : 0;
-  return fitApproved || orderAgeDays >= 5;
+  const isShipped = o && o.stage === 'shipped';
+  return fitApproved || orderAgeDays >= 5 || isShipped;
 }
 
 var _tnareq = { ordId: null, field: null, label: null, current: null };
