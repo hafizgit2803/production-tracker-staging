@@ -438,6 +438,9 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 .exp-summary .sv.bad{color:var(--red)}
 .exp-summary .sv.ok{color:var(--green)}
 .exp-apv-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;border-bottom:1px solid #F0EDE4}
+.exp-apv-grid{display:flex;flex-wrap:wrap;gap:10px}
+.exp-apv-item{width:104px}
+.exp-apv-item-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .exp-apv-row:last-child{border:none}
 .exp-apv-lbl{width:54px;flex-shrink:0;font-weight:600;font-size:11px;color:var(--muted)}
 .exp-apv-date{padding:2px 6px;border:1px solid var(--line);border-radius:5px;
@@ -2395,19 +2398,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     {k:'hanger', n:'Hanger'}, {k:'sewing_thread', n:'Sewing thread'}, {k:'other', n:'Other'},
   ];
 
-  function apvChip(sum, type, ordId, div2, canUpd, planDate) {
-    const rounds = (sum.ap[type] || []).sort(function(a,b){return a.round-b.round;});
-    const latest = rounds[rounds.length - 1];
-    const oc = "event.stopPropagation();openApvFlow('" + ordId + "','" + type + "','" + div2 + "')";
-    const approved = latest && latest.approved_on;
-    const tnaWarn = planDate && !approved && daysTo(planDate) < 0 ? ' <span style="color:var(--red);font-size:9px">\u26a0</span>' : '';
-    if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">Not submitted' + tnaWarn + '</button>';
-    if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
-    if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
-    if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">Submitted<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
-    return '<button class="apv-chip not-sent" onclick="' + oc + '">Round ' + latest.round + tnaWarn + '</button>';
-  }
-
   function accChip(sum, ordId, canUpd) {
     const acc = sum.acc || {};
     const booked = ACC_ITEMS.filter(function(it){ return acc[it.k] && acc[it.k].booked_on; });
@@ -2586,38 +2576,39 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     var wStr = 'width:' + w + 'px;min-width:' + w + 'px;max-width:' + w + 'px;';
     var fStyle = frozenStyle(item);
     var fClass = frozenClass(item);
+    var lbl = (item.cfg && item.cfg.label) || null; // buyer-specific display-name override
 
-    if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Style Number</th>';
-    else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Photo</th>';
-    else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">PO</th>';
-    else if (key === '_serial') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">#</th>';
-    else if (key === '_confirm_date') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Order Confirmed Date</th>';
-    else if (key === '_attachments') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Files</th>';
-    else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Buyer</th>';
-    else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">House</th>';
-    else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Gauge</th>';
-    else if (key === '_colour') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Colour</th>';
-    else if (key === '_composition') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Composition</th>';
-    else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Qty</th>';
-    else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">FOB</th>';
-    else if (key === '_value') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Value</th>';
-    else if (key === '_ship') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Ship</th>';
-    else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Days</th>';
-    else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + matLabel + '<br>(' + unit + ')</th>';
-    else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Accessories</th>';
+    if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Style Number') + '</th>';
+    else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Photo') + '</th>';
+    else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'PO') + '</th>';
+    else if (key === '_serial') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'#') + '</th>';
+    else if (key === '_confirm_date') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Order Confirmed Date') + '</th>';
+    else if (key === '_attachments') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Files') + '</th>';
+    else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Buyer') + '</th>';
+    else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'House') + '</th>';
+    else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Gauge') + '</th>';
+    else if (key === '_colour') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Colour') + '</th>';
+    else if (key === '_composition') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Composition') + '</th>';
+    else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Qty') + '</th>';
+    else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'FOB') + '</th>';
+    else if (key === '_value') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Value') + '</th>';
+    else if (key === '_ship') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Ship') + '</th>';
+    else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days') + '</th>';
+    else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||(matLabel + '<br>(' + unit + ')')) + '</th>';
+    else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Accessories') + '</th>';
     else if (key === '_approvals') {
-      topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">Approvals</th>';
+      topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">' + (lbl||'Approvals') + '</th>';
       bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th>';
     }
     else if (key === '_production') {
-      topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*90) + 'px;min-width:' + (VSTEPS.length*90) + 'px;max-width:' + (VSTEPS.length*90) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">Production</th>';
+      topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*90) + 'px;min-width:' + (VSTEPS.length*90) + 'px;max-width:' + (VSTEPS.length*90) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
       bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:90px;min-width:90px;max-width:90px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_balance') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Bal</th>';
-    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">Notes</th>';
+    else if (key === '_balance') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Bal') + '</th>';
+    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Notes') + '</th>';
     else {
       var mf = getFieldByKey(key);
-      topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (mf?mf.name:key) + '</th>';
+      topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
   topRow += '<th rowspan="2" style="width:180px;min-width:180px"></th>';
@@ -3212,32 +3203,18 @@ async function toggleRowExpand(ordId, division) {
     + (totalBk ? '<div class="exp-summary"><span>Booked: <span class="sv">' + fmt(totalBk) + '</span></span><span>Rcvd: <span class="sv ' + (totalRc>=totalBk?'ok':'') + '">' + fmt(totalRc) + '</span></span><span>Bal: <span class="sv ' + (bal>0?'bad':bal===0?'ok':'') + '">' + fmt(bal) + '</span></span></div>' : '')
     + '</div>';
 
-  // Panel 2: Approvals
-  function apvSec(type, label) {
-    var rounds = apData.filter(function(a){return a.type===type;}).sort(function(a,b){return a.round-b.round;});
-    var nextR = rounds.length ? Math.max.apply(null,rounds.map(function(r){return r.round;}))+1 : 1;
-    var html = '<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between">' + label
-      + (canEdit ? '<button class="btn sm" style="padding:1px 7px;font-size:10px" onclick="addApvRound(\''+ordId+'\',\''+type+'\',\''+division+'\')">+R'+nextR+'</button>' : '') + '</div>';
-    if (!rounds.length) { html += '<div style="font-size:11px;color:var(--muted)">None yet</div>'; }
-    rounds.forEach(function(r){
-      var st = r.approved_on ? '<span class="chip ok" style="font-size:10px;padding:1px 6px">Done</span>'
-        : r.submitted_on ? '<span class="chip warn" style="font-size:10px;padding:1px 6px">Pending</span>'
-        : '<span class="chip run" style="font-size:10px;padding:1px 6px">Open</span>';
-      html += '<div class="exp-apv-row"><span class="exp-apv-lbl">R'+r.round+'</span>'
-        + (canEdit ? '<input class="exp-apv-date" type="date" value="'+(r.submitted_on||'')+'" title="Submitted" onchange="updApv(\''+r.id+'\',\'submitted_on\',this.value,\''+ordId+'\',\''+division+'\')">'
-          + '<input class="exp-apv-date" type="date" value="'+(r.approved_on||'')+'" title="Approved" onchange="updApv(\''+r.id+'\',\'approved_on\',this.value,\''+ordId+'\',\''+division+'\')">'
-          : '<span style="font-size:11px;font-family:var(--mono)">' + short(r.submitted_on) + '</span><span style="font-size:11px;font-family:var(--mono);margin-left:6px">' + short(r.approved_on) + '</span>')
-        + st + '</div>';
-    });
-    return html + '</div>';
-  }
-
-  var apvHTML = '<div class="exp-panel">'
-    + '<div class="exp-panel-title">Approvals</div>'
-    + apvSec('labdip','Lab Dip')
-    + apvSec('fit','Fit')
-    + apvSec('pp','PP')
-    + '</div>';
+  // Panel 2: Approvals — one shared chip system for every approval type.
+  // Add a new type to APV_TYPE_CONFIG and it appears here automatically — nothing
+  // in this panel needs to change.
+  var apvHTML = '<div class="exp-panel"><div class="exp-panel-title">Approvals</div><div class="exp-apv-grid">'
+    + Object.keys(APV_TYPE_CONFIG).map(function(type) {
+        var cfg = APV_TYPE_CONFIG[type];
+        var planDate = cfg.planKey ? o[cfg.planKey] : (cfg.planFieldKey ? getFieldValue(ordId, cfg.planFieldKey) : null);
+        var sumForType = { ap: {} };
+        sumForType.ap[type] = apData.filter(function(a){ return a.type === type; });
+        return '<div class="exp-apv-item"><div class="exp-apv-item-lbl">' + cfg.label + '</div>' + apvChip(sumForType, type, ordId, division, canEdit, planDate) + '</div>';
+      }).join('')
+    + '</div></div>';
 
   // Panel 3: TNA
   var tnaHTML = '<div class="exp-panel"><div class="exp-panel-title">TNA — Plan vs Actual</div>'
@@ -3525,8 +3502,36 @@ var _ldOrdId = null, _ldDiv = null;
 
 // ─── APPROVAL FLOW MODAL ───
 var S_apv = { ordId: null, type: null, division: null, rounds: [], step: null };
-var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' };
-var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' };
+var APV_TYPE_CONFIG = {
+  labdip:      { label: 'Lab Dip',        planKey: 'plan_yarn' },
+  fit:         { label: 'Fit',            planKey: 'plan_sew' },
+  pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
+  sizeset:     { label: 'Size Set' },
+  ppt:         { label: 'Pre-Production Test' },
+  inline:      { label: 'Inline Inspection' },
+  fri:         { label: 'Final Random Inspection (FRI)', planFieldKey: 'fri_offer' },
+  lock_sample: { label: 'Lock Sample' }
+};
+var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' }; // kept for back-compat
+var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' }; // kept for back-compat
+
+// The ONE chip renderer every approval column uses — fixed (Lab Dip/Fit/PP/Size Set),
+// custom Column-Manager columns (PPT/Inline/FRI/Lock Sample), and the row-expansion
+// panel all call this. Add a new approval type by adding one entry to APV_TYPE_CONFIG
+// (and, if it should be its own column, one entry to MASTER_FIELDS) — nothing here
+// needs to change.
+function apvChip(sum, type, ordId, div2, canUpd, planDate) {
+  const rounds = ((sum && sum.ap && sum.ap[type]) || []).slice().sort(function(a,b){return (a.round||0)-(b.round||0);});
+  const latest = rounds[rounds.length - 1];
+  const oc = "event.stopPropagation();openApvFlow('" + ordId + "','" + type + "','" + div2 + "')";
+  const approved = latest && latest.approved_on;
+  const tnaWarn = planDate && !approved && daysTo(planDate) < 0 ? ' <span style="color:var(--red);font-size:9px">\u26a0</span>' : '';
+  if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">Not submitted' + tnaWarn + '</button>';
+  if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
+  if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
+  if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">Submitted<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
+  return '<button class="apv-chip not-sent" onclick="' + oc + '">Round ' + latest.round + tnaWarn + '</button>';
+}
 
 async function openApvFlow(ordId, type, division) {
   try {
@@ -3534,7 +3539,7 @@ async function openApvFlow(ordId, type, division) {
     S_apv.type = type;
     S_apv.division = division || 'sweater';
     S_apv.step = null;
-    var label = APV_LABELS[type] || type;
+    var label = (APV_TYPE_CONFIG[type]&&APV_TYPE_CONFIG[type].label) || APV_LABELS[type] || type;
     // Search all board caches
     var o = null;
     Object.keys(S.boardCache).forEach(function(mid){
@@ -3573,8 +3578,9 @@ function renderApvModal() {
     if (!o) o = (S.boardCache[mid]||[]).find(function(x){return x.id===S_apv.ordId;});
   });
   o = o || {};
-  var planKey = APV_PLAN_KEY[S_apv.type];
-  var planDate = o[planKey];
+  var apvCfg = APV_TYPE_CONFIG[S_apv.type] || {};
+  var planKey = apvCfg.planKey || APV_PLAN_KEY[S_apv.type];
+  var planDate = planKey ? o[planKey] : (apvCfg.planFieldKey ? getFieldValue(S_apv.ordId, apvCfg.planFieldKey) : null);
   var dl = planDate ? daysTo(planDate) : null;
   var pc = dl===null?'#73706A':dl<0?'var(--red)':dl<=7?'var(--amber)':'var(--green)';
   var pb = dl===null?'#F7F5EF':dl<0?'var(--red-soft)':dl<=7?'var(--amber-soft)':'var(--green-soft)';
@@ -5857,13 +5863,17 @@ var MASTER_FIELDS = [
   { key:'khata_sign',     name:'Khata Sign Date',     type:'date', defLoc:{live:true,laying:false,shipped:false} },
   { key:'prod_floor',     name:'Production Floor',    type:'special_floor', defLoc:{live:true,laying:false,shipped:false} },
   { key:'knit_start',     name:'Knitting Start Date', type:'date', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'inline_insp',    name:'Inline Inspection', type:'date',  defLoc:{live:true,laying:false,shipped:false} },
+  { key:'inline_insp',    name:'Inline Inspection', type:'special_approval', approvalType:'inline', defLoc:{live:true,laying:false,shipped:false} },
   { key:'spudi',          name:'Spudi',           type:'date',    defLoc:{live:true,laying:false,shipped:false} },
+  { key:'pre_prod_test',  name:'Pre-Production Test', type:'special_approval', approvalType:'ppt', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'lock_sample',    name:'Lock Sample',     type:'special_approval', approvalType:'lock_sample', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
 
   // ── LAYING GOODS FIELDS ─────────────────────────────────────────────────
   { key:'spudi_collect',  name:'Spudi Test Sample Collect', type:'date', defLoc:{live:false,laying:true,shipped:false} },
   { key:'spudi_status',   name:'Spudi Test Sample Status',  type:'dropdown', options:['Passed','Failed','Pending'], defLoc:{live:false,laying:true,shipped:false} },
   { key:'fri_offer',      name:'FRI Offer Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'fri',            name:'FRI',            type:'special_approval', approvalType:'fri', showPlanDate:true, planFieldKey:'fri_offer', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'inspection_type',name:'Inspection Type', type:'dropdown', options:['Self','Buyer','Third-Party'], defLoc:{live:false,laying:true,shipped:false} },
   { key:'delay',          name:'Delay',          type:'special_delay', defLoc:{live:false,laying:true,shipped:false} },
   { key:'carton_qty',     name:'Carton Quantity',type:'number', defLoc:{live:false,laying:true,shipped:false} },
   { key:'net_weight',     name:'Net Weight (kgs)',type:'number', defLoc:{live:false,laying:true,shipped:false} },
@@ -5930,7 +5940,7 @@ function getBuyerFieldConfig(buyerId, fieldKey) {
   var master = getFieldByKey(fieldKey);
   if (!master) return null;
   return {
-    buyer_id: buyerId, field_key: fieldKey, visible: true,
+    buyer_id: buyerId, field_key: fieldKey, visible: !master.defaultHidden,
     in_live: !!master.defLoc.live, in_laying: !!master.defLoc.laying, in_shipped: !!master.defLoc.shipped,
     col_order: getDefaultColOrder(fieldKey)
   };
@@ -6081,9 +6091,11 @@ async function renderBuyerColumnTable(buyerId) {
     var liveToggle = '<button class="cm-toggle ' + (cfg.in_live?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_live" onclick="cmToggle(this)"' + (isMandatory?' disabled title="Style always shows in Live"':'') + '></button>';
     var layingToggle = '<button class="cm-toggle ' + (cfg.in_laying?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_laying" onclick="cmToggle(this)"></button>';
     var shippedToggle = '<button class="cm-toggle ' + (cfg.in_shipped?'on':'') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" data-field="in_shipped" onclick="cmToggle(this)"></button>';
+    var labelInput = '<input class="cm-label-input" type="text" placeholder="' + name.replace(/"/g,'&quot;') + '" value="' + (cfg.label||'').replace(/"/g,'&quot;') + '" data-bid="' + buyerId + '" data-key="' + item.key + '" onchange="cmSetLabel(this)" style="width:100%;max-width:130px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12px;color:var(--ink)">';
 
     return '<tr data-key="' + item.key + '" style="' + (isFrozen?'background:var(--accent-soft)':'') + '">'
       + '<td>' + (isFrozen ? '<span title="Frozen" style="margin-right:6px">&#x1F9CA;</span>' : '') + '<div class="cm-field-name">' + name + '</div><div class="cm-field-type">' + typeLabel + '</div></td>'
+      + '<td>' + labelInput + '</td>'
       + '<td class="center">' + visToggle + '</td>'
       + '<td class="center">' + liveToggle + '</td>'
       + '<td class="center">' + layingToggle + '</td>'
@@ -6097,14 +6109,26 @@ async function renderBuyerColumnTable(buyerId) {
 
   var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
   var maxFreeze = items.length;
-  $('cm-body').innerHTML = '<div style="padding:12px 16px 8px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly. Fixed columns and custom fields share one order &mdash; reorder freely.</div>'
+  $('cm-body').innerHTML = '<div style="padding:12px 16px 8px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly. Fixed columns and custom fields share one order &mdash; reorder freely. Leave <strong>Display name</strong> blank to use the default.</div>'
     + '<div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px">'
     + '<span style="font-size:12px;font-weight:600;color:var(--ink)">&#x1F9CA; Freeze first</span>'
     + '<input type="number" min="1" max="' + maxFreeze + '" value="' + freezeCount + '" id="cm-freeze-input" data-bid="' + buyerId + '" onchange="cmSetFreeze(this)" style="width:60px;padding:5px 8px;border:1.5px solid var(--line);border-radius:7px;text-align:center;font-size:13px;font-weight:600">'
     + '<span style="font-size:12px;color:var(--muted)">columns (from the left, in the order below). Style is always included.</span>'
     + '</div>'
-    + '<table class="cm-table"><thead><tr><th>Column</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
+    + '<table class="cm-table"><thead><tr><th>Column</th><th>Display name</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>';
+}
+
+async function cmSetLabel(input) {
+  var buyerId = input.dataset.bid, key = input.dataset.key;
+  var val = input.value.trim();
+  var cfg = getBuyerFieldConfig(buyerId, key);
+  var updated = Object.assign({}, cfg, { buyer_id: buyerId, field_key: key, label: val || null });
+  var res = await db.from('buyer_field_visibility').upsert(updated, { onConflict: 'buyer_id,field_key' });
+  if (res.error) { toast('Error: ' + res.error.message, 'err'); return; }
+  if (!S.fieldVisibility[buyerId]) S.fieldVisibility[buyerId] = {};
+  S.fieldVisibility[buyerId][key] = updated;
+  if (S.view && S.boardCache[S.view]) renderBoard(S.view);
 }
 
 async function cmSetFreeze(input) {
@@ -6197,7 +6221,27 @@ function renderFieldCell(field, orderId, canEdit) {
   if (field.type === 'special_delay') {
     return renderDelayCell(orderId);
   }
+  if (field.type === 'special_approval') {
+    return renderApprovalFieldCell(field, orderId);
+  }
   return '<span>&mdash;</span>';
+}
+
+function renderApprovalFieldCell(field, orderId) {
+  var o = findOrderAnywhere(orderId);
+  if (!o) return '<span>&mdash;</span>';
+  var apvType = field.approvalType;
+  var sum = (S.boardSummaries[o.merchant_id]||{})[orderId] || {ap:{}};
+  var merch = S.users.find(function(u){return u.id===o.merchant_id;});
+  var division = merch ? (merch.division||'sweater') : 'sweater';
+  var canUpd = actsAsMerchant(o.merchant_id) || S.user.role==='admin' || S.user.role==='manager';
+  var planDate = field.planFieldKey ? getFieldValue(orderId, field.planFieldKey) : null;
+  var chip = apvChip(sum, apvType, orderId, division, canUpd, field.showPlanDate ? null : planDate);
+  var planHtml = '';
+  if (field.showPlanDate) {
+    planHtml = '<div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--mono)">' + (planDate ? 'TNA: ' + short(planDate) : 'No TNA date') + '</div>';
+  }
+  return '<div style="display:flex;flex-direction:column;align-items:flex-start">' + chip + planHtml + '</div>';
 }
 
 function renderDelayCell(orderId) {
