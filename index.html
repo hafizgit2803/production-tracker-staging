@@ -5813,7 +5813,7 @@ var FIXED_BLOCKS = [
   { key:'_colour',      name:'Colour',       width:78,  wrap:true, mandatory:false },
   { key:'_composition', name:'Composition',  width:88,  wrap:true, mandatory:false },
   { key:'_qty',         name:'Quantity',     width:72,  mandatory:false },
-  { key:'_fob',         name:'FOB',          width:48,  mandatory:false },
+  { key:'_fob',         name:'FOB',          width:66,  mandatory:false },
   { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:75,  mandatory:false },
   { key:'_days',        name:'Days',         width:52,  mandatory:false },
@@ -5852,8 +5852,8 @@ function isFixedKey(key) {
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
   { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:135, defLoc:{live:true,laying:false,shipped:false} },
-  { key:'season',         name:'Season',         type:'text',     width:55, defLoc:{live:true,laying:false,shipped:false} },
-  { key:'department',     name:'Department',     type:'text',     width:72, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'season',         name:'Season',         type:'text',     width:70, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'department',     name:'Department',     type:'text',     width:100, defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'avg_weight',     name:'Average Weight', type:'special_weight', defLoc:{live:true,laying:false,shipped:false} },
   { key:'lid',            name:'LID',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
