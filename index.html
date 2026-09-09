@@ -2510,7 +2510,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:10.5px;');
     if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:10.5px;');
     if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty));
-    if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', (o.fob||0).toFixed(2));
+    if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2));
     if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)));
     if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:10.5px;');
     if (itemByKey['_days']) cellsByKey['_days'] = singleTd('_days', 'num', dlSpan);
@@ -2589,9 +2589,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Gauge') + '</th>';
     else if (key === '_colour') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Colour') + '</th>';
     else if (key === '_composition') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Composition') + '</th>';
-    else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Qty') + '</th>';
+    else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Quantity') + '</th>';
     else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'FOB') + '</th>';
-    else if (key === '_value') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Value') + '</th>';
+    else if (key === '_value') topRow += '<th class="num wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Total Value') + '</th>';
     else if (key === '_ship') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Ship') + '</th>';
     else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days') + '</th>';
     else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||(matLabel + '<br>(' + unit + ')')) + '</th>';
@@ -5812,9 +5812,9 @@ var FIXED_BLOCKS = [
   { key:'_gauge',       name:'Gauge',        width:58,  mandatory:false },
   { key:'_colour',      name:'Colour',       width:78,  wrap:true, mandatory:false },
   { key:'_composition', name:'Composition',  width:88,  wrap:true, mandatory:false },
-  { key:'_qty',         name:'Qty',          width:72,  mandatory:false },
+  { key:'_qty',         name:'Quantity',     width:72,  mandatory:false },
   { key:'_fob',         name:'FOB',          width:48,  mandatory:false },
-  { key:'_value',       name:'Value',        width:96,  mandatory:false },
+  { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:75,  mandatory:false },
   { key:'_days',        name:'Days',         width:52,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
@@ -5852,8 +5852,8 @@ function isFixedKey(key) {
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
   { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:135, defLoc:{live:true,laying:false,shipped:false} },
-  { key:'season',         name:'Season',         type:'text',     defLoc:{live:true,laying:false,shipped:false} },
-  { key:'department',     name:'Department',     type:'text',     defLoc:{live:true,laying:false,shipped:false} },
+  { key:'season',         name:'Season',         type:'text',     width:55, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'department',     name:'Department',     type:'text',     width:72, defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'avg_weight',     name:'Average Weight', type:'special_weight', defLoc:{live:true,laying:false,shipped:false} },
   { key:'lid',            name:'LID',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
@@ -5884,9 +5884,9 @@ var MASTER_FIELDS = [
   { key:'hand_over',      name:'Hand Over Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
 
   // ── MULTI-MODULE FIELDS ─────────────────────────────────────────────────
-  { key:'sales_contract', name:'Sales Contract No', type:'text_memory', defLoc:{live:true,laying:true,shipped:true} },
-  { key:'lc_no',          name:'LC No',          type:'text_memory', width:170, defLoc:{live:true,laying:true,shipped:true} },
-  { key:'lc_status',      name:'LC Received Status', type:'dropdown', options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
+  { key:'sales_contract', name:'Sales Contract No', type:'text_memory', width:128, defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_no',          name:'LC No',          type:'text_memory', width:145, defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_status',      name:'LC Received Status', type:'dropdown', width:110, options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
 ];
 
 
@@ -6181,9 +6181,11 @@ async function cmReorder(btn) {
 function renderFieldCell(field, orderId, canEdit) {
   var val = getFieldValue(orderId, field.key);
   if (field.type === 'text') {
+    var upperStyle = field.key === 'season' ? ' style="text-transform:uppercase"' : '';
+    var maxLenAttr = field.key === 'season' ? ' maxlength="5"' : '';
     return canEdit
-      ? '<input class="cf-input" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'').replace(/"/g,'&quot;') + '" onchange="onFieldInputChange(this)">'
-      : '<span>' + (val||'&mdash;') + '</span>';
+      ? '<input class="cf-input" data-oid="' + orderId + '" data-key="' + field.key + '" value="' + (val||'').replace(/"/g,'&quot;') + '" onchange="onFieldInputChange(this)"' + upperStyle + maxLenAttr + '>'
+      : '<span' + upperStyle + '>' + (val||'&mdash;') + '</span>';
   }
   if (field.type === 'text_memory') {
     var dlId = 'dl_' + field.key;
@@ -6268,6 +6270,10 @@ function findOrderAnywhere(orderId) {
 
 async function onFieldInputChange(el) {
   var orderId = el.dataset.oid, key = el.dataset.key, val = el.value;
+  if (key === 'season' && val) {
+    val = val.toUpperCase();
+    el.value = val;
+  }
   await saveFieldValue(orderId, key, val);
   // Refresh delay cells if fri_offer changed
   if (key === 'fri_offer') {
