@@ -2611,7 +2611,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_qty') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Quantity') + '</th>';
     else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'FOB') + '</th>';
     else if (key === '_value') topRow += '<th class="num wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Total Value') + '</th>';
-    else if (key === '_ship') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Ship') + '</th>';
+    else if (key === '_ship') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Ship Date') + '</th>';
     else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days') + '</th>';
     else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||(matLabel + '<br>(' + unit + ')')) + '</th>';
     else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Accessories') + '</th>';
@@ -5842,7 +5842,7 @@ var FIXED_BLOCKS = [
   { key:'_qty',         name:'Quantity',     width:72,  mandatory:false },
   { key:'_fob',         name:'FOB',          width:66,  mandatory:false },
   { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
-  { key:'_ship',        name:'Ship Date',    width:75,  mandatory:false },
+  { key:'_ship',        name:'Ship Date',    width:78,  wrap:true, mandatory:false },
   { key:'_days',        name:'Days',         width:52,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
@@ -5888,7 +5888,6 @@ var MASTER_FIELDS = [
   { key:'khata_sign',     name:'Khata Sign Date',     type:'date', defLoc:{live:true,laying:false,shipped:false} },
   { key:'prod_floor',     name:'Production Floor',    type:'special_floor', defLoc:{live:true,laying:false,shipped:false} },
   { key:'knit_start',     name:'Knitting Start Date', type:'date', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'lrd',            name:'LRD',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'inline_insp',    name:'Inline Inspection', type:'special_approval', approvalType:'inline', defLoc:{live:true,laying:false,shipped:false} },
   { key:'pre_prod_test',  name:'Pre-Production Test', type:'special_approval', approvalType:'ppt', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
   { key:'lock_sample',    name:'Lock Sample',     type:'special_approval', approvalType:'lock_sample', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
