@@ -842,6 +842,17 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .cm-table th.center{text-align:center}
 .cm-table td{padding:8px 12px;border-bottom:1px solid #F0EDE4;font-size:13px;vertical-align:middle}
 .cm-table td.center{text-align:center}
+.cm-search-suggestions{position:absolute;top:calc(100% - 2px);left:16px;width:280px;max-width:calc(100% - 32px);
+  background:var(--panel);border:1.5px solid var(--line);border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.14);
+  z-index:20;max-height:280px;overflow-y:auto}
+.cm-search-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0EDE4;display:flex;flex-direction:column;gap:2px}
+.cm-search-item:last-child{border-bottom:none}
+.cm-search-item:hover{background:var(--accent-soft)}
+.cm-search-item-name{font-size:13px;font-weight:600;color:var(--ink)}
+.cm-search-item-custom{font-size:10.5px;color:var(--muted);font-style:italic}
+.cm-search-empty{padding:12px;font-size:12.5px;color:var(--muted);text-align:center}
+@keyframes cmRowFlash{0%,100%{background:var(--accent-soft)}50%{background:#FDE68A}}
+.cm-row-flash{animation:cmRowFlash 0.8s ease 2}
 .cm-field-name{font-weight:600;color:var(--ink)}
 .cm-field-type{font-size:10.5px;color:var(--muted);text-transform:capitalize}
 .cm-toggle{width:36px;height:20px;border-radius:20px;background:#D1D5DB;position:relative;
@@ -2535,8 +2546,8 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       cellsByKey['_approvals'] =
           '<td class="apv-col' + apFrozenCls + '" style="width:108px;min-width:108px;max-width:108px;' + apFrozenStyle + '">' + ldChip + '</td>'
         + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ftChip + '</td>'
-        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ppChip + '</td>'
-        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ssChip + '</td>';
+        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ssChip + '</td>'
+        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ppChip + '</td>';
     }
 
     if (itemByKey['_production']) {
@@ -2606,7 +2617,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Accessories') + '</th>';
     else if (key === '_approvals') {
       topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">' + (lbl||'Approvals') + '</th>';
-      bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th>';
+      bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th>';
     }
     else if (key === '_production') {
       topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*90) + 'px;min-width:' + (VSTEPS.length*90) + 'px;max-width:' + (VSTEPS.length*90) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
@@ -2616,7 +2627,8 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Notes') + '</th>';
     else {
       var mf = getFieldByKey(key);
-      topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
+      var mfWrapCls = (mf && mf.wrap) ? ' wrap2' : '';
+      topRow += '<th class="' + mfWrapCls + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
   topRow += '<th rowspan="2" style="width:180px;min-width:180px"></th>';
@@ -3516,12 +3528,13 @@ var S_apv = { ordId: null, type: null, division: null, rounds: [], step: null };
 var APV_TYPE_CONFIG = {
   labdip:      { label: 'Lab Dip',        planKey: 'plan_yarn' },
   fit:         { label: 'Fit',            planKey: 'plan_sew' },
-  pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
   sizeset:     { label: 'Size Set' },
+  pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
   ppt:         { label: 'Pre-Production Test', manualDate: true },
   inline:      { label: 'Inline Inspection',   manualDate: true },
-  fri:         { label: 'Final Random Inspection (FRI)', planFieldKey: 'fri_offer' },
-  lock_sample: { label: 'Lock Sample',    manualDate: true }
+  lock_sample: { label: 'Lock Sample',    manualDate: true },
+  final_insp:  { label: 'Final Inspection', planKey: 'plan_insp' },
+  spudi_status:{ label: 'Spudi Status' }
 };
 var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' }; // kept for back-compat
 var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' }; // kept for back-compat
@@ -3702,6 +3715,7 @@ async function apvDoSubmit() {
   toast('Submission recorded', 'ok-t');
   await reloadSummaries(S.view);
   renderBoard(S.view);
+  if (S.view === 'laying-goods') renderLayingGoods();
   closeModal('ov-apv-flow');
 }
 
@@ -3740,6 +3754,7 @@ async function apvDoResult(outcome) {
   toast(outcome === 'approve' ? 'Approved!' : 'Rejection recorded', outcome === 'approve' ? 'ok-t' : '');
   await reloadSummaries(S.view);
   renderBoard(S.view);
+  if (S.view === 'laying-goods') renderLayingGoods();
   closeModal('ov-apv-flow');
 }
 
@@ -5868,23 +5883,19 @@ var MASTER_FIELDS = [
   { key:'department',     name:'Department',     type:'text',     width:100, defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'avg_weight',     name:'Average Weight', type:'special_weight', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'lid',            name:'LID',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
-  { key:'lrd',            name:'LRD',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'internal_pp',    name:'Internal PP Meeting', type:'date', defLoc:{live:true,laying:false,shipped:false} },
   { key:'buyer_pp',       name:'Buyer PP Meeting',    type:'date', defLoc:{live:true,laying:false,shipped:false} },
   { key:'khata_sign',     name:'Khata Sign Date',     type:'date', defLoc:{live:true,laying:false,shipped:false} },
   { key:'prod_floor',     name:'Production Floor',    type:'special_floor', defLoc:{live:true,laying:false,shipped:false} },
   { key:'knit_start',     name:'Knitting Start Date', type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'lrd',            name:'LRD',            type:'date',     defLoc:{live:true,laying:false,shipped:false} },
   { key:'inline_insp',    name:'Inline Inspection', type:'special_approval', approvalType:'inline', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'spudi',          name:'Spudi',           type:'date',    defLoc:{live:true,laying:false,shipped:false} },
   { key:'pre_prod_test',  name:'Pre-Production Test', type:'special_approval', approvalType:'ppt', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
   { key:'lock_sample',    name:'Lock Sample',     type:'special_approval', approvalType:'lock_sample', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
 
   // ── LAYING GOODS FIELDS ─────────────────────────────────────────────────
-  { key:'spudi_collect',  name:'Spudi Test Sample Collect', type:'date', defLoc:{live:false,laying:true,shipped:false} },
-  { key:'spudi_status',   name:'Spudi Test Sample Status',  type:'dropdown', options:['Passed','Failed','Pending'], defLoc:{live:false,laying:true,shipped:false} },
-  { key:'fri_offer',      name:'FRI Offer Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
-  { key:'fri',            name:'FRI',            type:'special_approval', approvalType:'fri', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'final_insp',     name:'Final Inspection', type:'special_approval', approvalType:'final_insp', wrap:true, width:110, defLoc:{live:false,laying:true,shipped:false} },
+  { key:'spudi_status',   name:'Spudi Status',    type:'special_approval', approvalType:'spudi_status', wrap:true, width:100, defLoc:{live:false,laying:true,shipped:false} },
   { key:'inspection_type',name:'Inspection Type', type:'dropdown', options:['Self','Buyer','Third-Party'], defLoc:{live:false,laying:true,shipped:false} },
   { key:'delay',          name:'Delay',          type:'special_delay', defLoc:{live:false,laying:true,shipped:false} },
   { key:'carton_qty',     name:'Carton Quantity',type:'number', defLoc:{live:false,laying:true,shipped:false} },
@@ -5896,7 +5907,7 @@ var MASTER_FIELDS = [
   { key:'hand_over',      name:'Hand Over Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
 
   // ── MULTI-MODULE FIELDS ─────────────────────────────────────────────────
-  { key:'sales_contract', name:'Sales Contract No', type:'text_memory', width:128, defLoc:{live:true,laying:true,shipped:true} },
+  { key:'sales_contract', name:'Sales Contract No', type:'text_memory', width:147, defLoc:{live:true,laying:true,shipped:true} },
   { key:'lc_no',          name:'LC No',          type:'text_memory', width:145, defLoc:{live:true,laying:true,shipped:true} },
   { key:'lc_status',      name:'LC Received Status', type:'dropdown', width:110, options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
 ];
@@ -6026,6 +6037,7 @@ async function saveFieldValue(orderId, fieldKey, value) {
 
 // === COLUMN MANAGER ===
 var _cmTab = 'global';
+var _cmItems = []; // current buyer's column list, kept for the search box
 
 async function openColumnManagerHub() {
   await loadBuyers();
@@ -6121,7 +6133,12 @@ async function renderBuyerColumnTable(buyerId) {
 
   var buyer = S.buyers.find(function(b){ return b.id===buyerId; });
   var maxFreeze = items.length;
+  _cmItems = items;
   $('cm-body').innerHTML = '<div style="padding:12px 16px 8px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly. Fixed columns and custom fields share one order &mdash; reorder freely. Leave <strong>Display name</strong> blank to use the default.</div>'
+    + '<div style="padding:0 16px 10px;position:relative">'
+    + '<input type="text" id="cm-search-input" placeholder="&#x1F50D; Search columns&hellip;" autocomplete="off" oninput="cmSearchFields(this.value)" onkeydown="if(event.key===\'Escape\')cmClearSearch()" onblur="setTimeout(cmClearSearch,180)" style="width:280px;max-width:100%;padding:8px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:13px;background:#FCFBF7;color:var(--ink)">'
+    + '<div id="cm-search-suggestions" class="cm-search-suggestions" style="display:none"></div>'
+    + '</div>'
     + '<div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px">'
     + '<span style="font-size:12px;font-weight:600;color:var(--ink)">&#x1F9CA; Freeze first</span>'
     + '<input type="number" min="1" max="' + maxFreeze + '" value="' + freezeCount + '" id="cm-freeze-input" data-bid="' + buyerId + '" onchange="cmSetFreeze(this)" style="width:60px;padding:5px 8px;border:1.5px solid var(--line);border-radius:7px;text-align:center;font-size:13px;font-weight:600">'
@@ -6129,6 +6146,46 @@ async function renderBuyerColumnTable(buyerId) {
     + '</div>'
     + '<table class="cm-table"><thead><tr><th>Column</th><th>Display name</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>';
+}
+
+function cmSearchFields(query) {
+  var box = $('cm-search-suggestions');
+  if (!box) return;
+  var q = query.trim().toLowerCase();
+  if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  var matches = _cmItems.filter(function(item) {
+    var name = item.isFixed ? item.block.name : item.master.name;
+    var custom = (item.cfg && item.cfg.label) || '';
+    return name.toLowerCase().indexOf(q) !== -1 || custom.toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 8);
+  if (!matches.length) {
+    box.innerHTML = '<div class="cm-search-empty">No columns match "' + query.replace(/</g,'&lt;') + '"</div>';
+    box.style.display = 'block';
+    return;
+  }
+  box.innerHTML = matches.map(function(item) {
+    var name = item.isFixed ? item.block.name : item.master.name;
+    var custom = (item.cfg && item.cfg.label) || '';
+    return '<div class="cm-search-item" onclick="cmJumpToField(\'' + item.key + '\')">'
+      + '<span class="cm-search-item-name">' + name + '</span>'
+      + (custom ? '<span class="cm-search-item-custom">shown as "' + custom.replace(/</g,'&lt;') + '"</span>' : '')
+      + '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+function cmClearSearch() {
+  var inp = $('cm-search-input'); if (inp) inp.value = '';
+  var box = $('cm-search-suggestions'); if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+}
+
+function cmJumpToField(key) {
+  cmClearSearch();
+  var row = document.querySelector('.cm-table tr[data-key="' + key + '"]');
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.add('cm-row-flash');
+  setTimeout(function(){ row.classList.remove('cm-row-flash'); }, 1600);
 }
 
 async function cmSetLabel(input) {
@@ -6271,7 +6328,10 @@ function renderDelayCell(orderId) {
   var o = findOrderAnywhere(orderId);
   if (!o) return '<span>&mdash;</span>';
   var planFRI = o.plan_ship;
-  var actualOffer = getFieldValue(orderId, 'fri_offer');
+  var sum = (S.boardSummaries[o.merchant_id]||{})[orderId] || {ap:{}};
+  var rounds = (sum.ap['final_insp']||[]).slice().sort(function(a,b){return (a.round||0)-(b.round||0);});
+  var latest = rounds[rounds.length-1];
+  var actualOffer = latest ? (latest.submitted_on || latest.approved_on) : null;
   if (!planFRI || !actualOffer) return '<span style="color:var(--muted);font-size:11px">--</span>';
   var diff = Math.round((toDate(actualOffer) - toDate(planFRI)) / 86400000);
   var color = diff <= 0 ? 'var(--green)' : 'var(--red)';
@@ -6296,10 +6356,6 @@ async function onFieldInputChange(el) {
     el.value = val;
   }
   await saveFieldValue(orderId, key, val);
-  // Refresh delay cells if fri_offer changed
-  if (key === 'fri_offer') {
-    if (S.view === 'laying-goods') renderLayingGoods();
-  }
 }
 
 // Build header cells for a set of fields
