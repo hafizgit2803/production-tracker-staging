@@ -493,19 +493,23 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 .card table td{padding:5px 8px}
 .card table .apv-chip{font-size:10.5px}
 .apv-flow-modal{max-width:460px}
-.apv-chip{display:block;width:100%;padding:5px 7px;border-radius:7px;font-size:10.5px;
-  font-weight:600;cursor:pointer;border:1px solid;line-height:1.4;text-align:center;
-  transition:opacity .12s;white-space:normal;box-sizing:border-box;background:none}
+.apv-chip{display:block;width:100%;padding:6px 8px;border-radius:8px;font-size:10.5px;
+  font-weight:700;cursor:pointer;border:1.5px solid;line-height:1.4;text-align:center;letter-spacing:.01em;
+  transition:transform .12s ease,box-shadow .12s ease;white-space:normal;box-sizing:border-box;
+  box-shadow:0 1px 2px rgba(0,0,0,.07)}
 button.apv-chip{font-family:inherit}
-.apv-chip:hover{opacity:.82}
-.apv-chip.not-sent{background:#F4F2EB;color:#8A8780;border-color:#E5E2D9}
-.apv-chip.submitted{background:#FFFBEB;color:#92400E;border-color:#FDE68A}
-.apv-chip.approved{background:#ECFDF5;color:#065F46;border-color:#A7F3D0}
-.apv-chip.rejected{background:#FEF2F2;color:#991B1B;border-color:#FECACA}
-[data-theme="dark"] .apv-chip.not-sent{background:#252325;color:var(--muted);border-color:var(--line)}
-[data-theme="dark"] .apv-chip.submitted{background:#2A2010;color:#FCD34D;border-color:#78350F}
-[data-theme="dark"] .apv-chip.approved{background:#0E2018;color:#34D399;border-color:#065F46}
-[data-theme="dark"] .apv-chip.rejected{background:#2E1515;color:#FCA5A5;border-color:#991B1B}
+.apv-chip:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(0,0,0,.16)}
+.apv-chip.not-sent{background:#EDEBE1;color:#726E64;border-color:#DCD7C9}
+.apv-chip.submitted{background:#F59E0B;color:#fff;border-color:#D97706;box-shadow:0 1px 4px rgba(217,119,6,.4)}
+.apv-chip.approved{background:#16A34A;color:#fff;border-color:#15803D;box-shadow:0 1px 4px rgba(21,128,61,.4)}
+.apv-chip.rejected{background:#DC2626;color:#fff;border-color:#B91C1C;box-shadow:0 1px 4px rgba(185,28,28,.4)}
+[data-theme="dark"] .apv-chip.not-sent{background:#2E2C28;color:#A8A399;border-color:#443F35}
+[data-theme="dark"] .apv-chip.submitted{background:#B45309;color:#FEF3C7;border-color:#92400E}
+[data-theme="dark"] .apv-chip.approved{background:#15803D;color:#DCFCE7;border-color:#166534}
+[data-theme="dark"] .apv-chip.rejected{background:#B91C1C;color:#FEE2E2;border-color:#991B1B}
+.apv-date-line{font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--mono);line-height:1.3}
+.apv-manual-date{margin-top:3px;padding:2px 5px;border:1px solid var(--line);border-radius:5px;
+  font-size:9.5px;background:#FCFBF7;color:var(--ink);width:100%;box-sizing:border-box}
 .apv-col{width:108px;text-align:center;vertical-align:middle;padding:4px 5px !important}
 .apv-outcome-btn{padding:14px 10px;border-radius:10px;border:2px solid;font-size:14px;
   font-weight:600;cursor:pointer;text-align:center;transition:all .12s;
@@ -2116,9 +2120,13 @@ function renderDashboard() {
   if (can('inbox') && S.alerts && S.alerts.length) {
     alertHtml = '<div class="alert-cards"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Shipment alerts — ' + S.alerts.length + ' unresolved</div>' +
       S.alerts.map(function(a) {
-        if (a.alert_type === 'pp_late') {
+        // Generic "TNA-linked approval came in late" alert — covers pp_late, labdip_late,
+        // fit_late, fri_late, etc. (see the late-check in apvDoResult / APV_TYPE_CONFIG)
+        var apvLateType = a.alert_type && a.alert_type.slice(-5) === '_late' ? a.alert_type.slice(0,-5) : null;
+        if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
           const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
-          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + a.style + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">PP approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+          const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
+          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + a.style + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
         }
         const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
         const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
@@ -2469,9 +2477,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
 
-    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn);
-    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew);
-    const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp);
+    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn) + '<div class="apv-date-line">' + (o.plan_yarn ? 'TNA: '+short(o.plan_yarn) : 'No TNA date') + '</div>';
+    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew) + '<div class="apv-date-line">' + (o.plan_sew ? 'TNA: '+short(o.plan_sew) : 'No TNA date') + '</div>';
+    const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp) + '<div class="apv-date-line">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
 
@@ -3510,10 +3518,10 @@ var APV_TYPE_CONFIG = {
   fit:         { label: 'Fit',            planKey: 'plan_sew' },
   pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
   sizeset:     { label: 'Size Set' },
-  ppt:         { label: 'Pre-Production Test' },
-  inline:      { label: 'Inline Inspection' },
+  ppt:         { label: 'Pre-Production Test', manualDate: true },
+  inline:      { label: 'Inline Inspection',   manualDate: true },
   fri:         { label: 'Final Random Inspection (FRI)', planFieldKey: 'fri_offer' },
-  lock_sample: { label: 'Lock Sample' }
+  lock_sample: { label: 'Lock Sample',    manualDate: true }
 };
 var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' }; // kept for back-compat
 var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' }; // kept for back-compat
@@ -3528,11 +3536,13 @@ function apvChip(sum, type, ordId, div2, canUpd, planDate) {
   const latest = rounds[rounds.length - 1];
   const oc = "event.stopPropagation();openApvFlow('" + ordId + "','" + type + "','" + div2 + "')";
   const approved = latest && latest.approved_on;
-  const tnaWarn = planDate && !approved && daysTo(planDate) < 0 ? ' <span style="color:var(--red);font-size:9px">\u26a0</span>' : '';
+  const tnaWarn = planDate && !approved && daysTo(planDate) < 0
+    ? ' <span title="Past TNA date" style="background:#fff;color:#DC2626;border-radius:50%;padding:0 4px;font-size:9px;font-weight:900;box-shadow:0 1px 2px rgba(0,0,0,.25)">!</span>'
+    : '';
   if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">Not submitted' + tnaWarn + '</button>';
-  if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
-  if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
-  if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">Submitted<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
+  if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">&#x2713; Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
+  if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">&#x2717; Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
+  if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">&#x23F3; Submitted<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
   return '<button class="apv-chip not-sent" onclick="' + oc + '">Round ' + latest.round + tnaWarn + '</button>';
 }
 
@@ -3692,11 +3702,7 @@ async function apvDoSubmit() {
   toast('Submission recorded', 'ok-t');
   await reloadSummaries(S.view);
   renderBoard(S.view);
-  // Reload rounds and refresh modal
-  var res = await db.from('approvals').select('*').eq('order_id', S_apv.ordId).eq('type', S_apv.type).order('round');
-  S_apv.rounds = res.data || [];
-  S_apv.step = 'outcome';
-  renderApvModal();
+  closeModal('ov-apv-flow');
 }
 
 async function apvDoResult(outcome) {
@@ -3709,29 +3715,32 @@ async function apvDoResult(outcome) {
   var { error } = await db.from('approvals').update(upd).eq('id', latest.id);
   if (error) { toast('Error saving', 'err'); return; }
 
-  // If this is a PP approval and it came in AFTER the TNA plan date, notify managers/seniors
-  if (outcome === 'approve' && S_apv.type === 'pp') {
+  // If this is a TNA-linked approval type and it came in AFTER the TNA plan date,
+  // notify managers/seniors — covers Lab Dip, Fit, PP, FRI, and any future type with
+  // a planKey/planFieldKey in APV_TYPE_CONFIG (not just PP as before).
+  var apvCfgLate = APV_TYPE_CONFIG[S_apv.type] || {};
+  if (outcome === 'approve' && (apvCfgLate.planKey || apvCfgLate.planFieldKey)) {
     var ord = null;
     Object.keys(S.boardCache).forEach(function(m){ if(!ord) ord=(S.boardCache[m]||[]).find(function(x){return x.id===S_apv.ordId;}); });
-    if (ord && ord.plan_pp && date > ord.plan_pp) {
-      var daysLatePP = Math.round((new Date(date) - new Date(ord.plan_pp)) / 86400000);
-      await db.from('shipment_alerts').insert({
-        order_id: ord.id, style: ord.style, buyer: ord.buyer, merchant_id: ord.merchant_id,
-        alert_type: 'pp_late', days_late: daysLatePP,
-        shipped_qty: null, short_qty: null, value_lost: null
-      });
-      await loadAlerts();
-      renderRail();
+    if (ord) {
+      var planDateLate = apvCfgLate.planKey ? ord[apvCfgLate.planKey] : getFieldValue(S_apv.ordId, apvCfgLate.planFieldKey);
+      if (planDateLate && date > planDateLate) {
+        var daysLateApv = Math.round((new Date(date) - new Date(planDateLate)) / 86400000);
+        await db.from('shipment_alerts').insert({
+          order_id: ord.id, style: ord.style, buyer: ord.buyer, merchant_id: ord.merchant_id,
+          alert_type: S_apv.type + '_late', days_late: daysLateApv,
+          shipped_qty: null, short_qty: null, value_lost: null
+        });
+        await loadAlerts();
+        renderRail();
+      }
     }
   }
 
   toast(outcome === 'approve' ? 'Approved!' : 'Rejection recorded', outcome === 'approve' ? 'ok-t' : '');
   await reloadSummaries(S.view);
   renderBoard(S.view);
-  var res = await db.from('approvals').select('*').eq('order_id', S_apv.ordId).eq('type', S_apv.type).order('round');
-  S_apv.rounds = res.data || [];
-  S_apv.step = outcome === 'approve' ? 'done' : 'submit';
-  renderApvModal();
+  closeModal('ov-apv-flow');
 }
 
 
@@ -5875,7 +5884,7 @@ var MASTER_FIELDS = [
   { key:'spudi_collect',  name:'Spudi Test Sample Collect', type:'date', defLoc:{live:false,laying:true,shipped:false} },
   { key:'spudi_status',   name:'Spudi Test Sample Status',  type:'dropdown', options:['Passed','Failed','Pending'], defLoc:{live:false,laying:true,shipped:false} },
   { key:'fri_offer',      name:'FRI Offer Date', type:'date', defLoc:{live:false,laying:true,shipped:false} },
-  { key:'fri',            name:'FRI',            type:'special_approval', approvalType:'fri', showPlanDate:true, planFieldKey:'fri_offer', defLoc:{live:false,laying:true,shipped:false} },
+  { key:'fri',            name:'FRI',            type:'special_approval', approvalType:'fri', defLoc:{live:false,laying:true,shipped:false} },
   { key:'inspection_type',name:'Inspection Type', type:'dropdown', options:['Self','Buyer','Third-Party'], defLoc:{live:false,laying:true,shipped:false} },
   { key:'delay',          name:'Delay',          type:'special_delay', defLoc:{live:false,laying:true,shipped:false} },
   { key:'carton_qty',     name:'Carton Quantity',type:'number', defLoc:{live:false,laying:true,shipped:false} },
@@ -6236,17 +6245,26 @@ function renderApprovalFieldCell(field, orderId) {
   var o = findOrderAnywhere(orderId);
   if (!o) return '<span>&mdash;</span>';
   var apvType = field.approvalType;
+  var cfg = APV_TYPE_CONFIG[apvType] || {};
   var sum = (S.boardSummaries[o.merchant_id]||{})[orderId] || {ap:{}};
   var merch = S.users.find(function(u){return u.id===o.merchant_id;});
   var division = merch ? (merch.division||'sweater') : 'sweater';
   var canUpd = actsAsMerchant(o.merchant_id) || S.user.role==='admin' || S.user.role==='manager';
-  var planDate = field.planFieldKey ? getFieldValue(orderId, field.planFieldKey) : null;
-  var chip = apvChip(sum, apvType, orderId, division, canUpd, field.showPlanDate ? null : planDate);
-  var planHtml = '';
-  if (field.showPlanDate) {
-    planHtml = '<div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--mono)">' + (planDate ? 'TNA: ' + short(planDate) : 'No TNA date') + '</div>';
+  var planDate = cfg.planKey ? o[cfg.planKey] : (cfg.planFieldKey ? getFieldValue(orderId, cfg.planFieldKey) : null);
+  var chip = apvChip(sum, apvType, orderId, division, canUpd, planDate);
+  var dateHtml = '';
+  if (cfg.planKey || cfg.planFieldKey) {
+    // TNA-linked: date is set elsewhere (New Order form / that field) — shown here read-only for reference
+    dateHtml = '<div class="apv-date-line">' + (planDate ? 'TNA: ' + short(planDate) : 'No TNA date') + '</div>';
+  } else if (cfg.manualDate) {
+    // Not tied to TNA — merchant records the reference date directly in this column
+    var manualKey = 'apv_manual_' + apvType + '_date';
+    var manualVal = getFieldValue(orderId, manualKey);
+    dateHtml = canUpd
+      ? '<input type="date" class="apv-manual-date" value="' + (manualVal||'') + '" data-oid="' + orderId + '" data-key="' + manualKey + '" onclick="event.stopPropagation()" onchange="event.stopPropagation();onFieldInputChange(this)">'
+      : '<div class="apv-date-line">' + (manualVal ? short(manualVal) : 'No date') + '</div>';
   }
-  return '<div style="display:flex;flex-direction:column;align-items:flex-start">' + chip + planHtml + '</div>';
+  return '<div style="display:flex;flex-direction:column;align-items:stretch;width:100%">' + chip + dateHtml + '</div>';
 }
 
 function renderDelayCell(orderId) {
