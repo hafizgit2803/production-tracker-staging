@@ -1948,18 +1948,61 @@ async function cleanOldArchive() {
   await db.from('orders').delete().eq('shipped', true).lt('shipped_on', cutStr);
 }
 
+// ─── LOCAL ORDER CACHE PATCHING ───
+// Keeps S.orders / S.boardCache / S.archive in sync WITHOUT a network refetch,
+// so edits can be optimistic (show instantly, save quietly in the background)
+// and the realtime subscription doesn't need to blow away cached data on every
+// change — which is what used to cause the "blank page, then jump back to the
+// start of the row" flash on every edit.
+function upsertLocalOrder(newRow) {
+  if (!newRow || !newRow.id) return;
+  function upsertArr(arr) {
+    if (!arr) return;
+    var idx = arr.findIndex(function(x){ return x.id === newRow.id; });
+    if (idx !== -1) arr[idx] = Object.assign({}, arr[idx], newRow);
+    else arr.push(newRow);
+  }
+  function rmArr(arr) {
+    if (!arr) return;
+    var idx = arr.findIndex(function(x){ return x.id === newRow.id; });
+    if (idx !== -1) arr.splice(idx, 1);
+  }
+  if (newRow.stage === 'shipped') {
+    rmArr(S.orders);
+    if (newRow.merchant_id && S.boardCache[newRow.merchant_id]) rmArr(S.boardCache[newRow.merchant_id]);
+    if (S.layingGoods) rmArr(S.layingGoods);
+    if (S.archive) upsertArr(S.archive);
+  } else {
+    upsertArr(S.orders);
+    if (newRow.merchant_id && S.boardCache[newRow.merchant_id]) upsertArr(S.boardCache[newRow.merchant_id]);
+    if (newRow.stage === 'laying' && S.layingGoods) upsertArr(S.layingGoods);
+    else if (S.layingGoods) rmArr(S.layingGoods);
+    if (S.archive) rmArr(S.archive);
+  }
+}
+function removeLocalOrder(ordId, merchantId) {
+  function rmArr(arr) { if (!arr) return; var idx = arr.findIndex(function(x){ return x.id === ordId; }); if (idx !== -1) arr.splice(idx, 1); }
+  rmArr(S.orders);
+  if (merchantId && S.boardCache[merchantId]) rmArr(S.boardCache[merchantId]);
+  if (S.layingGoods) rmArr(S.layingGoods);
+  if (S.archive) rmArr(S.archive);
+}
+
 // ─── REALTIME ───
 function subscribeRealtime() {
   S.channel = db.channel('tracker-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async payload => {
-      // Invalidate board cache for affected merchant only
-      const mid = payload.new?.merchant_id || payload.old?.merchant_id;
-      if (mid) delete S.boardCache[mid];
-      if (S.archiveLoaded) S.archiveLoaded = false; // stale if shipped
+      const mid = (payload.new && payload.new.merchant_id) || (payload.old && payload.old.merchant_id);
+      if (payload.eventType === 'DELETE') {
+        removeLocalOrder(payload.old.id, mid);
+      } else if (payload.new) {
+        upsertLocalOrder(payload.new); // merge in place — no cache wipe, no reload flash
+      }
+      if (S.archiveLoaded) S.archiveLoaded = false; // shipped list may be stale — refetch lazily when opened
       await loadDashOrders();
       renderRail();
       if (S.view === 'dashboard') renderDashboard();
-      else if (S.view === mid) renderBoard(mid); // re-render open board
+      else if (S.view === mid) renderBoard(mid); // in-place refresh — scroll position preserved (see renderBoard)
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, async () => {
       await loadUsers(); renderRail();
@@ -1972,19 +2015,18 @@ function subscribeRealtime() {
       if (S.view === 'requests' || S.view === 'my-requests') render();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yarn_bookings' }, async () => {
-      Object.keys(S.boardCache).forEach(function(m){delete S.boardCache[m];});
+      // Booking/receipt/approval/accessory changes don't touch order ROW data (style,
+      // qty, dates) — only the summary counts shown alongside it — so there's no need
+      // to wipe the board cache here. Just refresh summaries and re-render in place.
       if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yarn_receipts' }, async () => {
-      Object.keys(S.boardCache).forEach(function(m){delete S.boardCache[m];});
       if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'approvals' }, async () => {
-      Object.keys(S.boardCache).forEach(function(m){delete S.boardCache[m];});
       if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'accessories' }, async () => {
-      Object.keys(S.boardCache).forEach(function(m){delete S.boardCache[m];});
       if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
     })
     .subscribe();
@@ -2983,17 +3025,26 @@ async function editOrder(orderId) {
 
 
 async function setProd(ordId, key, val) {
-  const o = S.orders.find(x => x.id === ordId);
+  const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
   if (!o) return;
   const clamped = Math.max(0, Math.min(o.qty || 0, Number(val) || 0));
+  const patch = { id: ordId, [key]: clamped, updated_at: new Date().toISOString(), updated_by: S.user.name };
+
+  // Optimistic: reflect the change immediately, save quietly in the background —
+  // no reload, no skeleton, no lost scroll position.
+  upsertLocalOrder(Object.assign({}, o, patch));
+  render();
+
   const { error } = await db.from('orders').update({
     [key]: clamped, updated_at: new Date().toISOString(), updated_by: S.user.name
   }).eq('id', ordId);
-  if (!error) {
-    await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
-    await loadOrders();
+  if (error) {
+    toast('Save failed — reverting', 'err');
+    if (o.merchant_id) delete S.boardCache[o.merchant_id];
     render();
-  } else { toast('Save failed', 'err'); }
+  } else {
+    db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
+  }
 }
 
 async function setRemark(ordId, val) {
@@ -3054,24 +3105,51 @@ function openTNA(ordId, division) {
 }
 
 async function setPlanDate(ordId, field, val, division) {
+  const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  const patch = { id: ordId, [field]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
+
+  // Optimistic: update locally and re-render immediately; save happens in the background.
+  if (o) upsertLocalOrder(Object.assign({}, o, patch));
+  render();
+  openTNA(ordId, division);
+
   const { error } = await db.from('orders').update({ [field]: val||null, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('id', ordId);
-  if (!error) { Object.keys(S.boardCache).forEach(function(m){if((S.boardCache[m]||[]).find(function(o){return o.id===ordId;}))delete S.boardCache[m];}); await loadDashOrders(); render(); openTNA(ordId, division); }
-  else toast('Save failed','err');
+  if (error) {
+    toast('Save failed — reverting', 'err');
+    if (o && o.merchant_id) delete S.boardCache[o.merchant_id];
+    render();
+    openTNA(ordId, division);
+  } else {
+    await loadDashOrders();
+  }
 }
 
 
-async function setAct(ordId, mKey, val, division) {
+async function setAct(ordId, mKey, val, division, skipModalRefresh) {
+  const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  const patch = { id: ordId, ['act_' + mKey]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
+
+  // Optimistic: update locally and re-render immediately; the save itself happens
+  // quietly in the background. skipModalRefresh=true when called from a context
+  // (like the row-expansion panel) that isn't the TNA modal itself — otherwise
+  // this would force-open the TNA modal on every edit, which isn't wanted there.
+  if (o) upsertLocalOrder(Object.assign({}, o, patch));
+  if (!skipModalRefresh) openTNA(ordId, division);
+  render();
+
   const { error } = await db.from('orders').update({
     ['act_' + mKey]: val || null,
     updated_at: new Date().toISOString(),
     updated_by: S.user.name
   }).eq('id', ordId);
-  if (!error) {
-    await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
-    await loadOrders();
-    openTNA(ordId, division);
+  if (error) {
+    toast('Save failed — reverting', 'err');
+    if (o && o.merchant_id) delete S.boardCache[o.merchant_id];
+    if (!skipModalRefresh) openTNA(ordId, division);
     render();
-  } else { toast('Save failed', 'err'); }
+  } else {
+    db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
+  }
 }
 
 // ─── SHIP ───
@@ -3157,7 +3235,13 @@ async function toggleRowExpand(ordId, division) {
   S.expandedRow = ordId;
   S.expandedData = null;
   renderBoard(S.view); // show skeleton first
+  await refreshExpandedRow(ordId, division);
+}
 
+// Reloads and re-renders an already-open expanded row's panels IN PLACE —
+// unlike toggleRowExpand, this never closes the panel, so it's safe to call
+// after any inline edit inside it (bookings, receipts, approvals, TNA actuals).
+async function refreshExpandedRow(ordId, division) {
   // Load detail data
   const [bk, rc, ap] = await Promise.all([
     db.from('yarn_bookings').select('*').eq('order_id', ordId).order('booked_on'),
@@ -3270,44 +3354,42 @@ async function saveBk(ordId, division) {
   var qty=parseFloat(document.getElementById('bkq-'+ordId).value)||0;
   if (!dt||!qty){toast('Date and quantity required','err');return;}
   await db.from('yarn_bookings').insert({order_id:ordId,booked_on:dt,qty:qty,supplier:sup});
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function delBk(id, ordId, division) {
   if (!confirm('Remove?')) return;
   await db.from('yarn_bookings').delete().eq('id',id);
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function saveRc(ordId, division) {
   var dt=document.getElementById('rcd-'+ordId).value;
   var qty=parseFloat(document.getElementById('rcq-'+ordId).value)||0;
   if (!dt||!qty){toast('Date and quantity required','err');return;}
   await db.from('yarn_receipts').insert({order_id:ordId,received_on:dt,qty:qty});
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function delRc(id, ordId, division) {
   if (!confirm('Remove?')) return;
   await db.from('yarn_receipts').delete().eq('id',id);
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function addApvRound(ordId, type, division) {
   var existing=(S.expandedData&&S.expandedData.approvals||[]).filter(function(a){return a.type===type;});
   var nextR=existing.length?Math.max.apply(null,existing.map(function(r){return r.round;}))+1:1;
   await db.from('approvals').insert({order_id:ordId,type:type,round:nextR});
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function updApv(id, field, val, ordId, division) {
   var obj={}; obj[field]=val||null;
   await db.from('approvals').update(obj).eq('id',id);
   S.expandedData = null; // force reload
-  await toggleRowExpand(ordId, division);
+  await refreshExpandedRow(ordId, division);
 }
 async function setActExp(ordId, mKey, val, div) {
-  await setAct(ordId, mKey, val, div);
-  // Refresh expanded row data
+  await setAct(ordId, mKey, val, div, true);
+  // Refresh the expanded row's own TNA panel (setAct already re-rendered the board)
   if (S.expandedRow === ordId) {
-    const o = (S.boardCache[S.view]||[]).find(function(x){return x.id===ordId;});
-    // Just refresh TNA panel without full reload
-    await toggleRowExpand(ordId, div);
+    await refreshExpandedRow(ordId, div);
   }
 }
 
