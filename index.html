@@ -474,7 +474,7 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 
 .logout-btn{width:100%;padding:7px 10px;background:none;border:1.5px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s}
 .logout-btn:hover{background:var(--red-soft);border-color:#EBC4BC;color:var(--red)}
-.card table th{font-size:8px;padding:3px 6px;line-height:1.15}
+.card table th{font-size:8.5px;font-weight:700;padding:3px 6px;line-height:1.25;white-space:normal;overflow-wrap:break-word}
 .card table td{padding:3px 6px;line-height:1.15}
 .card table .apv-chip{font-size:9px}
 .apv-flow-modal{max-width:460px}
@@ -806,9 +806,10 @@ tbody tr.late td.stk2,tbody tr.late td.stk3,tbody tr.late td.stk4{background-col
 .cf-input{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:6px;
   background:#FCFBF7;font-size:12px;color:var(--ink)}
 .cf-input:focus{outline:none;border-color:var(--accent);background:#fff}
+input[type="date"].cf-input{padding:3px 4px;font-size:10px}
 [data-theme="dark"] .cf-input{background:#2A2828;border-color:var(--line);color:var(--ink)}
-.cf-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
-  font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;background:var(--panel);
+.cf-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:14px;
+  font-size:9.5px;font-weight:600;cursor:pointer;border:1.5px solid;background:var(--panel);
   color:var(--muted);border-color:var(--line);transition:all .12s;white-space:nowrap}
 .cf-chip:hover{border-color:var(--accent);color:var(--accent)}
 .cf-chip.has-val{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
@@ -954,7 +955,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-6.3</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-6.4</p>
   </div>
 </div>
 
@@ -989,7 +990,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-6.3</div>
+  <div id="ver-stamp">v2026-09-10 WF-6.4</div>
 </div>
 
 
@@ -2669,7 +2670,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
         var cls = idx === 0 ? prFrozenCls : '';
         var stl = 'width:92px;min-width:92px;max-width:92px;' + (idx === 0 ? prFrozenStyle : '');
         var balHtml = balance < 0
-          ? '<div class="prod-bal-chip short">-' + fmt(Math.abs(balance)) + '</div>'
+          ? '<div class="prod-bal-chip short">Bal -' + fmt(Math.abs(balance)) + '</div>'
           : balance === 0
           ? '<div class="prod-bal-chip done">Done</div>'
           : '<div class="prod-bal-chip over">Done +' + fmt(balance) + '</div>';
@@ -2726,7 +2727,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_fob') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'FOB') + '</th>';
     else if (key === '_value') topRow += '<th class="num wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Total Value') + '</th>';
     else if (key === '_ship') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Ship Date') + '</th>';
-    else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days') + '</th>';
+    else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days Left') + '</th>';
     else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||(matLabel + '<br>(' + unit + ')')) + '</th>';
     else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Accessories') + '</th>';
     else if (key === '_approvals') {
@@ -5904,7 +5905,7 @@ var FIXED_BLOCKS = [
   { key:'_fob',         name:'FOB',          width:66,  mandatory:false },
   { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:78,  wrap:true, mandatory:false },
-  { key:'_days',        name:'Days',         width:52,  mandatory:false },
+  { key:'_days',        name:'Days Left',    width:52,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
@@ -5938,16 +5939,16 @@ function isFixedKey(key) {
 
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
-  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:135, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:128, defLoc:{live:true,laying:false,shipped:false} },
   { key:'season',         name:'Season',         type:'text',     width:70, defLoc:{live:true,laying:false,shipped:false} },
   { key:'department',     name:'Department',     type:'text',     width:100, defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
-  { key:'avg_weight',     name:'Average Weight', type:'special_weight', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'internal_pp',    name:'Internal PP Meeting', type:'date', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'buyer_pp',       name:'Buyer PP Meeting',    type:'date', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'khata_sign',     name:'Khata Sign Date',     type:'date', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'prod_floor',     name:'Production Floor',    type:'special_floor', defLoc:{live:true,laying:false,shipped:false} },
-  { key:'knit_start',     name:'Knitting Start Date', type:'date', defLoc:{live:true,laying:false,shipped:false} },
+  { key:'avg_weight',     name:'Average Weight', type:'special_weight', width:74, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'internal_pp',    name:'Internal PP Meeting', type:'date', width:96, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'buyer_pp',       name:'Buyer PP Meeting',    type:'date', width:96, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'khata_sign',     name:'Khata Sign Date',     type:'date', width:96, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'prod_floor',     name:'Production Floor',    type:'special_floor', width:74, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'knit_start',     name:'Knitting Start Date', type:'date', width:96, wrap:true, defLoc:{live:true,laying:false,shipped:false} },
   { key:'inline_insp',    name:'Inline Inspection', type:'special_approval', approvalType:'inline', defLoc:{live:true,laying:false,shipped:false} },
   { key:'pre_prod_test',  name:'Pre-Production Test', type:'special_approval', approvalType:'ppt', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
   { key:'lock_sample',    name:'Lock Sample',     type:'special_approval', approvalType:'lock_sample', defaultHidden:true, defLoc:{live:true,laying:false,shipped:false} },
@@ -5968,7 +5969,7 @@ var MASTER_FIELDS = [
   // ── MULTI-MODULE FIELDS ─────────────────────────────────────────────────
   { key:'sales_contract', name:'Sales Contract No', type:'text_memory', width:147, defLoc:{live:true,laying:true,shipped:true} },
   { key:'lc_no',          name:'LC No',          type:'text_memory', width:145, defLoc:{live:true,laying:true,shipped:true} },
-  { key:'lc_status',      name:'LC Received Status', type:'dropdown', width:110, options:['Received','Pending','Not Required'], defLoc:{live:true,laying:true,shipped:true} },
+  { key:'lc_status',      name:'LC Received Status', type:'dropdown', width:94, wrap:true, options:['Pending','Received','N/A'], defLoc:{live:true,laying:true,shipped:true} },
 ];
 
 
@@ -6381,11 +6382,11 @@ function renderFieldCell(field, orderId, canEdit) {
       : '<span>' + (val||'&mdash;') + '</span>';
   }
   if (field.type === 'special_weight') {
-    var display = val ? val + ' lbs' : 'Set weight';
+    var display = val ? val + ' lbs' : 'Set';
     return '<button class="cf-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openAvgWeightModal(this.dataset.oid)">' + display + '</button>';
   }
   if (field.type === 'special_floor') {
-    var display2 = val ? val : 'Set floors';
+    var display2 = val ? val : 'Set';
     return '<button class="cf-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openProdFloorModal(this.dataset.oid)">' + display2 + '</button>';
   }
   if (field.type === 'special_delay') {
