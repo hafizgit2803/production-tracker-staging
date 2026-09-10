@@ -431,16 +431,42 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 .ccs-row:hover{background:var(--accent-soft)}
 .ccs-row input{width:16px;height:16px;cursor:pointer}
 
-/* Header hover tooltip */
-.th-tip{position:relative;cursor:help;border-bottom:1px dotted rgba(0,0,0,.3)}
-.th-tip:hover::after{
-  content:attr(data-tip);position:absolute;top:100%;left:50%;transform:translateX(-50%);
-  background:#1F1F1F;color:#fff;padding:8px 10px;border-radius:8px;font-size:10.5px;
-  font-weight:500;line-height:1.4;white-space:normal;width:180px;z-index:200;margin-top:7px;
-  box-shadow:0 6px 20px rgba(0,0,0,.3);text-align:left;text-transform:none;letter-spacing:normal}
-.th-tip:hover::before{
-  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%) rotate(45deg);
-  width:8px;height:8px;background:#1F1F1F;z-index:200;margin-top:3px}
+/* Header hover tooltip trigger — the actual floating tooltip is a single shared
+   element (#floating-tip) positioned in JS and appended to body, so it can never
+   be clipped by the table's overflow/sticky-header stacking context the way a
+   CSS ::after pseudo-element inside a th would be. */
+.th-tip{cursor:help;border-bottom:1px dotted rgba(0,0,0,.3)}
+
+/* Floating tooltip — liquid-glass style, positioned in JS, lives at the end of
+   <body> so it renders above everything regardless of table stacking contexts */
+#floating-tip{
+  position:fixed;z-index:9999;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);
+  transition:opacity .14s ease,transform .14s ease;
+  max-width:220px;padding:9px 13px;border-radius:14px;
+  background:rgba(255,255,255,.68);backdrop-filter:blur(20px) saturate(190%);
+  -webkit-backdrop-filter:blur(20px) saturate(190%);
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 10px 34px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.6);
+  color:#1F1F1F;font-size:11.5px;font-weight:500;line-height:1.45;text-align:left}
+#floating-tip.show{opacity:1;transform:translateY(0) scale(1)}
+[data-theme="dark"] #floating-tip{
+  background:rgba(40,38,38,.62);border-color:rgba(255,255,255,.12);color:#F2F0EB;
+  box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+
+/* Notes chip — liquid-glass style, matching the tooltip's aesthetic */
+.notes-chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:4px 10px;
+  border-radius:14px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;color:var(--muted);
+  background:rgba(255,255,255,.55);backdrop-filter:blur(10px) saturate(180%);
+  -webkit-backdrop-filter:blur(10px) saturate(180%);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .12s ease,box-shadow .12s ease}
+.notes-chip:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.6)}
+.notes-chip.has-val{color:var(--accent);background:rgba(232,207,194,.45);border-color:rgba(232,207,194,.8)}
+[data-theme="dark"] .notes-chip{background:rgba(50,48,48,.5);border-color:rgba(255,255,255,.1);color:var(--muted);
+  box-shadow:0 2px 8px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05)}
+[data-theme="dark"] .notes-chip.has-val{background:rgba(90,67,53,.5);color:#E8B4A0;border-color:rgba(90,67,53,.9)}
 
 /* Order notes modal */
 .notes-textarea{width:100%;min-height:320px;box-sizing:border-box;padding:14px 16px;
@@ -975,7 +1001,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.0</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.2</p>
   </div>
 </div>
 
@@ -1010,7 +1036,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-7.0</div>
+  <div id="ver-stamp">v2026-09-10 WF-7.2</div>
 </div>
 
 
@@ -1514,6 +1540,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 
 <!-- Toast -->
 <div id="toast"></div>
+<div id="floating-tip"></div>
 
 <script>
 'use strict';
@@ -1723,6 +1750,33 @@ function runUndo() {
   t.className = '';
   clearTimeout(toastTimer);
 }
+
+// ─── FLOATING TOOLTIP (liquid-glass style) ───
+// A single shared element, positioned in JS and anchored to document.body, so it
+// can never be clipped by a table cell's overflow:hidden or a sticky header's
+// stacking context the way a CSS ::after pseudo-element would be.
+function showFloatingTip(el) {
+  var tip = $('floating-tip');
+  if (!tip || !el) return;
+  var text = el.getAttribute('data-tip');
+  if (!text) return;
+  tip.textContent = text;
+  tip.classList.remove('show'); // reset so width recalculates before measuring
+  var rect = el.getBoundingClientRect();
+  var tipRect = tip.getBoundingClientRect();
+  var left = rect.left + rect.width / 2 - tipRect.width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+  var top = rect.bottom + 8;
+  if (top + tipRect.height > window.innerHeight - 8) top = rect.top - tipRect.height - 8; // flip above if no room below
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  requestAnimationFrame(function(){ tip.classList.add('show'); });
+}
+function hideFloatingTip() {
+  var tip = $('floating-tip');
+  if (tip) tip.classList.remove('show');
+}
+document.addEventListener('scroll', hideFloatingTip, true);
 
 // ─── Modal ───
 function openModal(id) { $(id).classList.add('open'); }
@@ -2658,7 +2712,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     const notesText = (o.remarks||'').trim();
     const notesPreviewRaw = notesText ? notesText.replace(/\u2022\s*/g,'').split('\n')[0].slice(0,28) : '';
-    const remCell = '<button class="cf-chip' + (notesText?' has-val':'') + '" onclick="event.stopPropagation();openOrderNotesModal(\'' + o.id + '\')" title="' + htmlEsc(notesText || 'Click to add notes') + '">' + (notesText ? '&#x1F4DD; ' + htmlEsc(notesPreviewRaw) + (notesText.length>28?'\u2026':'') : '+ Note') + '</button>';
+    const remCell = '<button class="notes-chip' + (notesText?' has-val':'') + '" onclick="event.stopPropagation();openOrderNotesModal(\'' + o.id + '\')" title="' + htmlEsc(notesText || 'Click to add notes') + '">' + (notesText ? '&#x1F4DD; ' + htmlEsc(notesPreviewRaw) + (notesText.length>28?'\u2026':'') : '+ Note') + '</button>';
 
     // Build cell HTML keyed by column key — every cell carries width + frozen positioning
     var cellsByKey = {};
@@ -2782,7 +2836,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*92) + 'px;min-width:' + (VSTEPS.length*92) + 'px;max-width:' + (VSTEPS.length*92) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
       bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2"><span class="th-tip" data-tip="Free-form notes for this order \u2014 click any cell in this column to open and type, like a small text document. Saves automatically.">' + (lbl||'Notes') + '</span></th>';
+    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2"><span class="th-tip" data-tip="Free-form notes for this order \u2014 click any cell in this column to open and type, like a small text document. Saves automatically." onmouseenter="showFloatingTip(this)" onmouseleave="hideFloatingTip()">' + (lbl||'Notes') + '</span></th>';
     else {
       var mf = getFieldByKey(key);
       var mfWrapCls = (mf && mf.wrap) ? ' wrap2' : '';
@@ -3192,7 +3246,8 @@ function openOrderNotesModal(orderId) {
   if (!o) return;
   _notesTarget = orderId;
   $('on-modal-title').textContent = 'Notes \u2014 ' + (o.style||'');
-  $('on-modal-sub').textContent = (o.buyer||'');
+  var countryVal = getFieldValue(orderId, 'country');
+  $('on-modal-sub').textContent = [o.po_number ? 'PO ' + o.po_number : null, o.buyer, countryVal].filter(Boolean).join(' \u00b7 ');
   var canEditNotes = actsAsMerchant(o.merchant_id) || S.user.role==='admin' || S.user.role==='management' || S.user.role==='manager';
   var ta = $('on-modal-textarea');
   ta.value = notesAsText(o.remarks);
