@@ -904,11 +904,39 @@ input[type="date"].cf-input{padding:3px 4px;font-size:10px}
   background:var(--panel);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
 
 /* Average Weight modal */
-.aw-big{text-align:center;padding:16px 0 20px;border-bottom:1px solid var(--line);margin-bottom:16px}
-.aw-big .lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.aw-big .val{font-family:var(--serif);font-size:38px;font-weight:600;margin-top:4px}
-.aw-size-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0EDE4}
-.aw-size-row input{padding:5px 9px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+.aw-glass-card{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(190%);
+  -webkit-backdrop-filter:blur(18px) saturate(190%);border:1px solid rgba(255,255,255,.65);
+  border-radius:22px;padding:28px 20px 22px;text-align:center;margin-bottom:18px;
+  box-shadow:0 10px 34px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.65)}
+#ov-avg-weight .m-b{
+  background:radial-gradient(circle at 20% 15%,#F6C9A8 0%,transparent 40%),
+    radial-gradient(circle at 85% 25%,#C9A8E8 0%,transparent 45%),
+    radial-gradient(circle at 50% 95%,#A8D8E8 0%,transparent 50%),
+    linear-gradient(135deg,#FDF4E8,#F4E8F8);
+  border-radius:0 0 14px 14px;padding-top:16px}
+[data-theme="dark"] #ov-avg-weight .m-b{
+  background:radial-gradient(circle at 20% 15%,#5A3D2E 0%,transparent 40%),
+    radial-gradient(circle at 85% 25%,#3D2E5A 0%,transparent 45%),
+    radial-gradient(circle at 50% 95%,#2E4A5A 0%,transparent 50%),
+    linear-gradient(135deg,#2A2320,#241F28)}
+.aw-glass-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
+.aw-glass-input-wrap{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:10px}
+.aw-glass-input{width:150px;text-align:center;border:none;background:transparent;font-family:var(--serif);
+  font-size:46px;font-weight:700;color:var(--accent);outline:none}
+.aw-glass-input::-webkit-outer-spin-button,.aw-glass-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.aw-glass-input{-moz-appearance:textfield}
+.aw-glass-unit{font-size:17px;color:var(--muted);font-weight:600}
+.aw-glass-hint{font-size:10.5px;color:var(--muted);margin-top:12px;line-height:1.45;padding:0 8px}
+[data-theme="dark"] .aw-glass-card{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.12);
+  box-shadow:0 10px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.07)}
+.aw-size-row{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:7px;border-radius:12px;
+  background:rgba(255,255,255,.5);backdrop-filter:blur(10px) saturate(180%);-webkit-backdrop-filter:blur(10px) saturate(180%);
+  border:1px solid rgba(255,255,255,.55);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.aw-size-row input{padding:6px 9px;border:1px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px;
+  background:rgba(255,255,255,.7);color:var(--ink)}
+.aw-size-row input:focus{outline:none;border-color:var(--accent);background:#fff}
+[data-theme="dark"] .aw-size-row{background:rgba(50,48,48,.5);border-color:rgba(255,255,255,.1)}
+[data-theme="dark"] .aw-size-row input{background:rgba(30,28,28,.6);border-color:rgba(255,255,255,.12);color:var(--ink)}
 
 /* Production Floor modal */
 .pf-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;
@@ -1001,7 +1029,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.3</p>
   </div>
 </div>
 
@@ -1036,7 +1064,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-7.2</div>
+  <div id="ver-stamp">v2026-09-10 WF-7.3</div>
 </div>
 
 
@@ -6668,18 +6696,20 @@ function buildFieldDataCells(fields, orderId, canEdit) {
 
 // === AVERAGE WEIGHT MODAL ===
 var _awOrderId = null;
-var _awSizes = []; // [{size:'XS', weight:2.5}, ...]
+var _awSizes = []; // [{size:'XS', weight:2.5}, ...] — reference breakdown only, doesn't drive the average
+var _awAvg = '';   // the actual contract weight, agreed with the buyer, typed in directly
 
 function openAvgWeightModal(orderId) {
   _awOrderId = orderId;
   var raw = getFieldValue(orderId, 'avg_weight_detail');
   try { _awSizes = raw ? JSON.parse(raw) : []; } catch(e) { _awSizes = []; }
+  _awAvg = getFieldValue(orderId, 'avg_weight') || '';
   renderAvgWeightModal();
   openModal('ov-avg-weight');
+  setTimeout(function(){ var el = $('aw-avg-input'); if (el) el.focus(); }, 60);
 }
 
 function renderAvgWeightModal() {
-  var avg = calcAvgWeight();
   var rows = _awSizes.map(function(s, i) {
     return '<div class="aw-size-row">'
       + '<input type="text" placeholder="Size (e.g. XS, 8-9Y)" value="' + (s.size||'').replace(/"/g,'&quot;') + '" data-idx="' + i + '" data-field="size" onchange="updAwSize(this)" style="flex:1">'
@@ -6688,17 +6718,23 @@ function renderAvgWeightModal() {
       + '</div>';
   }).join('');
 
-  $('aw-body').innerHTML = '<div class="aw-big"><div class="lbl">Average Weight</div><div class="val">' + avg + ' lbs</div></div>'
-    + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">Size-wise breakdown</div>'
+  $('aw-body').innerHTML = '<div class="aw-glass-card">'
+    + '<div class="aw-glass-lbl">Average Contract Weight</div>'
+    + '<div class="aw-glass-input-wrap"><input type="number" step="0.01" id="aw-avg-input" class="aw-glass-input" value="' + (_awAvg||'') + '" placeholder="0.00" onchange="setAwAvg(this.value)"><span class="aw-glass-unit">lbs</span></div>'
+    + '<div class="aw-glass-hint">Agreed directly with the buyer \u2014 not necessarily the mathematical average of the sizes below</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">Size-wise breakdown <span style="font-weight:400">(reference only \u2014 doesn\u2019t affect the number above)</span></div>'
     + '<div id="aw-size-list">' + (rows || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No sizes added yet</div>') + '</div>'
     + '<button class="btn sm" onclick="addAwSize()" style="margin-top:10px;width:100%">+ Add size</button>';
 }
 
-function calcAvgWeight() {
-  var valid = _awSizes.filter(function(s){ return s.weight && !isNaN(parseFloat(s.weight)); });
-  if (!valid.length) return '0.00';
-  var sum = valid.reduce(function(s,x){ return s + parseFloat(x.weight); }, 0);
-  return (sum / valid.length).toFixed(2);
+function setAwAvg(val) {
+  _awAvg = val;
+  saveAwAvg();
+}
+async function saveAwAvg() {
+  await saveFieldValue(_awOrderId, 'avg_weight', _awAvg);
+  if (S.view && S.boardCache[S.view]) renderBoard(S.view);
 }
 
 function addAwSize() {
@@ -6708,25 +6744,16 @@ function addAwSize() {
 function removeAwSize(btn) {
   var idx = parseInt(btn.dataset.idx);
   _awSizes.splice(idx, 1);
-  saveAwSizes();
+  saveAwSizesDetail();
   renderAvgWeightModal();
 }
 function updAwSize(input) {
   var idx = parseInt(input.dataset.idx), field = input.dataset.field;
   _awSizes[idx][field] = input.value;
-  saveAwSizes();
-  // Only re-render the big number, not the whole list (avoid losing focus)
-  var avg = calcAvgWeight();
-  var bigVal = document.querySelector('#ov-avg-weight .aw-big .val');
-  if (bigVal) bigVal.textContent = avg + ' lbs';
+  saveAwSizesDetail();
 }
-
-async function saveAwSizes() {
-  var avg = calcAvgWeight();
-  await saveFieldValue(_awOrderId, 'avg_weight', avg);
+async function saveAwSizesDetail() {
   await saveFieldValue(_awOrderId, 'avg_weight_detail', JSON.stringify(_awSizes));
-  // Refresh board chip
-  if (S.view && S.boardCache[S.view]) renderBoard(S.view);
 }
 
 // === PRODUCTION FLOOR MODAL ===
