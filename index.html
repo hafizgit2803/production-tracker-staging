@@ -215,12 +215,59 @@ tbody tr.late td.stk{background-color:#FDECEA!important}
 
 /* TNA modal */
 .tna-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.tna-kpis>div{background:#FAF9F5;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.tna-kpis>div{background:rgba(255,255,255,.55);backdrop-filter:blur(14px) saturate(150%);
+  -webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid rgba(255,255,255,.65);
+  border-radius:12px;padding:9px 11px;box-shadow:0 4px 14px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.5)}
+[data-theme="dark"] .tna-kpis>div{background:rgba(42,40,40,.5);border-color:rgba(255,255,255,.1);
+  box-shadow:0 4px 14px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06)}
 .tna-kpis .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .tna-kpis .v{font-weight:600;margin-top:2px;font-size:15px}
 table.tna-t td{vertical-align:middle}
 table.tna-t td.late-c{color:var(--red);font-weight:700}
 table.tna-t td.early-c{color:var(--green);font-weight:600}
+table.tna-t{width:100%;table-layout:fixed;border-collapse:collapse}
+table.tna-t th,table.tna-t td{padding:9px 12px}
+table.tna-t th{text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)}
+table.tna-t th.num,table.tna-t td.num{text-align:center}
+table.tna-t td{border-bottom:1px solid #F0EDE4;font-size:13px}
+table.tna-t tr:last-child td{border-bottom:none}
+table.tna-t td.sty{font-weight:600}
+.tna-col-mile{width:19%}.tna-col-date{width:19%}.tna-col-days{width:15%}
+.tna-col-delay{width:11%}.tna-col-status{width:17%}
+.tna-info-card{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,.6);
+  backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
+  border:1px solid rgba(255,255,255,.65);border-radius:14px;padding:14px 16px;margin-bottom:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
+[data-theme="dark"] .tna-info-card{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.1);
+  box-shadow:0 6px 20px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+.tna-info-photo{width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0;
+  border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tna-info-photo-ph{display:flex;align-items:center;justify-content:center;font-size:10px;
+  color:var(--muted);background:#F0EDE4;text-align:center}
+[data-theme="dark"] .tna-info-photo-ph{background:#2A2828}
+.tna-info-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px 16px;min-width:0}
+.tna-info-item{min-width:0}
+.tna-info-lbl{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tna-info-val{font-size:13px;font-weight:600;color:var(--ink);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tna-audience-btn{padding:16px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel);
+  cursor:pointer;text-align:center;transition:all .15s}
+.tna-audience-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.tna-audience-btn.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(201,100,66,.12)}
+.tna-audience-ico{font-size:26px;margin-bottom:6px}
+.tna-audience-lbl{font-size:13px;font-weight:700;color:var(--ink)}
+.btna-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line);margin-bottom:6px;cursor:pointer;transition:background .12s}
+.btna-row:hover{background:var(--accent-soft)}
+.btna-row input{width:17px;height:17px;cursor:pointer;flex-shrink:0}
+.btna-row-main{flex:1;min-width:0}
+.btna-row-style{font-size:13.5px;font-weight:700}
+.btna-row-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.tna-table-glass{background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.65);
+  border-radius:14px;padding:6px 10px;box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
+[data-theme="dark"] .tna-table-glass{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.1);
+  box-shadow:0 6px 20px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
 
 /* Admin */
 .admin-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
@@ -903,22 +950,25 @@ input[type="date"].cf-input{padding:3px 4px;font-size:10px}
 .cm-buyer-select{padding:8px 32px 8px 12px;border:1.5px solid var(--line);border-radius:9px;
   background:var(--panel);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
 
+/* Shared muted glass-backdrop — subtle enough to give backdrop-filter something to
+   blur without being visually loud. Reused by Average Weight and TNA modals. */
+.glass-backdrop{
+  background:radial-gradient(circle at 20% 15%,rgba(216,196,178,.35) 0%,transparent 42%),
+    radial-gradient(circle at 85% 25%,rgba(196,196,216,.3) 0%,transparent 46%),
+    radial-gradient(circle at 50% 95%,rgba(178,206,216,.3) 0%,transparent 52%),
+    linear-gradient(135deg,#FAF8F4,#F6F4F2);
+  border-radius:0 0 14px 14px;padding-top:16px}
+[data-theme="dark"] .glass-backdrop{
+  background:radial-gradient(circle at 20% 15%,rgba(90,70,55,.35) 0%,transparent 42%),
+    radial-gradient(circle at 85% 25%,rgba(60,55,90,.3) 0%,transparent 46%),
+    radial-gradient(circle at 50% 95%,rgba(45,75,90,.3) 0%,transparent 52%),
+    linear-gradient(135deg,#242220,#211F22)}
+
 /* Average Weight modal */
-.aw-glass-card{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(190%);
-  -webkit-backdrop-filter:blur(18px) saturate(190%);border:1px solid rgba(255,255,255,.65);
+.aw-glass-card{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(255,255,255,.65);
   border-radius:22px;padding:28px 20px 22px;text-align:center;margin-bottom:18px;
   box-shadow:0 10px 34px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.65)}
-#ov-avg-weight .m-b{
-  background:radial-gradient(circle at 20% 15%,#F6C9A8 0%,transparent 40%),
-    radial-gradient(circle at 85% 25%,#C9A8E8 0%,transparent 45%),
-    radial-gradient(circle at 50% 95%,#A8D8E8 0%,transparent 50%),
-    linear-gradient(135deg,#FDF4E8,#F4E8F8);
-  border-radius:0 0 14px 14px;padding-top:16px}
-[data-theme="dark"] #ov-avg-weight .m-b{
-  background:radial-gradient(circle at 20% 15%,#5A3D2E 0%,transparent 40%),
-    radial-gradient(circle at 85% 25%,#3D2E5A 0%,transparent 45%),
-    radial-gradient(circle at 50% 95%,#2E4A5A 0%,transparent 50%),
-    linear-gradient(135deg,#2A2320,#241F28)}
 .aw-glass-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
 .aw-glass-input-wrap{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:10px}
 .aw-glass-input{width:150px;text-align:center;border:none;background:transparent;font-family:var(--serif);
@@ -930,7 +980,7 @@ input[type="date"].cf-input{padding:3px 4px;font-size:10px}
 [data-theme="dark"] .aw-glass-card{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.12);
   box-shadow:0 10px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.07)}
 .aw-size-row{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:7px;border-radius:12px;
-  background:rgba(255,255,255,.5);backdrop-filter:blur(10px) saturate(180%);-webkit-backdrop-filter:blur(10px) saturate(180%);
+  background:rgba(255,255,255,.5);backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);
   border:1px solid rgba(255,255,255,.55);box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .aw-size-row input{padding:6px 9px;border:1px solid rgba(0,0,0,.08);border-radius:8px;font-size:13px;
   background:rgba(255,255,255,.7);color:var(--ink)}
@@ -1029,7 +1079,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.3</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-8.1</p>
   </div>
 </div>
 
@@ -1064,7 +1114,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-7.3</div>
+  <div id="ver-stamp">v2026-09-10 WF-8.1</div>
 </div>
 
 
@@ -1192,9 +1242,92 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 <div class="ov" id="ov-tna" onclick="if(event.target===this)closeModal('ov-tna')">
   <div class="modal wide">
     <div class="m-h"><div><h3 id="tna-title">TNA</h3><div class="msub" id="tna-sub"></div></div>
-      <button class="btn" onclick="closeModal('ov-tna')">Close</button></div>
-    <div class="m-b" id="tna-body"></div>
+      <div style="display:flex;gap:8px"><button class="btn" onclick="openTNAPrintOptions()">&#x1F5A8; Print</button><button class="btn" onclick="closeModal('ov-tna')">Close</button></div></div>
+    <div class="m-b glass-backdrop" id="tna-body"></div>
     <div class="m-f"><button class="btn" onclick="closeModal('ov-tna')">Close</button></div>
+  </div>
+</div>
+
+<!-- === TNA PRINT OPTIONS MODAL === -->
+<div class="ov" id="ov-tna-print-opts" onclick="if(event.target===this)closeModal('ov-tna-print-opts')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3>Print TNA</h3><div class="msub">For Planning Team?</div></div>
+      <button class="btn" onclick="closeModal('ov-tna-print-opts')">Cancel</button></div>
+    <div class="m-b">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
+        <button class="tna-audience-btn" id="tna-aud-planning" onclick="selectTNAAudience('planning')">
+          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Yes \u2014 Planning Team</div>
+        </button>
+        <button class="tna-audience-btn" id="tna-aud-mgmt" onclick="selectTNAAudience('management')">
+          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">No \u2014 Management</div>
+        </button>
+      </div>
+      <div id="tna-buffer-row" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+        <label style="font-size:12.5px;font-weight:600;color:var(--muted)">Show Final Inspection &amp; Ship Date this many days earlier</label>
+        <input type="number" id="tna-buffer-days" min="0" max="60" value="3" style="width:100%;margin-top:6px;padding:8px 11px;border:1.5px solid var(--line);border-radius:8px;background:#FCFBF7;font-size:15px;font-family:var(--mono);color:var(--ink)">
+        <div class="hint" style="margin-top:6px">Only affects this printout \u2014 the real dates in the system never change.</div>
+      </div>
+    </div>
+    <div class="m-f"><button class="btn pri" id="tna-print-generate-btn" style="width:100%" disabled onclick="generateTNAPrint()">Generate</button></div>
+  </div>
+</div>
+
+<!-- === TNA PRINT PREVIEW MODAL === -->
+<div class="ov" id="ov-tna-print" onclick="if(event.target===this)closeTNAPrint()" style="padding:16px">
+  <div class="modal" style="max-width:900px;width:98vw;max-height:92vh;display:flex;flex-direction:column">
+    <div class="m-h no-print" style="flex-shrink:0">
+      <div><h3>TNA Print Preview</h3><div class="msub" id="tnapdf-sub">Review before printing</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeTNAPrint()">Cancel</button>
+        <button class="btn pri" onclick="printTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+      </div>
+    </div>
+    <div class="m-b" id="tnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
+  </div>
+</div>
+
+<!-- === BULK TNA SELECT MODAL === -->
+<div class="ov" id="ov-bulk-tna" onclick="if(event.target===this)closeModal('ov-bulk-tna')">
+  <div class="modal" style="max-width:720px;width:96vw;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3>Send TNA to Planning</h3><div class="msub" id="btna-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-bulk-tna')">Close</button></div>
+    <div class="m-b" style="flex:1;overflow-y:auto;min-height:0">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn sm" onclick="bulkTNAQuickSelect('all')">Select all</button>
+        <button class="btn sm" onclick="bulkTNAQuickSelect('none')">Clear</button>
+      </div>
+      <div id="btna-list"></div>
+    </div>
+    <div class="m-f" style="flex-direction:column;align-items:stretch;gap:10px;flex-shrink:0">
+      <div id="btna-count" style="font-size:12.5px;color:var(--muted);text-align:center">0 orders selected</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="tna-audience-btn" id="btna-aud-planning" onclick="selectBulkTNAAudience('planning')">
+          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Yes \u2014 Planning Team</div>
+        </button>
+        <button class="tna-audience-btn" id="btna-aud-mgmt" onclick="selectBulkTNAAudience('management')">
+          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">No \u2014 Management</div>
+        </button>
+      </div>
+      <div id="btna-buffer-row" style="display:none">
+        <label style="font-size:12.5px;font-weight:600;color:var(--muted)">Show Final Inspection &amp; Ship Date this many days earlier</label>
+        <input type="number" id="btna-buffer-days" min="0" max="60" value="3" style="width:100%;margin-top:6px;padding:8px 11px;border:1.5px solid var(--line);border-radius:8px;background:#FCFBF7;font-size:15px;font-family:var(--mono);color:var(--ink)">
+      </div>
+      <button class="btn pri" id="btna-generate-btn" style="width:100%" disabled onclick="generateBulkTNAPrint()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- === BULK TNA PRINT PREVIEW MODAL === -->
+<div class="ov" id="ov-bulk-tna-print" onclick="if(event.target===this)closeBulkTNAPrint()" style="padding:16px">
+  <div class="modal" style="max-width:1100px;width:98vw;max-height:92vh;display:flex;flex-direction:column">
+    <div class="m-h no-print" style="flex-shrink:0">
+      <div><h3>Bulk TNA Print Preview</h3><div class="msub" id="btnapdf-sub">Review before printing</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeBulkTNAPrint()">Cancel</button>
+        <button class="btn pri" onclick="printBulkTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+      </div>
+    </div>
+    <div class="m-b" id="btnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
   </div>
 </div>
 
@@ -1489,7 +1622,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   <div class="modal slim">
     <div class="m-h"><div><h3>Average Weight</h3><div class="msub" id="aw-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-avg-weight')">Close</button></div>
-    <div class="m-b" id="aw-body"></div>
+    <div class="m-b glass-backdrop" id="aw-body"></div>
     <div class="m-f"><button class="btn" onclick="closeModal('ov-avg-weight')">Done</button></div>
   </div>
 </div>
@@ -2520,6 +2653,7 @@ async function renderBoard(uid) {
   if (canEdit) actBtns += `<button class="btn pri" onclick="openOrder('${uid}')">+ New order</button>`;
   if (canNote) actBtns += `<button class="btn" onclick="openNote('${uid}')">+ Add note</button>`;
   actBtns += `<button class="btn ghost" onclick="openPrint('${uid}')">Print</button>`;
+  if (canEdit) actBtns += `<button class="btn ghost" onclick="openBulkTNASelect('${uid}')">&#x1F4CB; TNA to Planning</button>`;
   $('act-row').innerHTML = actBtns;
 
   // Notes banner
@@ -2723,8 +2857,8 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
 
-    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn) + '<div class="apv-date-line' + (o.plan_yarn?'':' empty') + '">' + (o.plan_yarn ? 'TNA: '+short(o.plan_yarn) : 'No TNA date') + '</div>';
-    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew) + '<div class="apv-date-line' + (o.plan_sew?'':' empty') + '">' + (o.plan_sew ? 'TNA: '+short(o.plan_sew) : 'No TNA date') + '</div>';
+    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, null);
+    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, null);
     const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp) + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
@@ -3339,13 +3473,46 @@ function openTNA(ordId, division) {
   const isShipped = o.stage === 'shipped';
   const tnaLocked=isTNALocked(ordId, o.merchant_id)&&!isMgmt&&!isAdmin;
   const pendingFields=S.tnaRequests.filter(function(r){return r.order_id===ordId&&r.status==='pending';}).map(function(r){return r.field_name;});
+  S._tnaCurrentOrdId = ordId; // used by the print flow below
+
   $('tna-title').textContent='TNA \u2014 '+o.style+(tnaLocked?' \uD83D\uDD12':'');
-  $('tna-sub').textContent=o.buyer+' \u00b7 '+o.house+' \u00b7 '+fmt(o.qty)+' pcs \u00b7 ships '+short(o.ship_date);
+  $('tna-sub').textContent=[o.buyer, o.house, o.qty?fmt(o.qty)+' pcs':null, o.ship_date?'ships '+short(o.ship_date):null].filter(Boolean).join(' \u00b7 ');
   var lockBanner=tnaLocked?('<div style="background:var(--amber-soft);border:1px solid #F6D860;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12.5px">&#x1F512; <strong>TNA Locked</strong> \u2014 '+(isShipped?'Order has shipped. Dates are view-only.':'Fit approved. Plan dates require HOD/Manager approval to change.')+'</div>'):'';
+
+  // ── Order info card — every value falls back to being omitted entirely rather
+  // than ever showing "undefined" or "null" when a field hasn't been filled in.
+  var merchName = (S.users.find(function(u){return u.id===o.merchant_id;})||{}).name || '';
+  var countryVal = getFieldValue(ordId, 'country') || '';
+  var photoUrl = getStyleImage(o.merchant_id, o.style);
+  function infoItem(label, val) {
+    if (!val) return '';
+    return '<div class="tna-info-item"><div class="tna-info-lbl">'+label+'</div><div class="tna-info-val">'+val+'</div></div>';
+  }
+  var infoHTML = '<div class="tna-info-card">'
+    + (photoUrl ? '<img class="tna-info-photo" src="'+photoUrl+'" alt="">' : '<div class="tna-info-photo tna-info-photo-ph">No photo</div>')
+    + '<div class="tna-info-grid">'
+    + infoItem('Style', o.style) + infoItem('PO Number', o.po_number) + infoItem('Buyer', o.buyer)
+    + infoItem('Buying House', o.house) + infoItem('Country', countryVal) + infoItem('Merchant', merchName)
+    + infoItem('Order Confirmed', o.confirm_date ? short(o.confirm_date) : '')
+    + infoItem('Quantity', o.qty ? fmt(o.qty)+' pcs' : '') + infoItem('Ship Date', o.ship_date ? short(o.ship_date) : '')
+    + '</div></div>';
+
   var rows=VMILES.map(function(x){
     var p=o['plan_'+x.k],a=o['act_'+x.k];
-    var delay='\u2014',st='<span class="chip run">No plan</span>',cls='';
-    if(p){if(a){var dd=Math.round((toDate(a)-toDate(p))/86400000);delay=dd>0?'+'+dd+'d':dd+'d';st=dd>0?'<span class="chip bad">Late</span>':'<span class="chip ok">On time</span>';cls=dd>0?'late-c':'early-c';}else{var dd2=daysTo(p);delay=dd2<0?'+'+(- dd2)+'d overdue':dd2+'d left';st=dd2<0?'<span class="chip bad">Overdue</span>':dd2<=3?'<span class="chip warn">Due soon</span>':'<span class="chip run">Pending</span>';cls=dd2<0?'late-c':'';}}
+    // Delay only ever shows a value when something is GENUINELY late (actual after
+    // plan). On time, early, or not-yet-actioned all show nothing in this column —
+    // there's no "delay" to report yet in those cases.
+    var delay='', st='<span class="chip run">No plan</span>', cls='';
+    if(p){
+      if(a){
+        var dd=Math.round((toDate(a)-toDate(p))/86400000);
+        if (dd>0) { delay='+'+dd+'d'; cls='late-c'; st='<span class="chip bad">Late</span>'; }
+        else { st='<span class="chip ok">On time</span>'; }
+      } else {
+        var dd2=daysTo(p);
+        st=dd2<0?'<span class="chip bad">Overdue</span>':dd2<=3?'<span class="chip warn">Due soon</span>':'<span class="chip run">Pending</span>';
+      }
+    }
     var hasPend=pendingFields.includes(x.k==='ship'?'ship_date':('plan_'+x.k));
     var planCell;
     var reqFieldKey = x.k === 'ship' ? 'ship_date' : ('plan_'+x.k);
@@ -3370,7 +3537,7 @@ function openTNA(ordId, division) {
     } else { daysLeftCell = '<span style="color:var(--muted)">&#x2014;</span>'; }
     return '<tr><td class="sty">'+x.n+'</td><td>'+planCell+'</td><td>'+actCell+'</td><td class="num">'+daysLeftCell+'</td><td class="num '+cls+'">'+delay+'</td><td>'+st+'</td></tr>';
   }).join('');
-  $('tna-body').innerHTML='<div class="tna-kpis"><div><div class="k">Shipment</div><div class="v">'+short(o.ship_date)+'</div></div><div><div class="k">Days left</div><div class="v" style="'+( dl!=null&&dl<=5?'color:var(--red)':'')+'">'+(dl!=null?dl:'\u2014')+'</div></div><div><div class="k">Packed</div><div class="v">'+pctPacked(o)+'%</div></div><div><div class="k">TNA lock</div><div class="v">'+(tnaLocked?'<span class="chip warn">Locked</span>':'<span class="chip ok">Open</span>')+'</div></div></div>'+lockBanner+'<table class="tna-t"><thead><tr><th>Milestone</th><th>Plan date</th><th>Actual date</th><th class="num">Days Left</th><th class="num">Delay</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  $('tna-body').innerHTML=infoHTML+'<div class="tna-kpis"><div><div class="k">Shipment</div><div class="v">'+short(o.ship_date)+'</div></div><div><div class="k">Days Remaining to Ship</div><div class="v" style="'+( dl!=null&&dl<=5?'color:var(--red)':'')+'">'+(dl!=null?dl:'\u2014')+'</div></div><div><div class="k">Packed</div><div class="v">'+pctPacked(o)+'%</div></div><div><div class="k">TNA lock</div><div class="v">'+(tnaLocked?'<span class="chip warn">Locked</span>':'<span class="chip ok">Open</span>')+'</div></div></div>'+lockBanner+'<div class="tna-table-glass"><table class="tna-t"><thead><tr><th class="tna-col-mile">Milestone</th><th class="tna-col-date">Plan date</th><th class="tna-col-date">Actual date</th><th class="num tna-col-days">Days Left</th><th class="num tna-col-delay">Delay</th><th class="tna-col-status">Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   openModal('ov-tna');
 }
 
@@ -3710,6 +3877,7 @@ async function addMat(type) {
     await db.from('yarn_receipts').insert({order_id:_matOrdId,received_on:dt2,qty:qty2});
   }
   toast('Saved','ok-t');
+  await recomputeYarnActual(_matOrdId); // keep the TNA actual date in sync automatically
   await reloadSummaries(S.view);
   renderBoard(S.view); // refresh table
   openMaterialModal(_matOrdId, _matDiv); // refresh modal
@@ -3719,9 +3887,61 @@ async function delMat(type, id) {
   if (!confirm('Remove?')) return;
   if (type === 'bk') await db.from('yarn_bookings').delete().eq('id',id);
   else await db.from('yarn_receipts').delete().eq('id',id);
+  await recomputeYarnActual(_matOrdId); // e.g. deleting a receipt can drop total below booked again
   await reloadSummaries(S.view);
   renderBoard(S.view);
   openMaterialModal(_matOrdId, _matDiv);
+}
+
+// ─── TNA ACTUAL-DATE AUTO-LINK ───
+// Shared by both the approval-driven link (PP/Fit/Final Inspection) and the
+// yarn-driven link (booking vs receipt totals) below, so both paths update the
+// order the same safe, optimistic way and never fight each other.
+async function setMilestoneActual(orderId, milesKey, dateVal) {
+  var o = findOrderAnywhere(orderId);
+  var field = 'act_' + milesKey;
+  var current = o ? (o[field] || null) : undefined;
+  var next = dateVal || null;
+  if (current === next) return; // already correct — skip the redundant write/log
+  var patch = { id: orderId };
+  patch[field] = next;
+  if (o) upsertLocalOrder(Object.assign({}, o, patch, { updated_at: new Date().toISOString(), updated_by: S.user.name }));
+  var upd = {}; upd[field] = next; upd.updated_at = new Date().toISOString(); upd.updated_by = S.user.name;
+  await db.from('orders').update(upd).eq('id', orderId);
+}
+
+// Which approval types auto-set which TNA milestone's actual date on approval.
+// Deliberately NOT labdip — plan_yarn is used there only as labdip's own reference/
+// warning date, not a signal that yarn is actually inhoused. That's driven by real
+// booking/receipt totals instead (see recomputeYarnActual below).
+// Only PP and Final Inspection are genuinely, literally one of the 6 official TNA
+// milestones (see MILES above). Fit and Lab Dip are separate garment-development
+// approvals — not TNA milestones — so they must NEVER auto-set a milestone's
+// actual date, no matter how loosely related they might seem.
+var APV_TO_MILES = { pp: 'pp', final_insp: 'insp' };
+
+// ─── YARN INHOUSE ACTUAL-DATE AUTO-LINK ───
+// Recomputes act_yarn from the real booking/receipt totals every time either
+// changes. Walking receipts chronologically (not just "latest entry") means the
+// date shown is when the order genuinely became fully inhoused, even if entries
+// were added out of order — and if a later booking pushes the required total up
+// past what's already been received, this correctly clears act_yarn again rather
+// than leaving a stale "done" date behind.
+async function recomputeYarnActual(orderId) {
+  const [bk, rc] = await Promise.all([
+    db.from('yarn_bookings').select('*').eq('order_id', orderId),
+    db.from('yarn_receipts').select('*').eq('order_id', orderId),
+  ]);
+  var bookings = bk.data || [], receipts = rc.data || [];
+  var totalBooked = bookings.reduce(function(s,x){ return s + (x.qty||0); }, 0);
+  if (totalBooked <= 0) { await setMilestoneActual(orderId, 'yarn', null); return; }
+  var sorted = receipts.slice().sort(function(a,b){ return (a.received_on||'') < (b.received_on||'') ? -1 : (a.received_on||'') > (b.received_on||'') ? 1 : 0; });
+  var running = 0, completedOn = null;
+  for (var i = 0; i < sorted.length; i++) {
+    running += sorted[i].qty || 0;
+    if (running >= totalBooked) { completedOn = sorted[i].received_on; break; }
+  }
+  await setMilestoneActual(orderId, 'yarn', completedOn);
 }
 
 // ─── PP APPROVAL MODAL ───
@@ -3739,8 +3959,8 @@ var _ldOrdId = null, _ldDiv = null;
 // ─── APPROVAL FLOW MODAL ───
 var S_apv = { ordId: null, type: null, division: null, rounds: [], step: null };
 var APV_TYPE_CONFIG = {
-  labdip:      { label: 'Lab Dip',        planKey: 'plan_yarn' },
-  fit:         { label: 'Fit',            planKey: 'plan_sew' },
+  labdip:      { label: 'Lab Dip' },
+  fit:         { label: 'Fit' },
   sizeset:     { label: 'Size Set' },
   pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
   ppt:         { label: 'Pre-Production Test', manualDate: true },
@@ -3750,7 +3970,6 @@ var APV_TYPE_CONFIG = {
   spudi_status:{ label: 'Spudi Status' }
 };
 var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' }; // kept for back-compat
-var APV_PLAN_KEY = { labdip: 'plan_yarn', fit: 'plan_sew', pp: 'plan_pp' }; // kept for back-compat
 
 // The ONE chip renderer every approval column uses — fixed (Lab Dip/Fit/PP/Size Set),
 // custom Column-Manager columns (PPT/Inline/FRI/Lock Sample), and the row-expansion
@@ -3817,7 +4036,7 @@ function renderApvModal() {
   });
   o = o || {};
   var apvCfg = APV_TYPE_CONFIG[S_apv.type] || {};
-  var planKey = apvCfg.planKey || APV_PLAN_KEY[S_apv.type];
+  var planKey = apvCfg.planKey;
   var planDate = planKey ? o[planKey] : (apvCfg.planFieldKey ? getFieldValue(S_apv.ordId, apvCfg.planFieldKey) : null);
   var dl = planDate ? daysTo(planDate) : null;
   var pc = dl===null?'#73706A':dl<0?'var(--red)':dl<=7?'var(--amber)':'var(--green)';
@@ -3867,7 +4086,9 @@ function renderApvModal() {
       +'<div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">'+rLabel+'</div>'
       +'<div style="font-size:13px;color:var(--muted);margin-bottom:8px">When did you send it to the buyer?</div>'
       +'<input class="apv-date-big" type="date" id="apv-submit-date" value="'+today0+'"></div>';
-    footHTML='<button class="btn" onclick="closeModal(\'ov-apv-flow\')">Cancel</button><button class="btn pri" onclick="apvDoSubmit()">Confirm submission</button>';
+    footHTML='<button class="btn" onclick="closeModal(\'ov-apv-flow\')">Cancel</button>'
+      + (canAct && latest && latest.rejected_on ? '<button class="btn" onclick="apvUndoLatest()" style="color:var(--red)">&#x21A9; Undo rejection</button>' : '')
+      + '<button class="btn pri" onclick="apvDoSubmit()">Confirm submission</button>';
   } else if (S_apv.step==='outcome') {
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px">'
       +'<div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Round '+(latest?latest.round:1)+' — What was the outcome?</div>'
@@ -3891,6 +4112,7 @@ function renderApvModal() {
       +'<div style="width:44px;height:44px;border-radius:50%;background:var(--green-soft);border:2px solid #4ADE80;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;color:var(--green)">✓</div>'
       +'<div style="font-size:16px;font-weight:600;color:var(--green);margin-bottom:4px">Approved</div>'
       +'<div style="font-size:12.5px;color:var(--muted)">'+short(ar?ar.approved_on:'')+'  ·  Round '+(ar?ar.round:'')+'</div></div>';
+    if (canAct) footHTML='<button class="btn" onclick="apvUndoLatest()" style="color:var(--red)">&#x21A9; Undo approval</button><button class="btn pri" onclick="closeModal(\'ov-apv-flow\')">Done</button>';
   } else {
     actionHTML=!canAct
       ?'<div style="border-top:1px solid var(--line);padding-top:12px;font-size:12.5px;color:var(--muted)">View only — the merchandiser manages this approval.</div>':'' ;
@@ -3942,6 +4164,12 @@ async function apvDoResult(outcome) {
   var { error } = await db.from('approvals').update(upd).eq('id', latest.id);
   if (error) { toast('Error saving', 'err'); return; }
 
+  // Auto-link to the TNA actual date — no more entering the same date twice.
+  var linkedMiles = APV_TO_MILES[S_apv.type];
+  if (linkedMiles) {
+    await setMilestoneActual(S_apv.ordId, linkedMiles, outcome === 'approve' ? date : null);
+  }
+
   // If this is a TNA-linked approval type and it came in AFTER the TNA plan date,
   // notify managers/seniors — covers Lab Dip, Fit, PP, FRI, and any future type with
   // a planKey/planFieldKey in APV_TYPE_CONFIG (not just PP as before).
@@ -3972,6 +4200,41 @@ async function apvDoResult(outcome) {
   closeModal('ov-apv-flow');
 }
 
+// Reverts the LATEST round's outcome only — not the whole history. If it was an
+// approval, this also clears whatever TNA actual date it auto-set, so the order
+// correctly shows as "not approved yet" again rather than leaving a stale date.
+// Scoped to the latest round deliberately: undoing an older round while newer
+// ones already exist on top of it isn't a coherent single action.
+async function apvUndoLatest() {
+  if (!confirm('Undo this outcome? It will go back to awaiting a decision.')) return;
+  var latest = S_apv.rounds[S_apv.rounds.length - 1];
+  if (!latest) return;
+  var wasApproved = !!latest.approved_on;
+  var wasRejected = !!latest.rejected_on;
+  if (!wasApproved && !wasRejected) return;
+  var upd = wasApproved ? { approved_on: null } : { rejected_on: null };
+  var { error } = await db.from('approvals').update(upd).eq('id', latest.id);
+  if (error) { toast('Error undoing', 'err'); return; }
+
+  var linkedMiles = APV_TO_MILES[S_apv.type];
+  if (linkedMiles && wasApproved) {
+    await setMilestoneActual(S_apv.ordId, linkedMiles, null);
+  }
+
+  toast('Undone — back to awaiting a decision', '');
+  logActivity(S_apv.ordId, 'Approval undone', (APV_TYPE_CONFIG[S_apv.type]||{}).label + ' — round ' + latest.round + ' reverted to pending');
+  await reloadSummaries(S.view);
+  renderBoard(S.view);
+  if (S.view === 'laying-goods') renderLayingGoods();
+
+  // Refresh the modal in place at the outcome step, rather than closing it —
+  // the person almost certainly wants to immediately re-decide.
+  var res = await db.from('approvals').select('*').eq('order_id', S_apv.ordId).eq('type', S_apv.type).order('round');
+  S_apv.rounds = res.data || [];
+  S_apv.step = 'outcome';
+  renderApvModal();
+}
+
 
 // ─── TNA LOCK + REQUEST ───
 function isTNALocked(ordId, merchantId) {
@@ -3989,6 +4252,227 @@ var _tnareq = { ordId: null, field: null, label: null, current: null };
 function openShipExtensionRequest(ordId, currentShipDate) {
   closeModal('ov-order');
   openTNARequestForm(ordId, 'ship_date', 'Shipment Date (Buyer Extension)', currentShipDate);
+}
+
+// ─── BULK TNA PRINT ───
+// Same "planning team gets a buffer, management gets real dates" idea as the
+// single-order print, but as one table covering many orders at once — and with
+// a selection step, since the whole point is being able to send just the NEW
+// orders next time without resending ones already handed off.
+var _btnaUid = null;
+var _btnaSelected = {}; // orderId -> true
+var _btnaAudience = null;
+
+function openBulkTNASelect(uid) {
+  _btnaUid = uid;
+  _btnaSelected = {};
+  _btnaAudience = null;
+  document.getElementById('btna-aud-planning').classList.remove('sel');
+  document.getElementById('btna-aud-mgmt').classList.remove('sel');
+  document.getElementById('btna-buffer-row').style.display = 'none';
+  document.getElementById('btna-generate-btn').disabled = true;
+  var merch = S.users.find(function(u){ return u.id === uid; });
+  $('btna-sub').textContent = (merch?merch.name:'') + ' \u2014 pick which live orders to include';
+  bulkTNARenderList();
+  openModal('ov-bulk-tna');
+}
+
+function bulkTNAGetOrders() {
+  var list = (S.boardCache[_btnaUid] || S.orders.filter(function(o){ return o.merchant_id === _btnaUid; })) || [];
+  return list.filter(function(o){ return o.stage !== 'shipped'; })
+    .slice().sort(function(a,b){ return (a.ship_date||'9999') < (b.ship_date||'9999') ? -1 : 1; });
+}
+
+function bulkTNARenderList() {
+  var orders = bulkTNAGetOrders();
+  if (!orders.length) {
+    $('btna-list').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0;text-align:center">No live orders for this merchant.</div>';
+    bulkTNAUpdateCount();
+    return;
+  }
+  $('btna-list').innerHTML = orders.map(function(o) {
+    var checked = _btnaSelected[o.id] ? 'checked' : '';
+    return '<label class="btna-row"><input type="checkbox" data-oid="' + o.id + '" ' + checked + ' onchange="bulkTNAToggle(this)">'
+      + '<div class="btna-row-main"><div class="btna-row-style">' + o.style + '</div><div class="btna-row-meta">PO ' + (o.po_number||'\u2014') + ' \u00b7 ' + o.buyer + ' \u00b7 ships ' + short(o.ship_date) + '</div></div>'
+      + '</label>';
+  }).join('');
+  bulkTNAUpdateCount();
+}
+
+function bulkTNAToggle(cb) {
+  if (cb.checked) _btnaSelected[cb.dataset.oid] = true;
+  else delete _btnaSelected[cb.dataset.oid];
+  bulkTNAUpdateCount();
+}
+
+function bulkTNAQuickSelect(mode) {
+  var orders = bulkTNAGetOrders();
+  _btnaSelected = {};
+  if (mode === 'all') orders.forEach(function(o){ _btnaSelected[o.id] = true; });
+  bulkTNARenderList();
+}
+
+function bulkTNAUpdateCount() {
+  var n = Object.keys(_btnaSelected).length;
+  $('btna-count').textContent = n + ' order' + (n===1?'':'s') + ' selected';
+  $('btna-generate-btn').disabled = !(n > 0 && _btnaAudience);
+}
+
+function selectBulkTNAAudience(aud) {
+  _btnaAudience = aud;
+  document.getElementById('btna-aud-planning').classList.toggle('sel', aud === 'planning');
+  document.getElementById('btna-aud-mgmt').classList.toggle('sel', aud === 'management');
+  document.getElementById('btna-buffer-row').style.display = aud === 'planning' ? 'block' : 'none';
+  bulkTNAUpdateCount();
+}
+
+async function generateBulkTNAPrint() {
+  var ids = Object.keys(_btnaSelected);
+  if (!ids.length || !_btnaAudience) return;
+  var orders = bulkTNAGetOrders().filter(function(o){ return _btnaSelected[o.id]; });
+  var buffer = _btnaAudience === 'planning' ? (parseInt(document.getElementById('btna-buffer-days').value) || 0) : 0;
+  var merch = S.users.find(function(u){ return u.id === _btnaUid; });
+  var division = merch ? (merch.division||'sweater') : 'sweater';
+  var VMILES = getMiles(division);
+  var genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var audienceLabel = _btnaAudience === 'planning' ? 'Planning Team' : 'Management';
+
+  var headerCells = VMILES.map(function(x){ return '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817;white-space:nowrap">'+x.n+'</th>'; }).join('');
+  var bodyRows = orders.map(function(o) {
+    var cells = VMILES.map(function(x){
+      var p = o['plan_' + x.k];
+      if (buffer && (x.k === 'insp' || x.k === 'ship')) p = shiftDate(p, buffer);
+      return '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-family:Georgia,serif;font-size:12.5px;white-space:nowrap">'+(p?short(p):'\u2014')+'</td>';
+    }).join('');
+    return '<tr><td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-weight:700;white-space:nowrap">'+o.style+'</td>'
+      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+(o.po_number||'\u2014')+'</td>'
+      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+o.buyer+'</td>'
+      + cells + '</tr>';
+  }).join('');
+
+  $('btnapdf-sub').textContent = genDate + ' \u00b7 For: ' + audienceLabel + ' \u00b7 ' + orders.length + ' orders';
+
+  var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#191817;background:#fff;margin:20px;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)">'
+    + '<div style="padding:24px 28px 20px;border-bottom:2px solid #191817;display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#73706A;font-weight:700;margin-bottom:6px">Shahana Group</div>'
+    + '<div style="font-family:Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.4px">TNA Plan \u2014 ' + (merch?merch.name:'') + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:12px;color:#73706A">' + genDate + '</div>'
+    + '<div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#A0A09A;margin-top:3px;font-weight:700">For: ' + audienceLabel + '</div></div>'
+    + '</div>'
+    + '<div style="padding:20px 28px;overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'
+    + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Style</th>'
+    + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">PO</th>'
+    + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Buyer</th>'
+    + headerCells + '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>'
+    + '<div style="padding:14px 28px;border-top:1px solid #E5E2D9;font-size:10.5px;color:#A0A09A">Generated ' + genDate + ' by ' + S.user.name + ' \u00b7 ' + orders.length + ' orders</div>'
+    + '</div>';
+
+  $('btnapdf-body').innerHTML = html;
+  closeModal('ov-bulk-tna');
+  openModal('ov-bulk-tna-print');
+}
+function closeBulkTNAPrint() {
+  $('ov-bulk-tna-print').classList.remove('printing');
+  closeModal('ov-bulk-tna-print');
+}
+function printBulkTNADoc() {
+  document.querySelectorAll('.ov').forEach(function(o){ o.classList.remove('printing'); });
+  $('ov-bulk-tna-print').classList.add('printing');
+  window.print();
+}
+
+// ─── TNA PRINT ───
+// Two audiences, one document layout. The "planning team" version shows the
+// Final Inspection & Shipment dates shifted earlier by a chosen buffer — purely
+// on the printout, so the team has an internal deadline ahead of the real
+// buyer-committed date. Nothing here ever writes to the database; the shift only
+// exists inside this one generated HTML string.
+var _tnaPrintAudience = null;
+
+function openTNAPrintOptions() {
+  _tnaPrintAudience = null;
+  document.getElementById('tna-aud-planning').classList.remove('sel');
+  document.getElementById('tna-aud-mgmt').classList.remove('sel');
+  document.getElementById('tna-buffer-row').style.display = 'none';
+  document.getElementById('tna-print-generate-btn').disabled = true;
+  openModal('ov-tna-print-opts');
+}
+function selectTNAAudience(aud) {
+  _tnaPrintAudience = aud;
+  document.getElementById('tna-aud-planning').classList.toggle('sel', aud === 'planning');
+  document.getElementById('tna-aud-mgmt').classList.toggle('sel', aud === 'management');
+  document.getElementById('tna-buffer-row').style.display = aud === 'planning' ? 'block' : 'none';
+  document.getElementById('tna-print-generate-btn').disabled = false;
+}
+function shiftDate(dateStr, days) {
+  if (!dateStr || !days) return dateStr;
+  var d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+function generateTNAPrint() {
+  var ordId = S._tnaCurrentOrdId;
+  var o = findOrderAnywhere(ordId);
+  if (!o) return;
+  var merch = S.users.find(function(u){ return u.id === o.merchant_id; });
+  var division = merch ? (merch.division||'sweater') : 'sweater';
+  var VMILES = getMiles(division);
+  var buffer = _tnaPrintAudience === 'planning' ? (parseInt(document.getElementById('tna-buffer-days').value) || 0) : 0;
+  var countryVal = getFieldValue(ordId, 'country') || '';
+  var photoUrl = getStyleImage(o.merchant_id, o.style);
+  var genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var audienceLabel = _tnaPrintAudience === 'planning' ? 'Planning Team' : 'Management';
+
+  function infoItem(label, val) {
+    if (!val) return '';
+    return '<div style="min-width:0"><div style="font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#73706A;font-weight:700">'+label+'</div><div style="font-size:13px;font-weight:600;color:#191817;margin-top:2px">'+val+'</div></div>';
+  }
+
+  var rows = VMILES.map(function(x) {
+    var p = o['plan_' + x.k];
+    // Only Final Inspection & Shipment get the buffer applied — every other
+    // milestone always prints its real, unmodified plan date.
+    if (buffer && (x.k === 'insp' || x.k === 'ship')) p = shiftDate(p, buffer);
+    return '<tr><td style="padding:10px 14px;border-bottom:1px solid #E5E2D9;font-weight:600">'+x.n+'</td>'
+      + '<td style="padding:10px 14px;border-bottom:1px solid #E5E2D9;font-family:Georgia,serif;font-size:15px">'+(p?short(p):'\u2014')+'</td></tr>';
+  }).join('');
+
+  $('tnapdf-sub').textContent = genDate + ' \u00b7 For: ' + audienceLabel;
+
+  var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#191817;background:#fff;margin:20px;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)">'
+    + '<div style="padding:24px 28px 20px;border-bottom:2px solid #191817;display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#73706A;font-weight:700;margin-bottom:6px">Shahana Group</div>'
+    + '<div style="font-family:Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.4px">TNA Plan \u2014 ' + o.style + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:12px;color:#73706A">' + genDate + '</div>'
+    + '<div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#A0A09A;margin-top:3px;font-weight:700">For: ' + audienceLabel + '</div></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:16px;align-items:flex-start;padding:20px 28px;background:#F7F5EF;border-bottom:1px solid #E5E2D9">'
+    + (photoUrl ? '<img src="'+photoUrl+'" style="width:70px;height:70px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid #E5E2D9">' : '')
+    + '<div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 16px">'
+    + infoItem('PO Number', o.po_number) + infoItem('Buyer', o.buyer) + infoItem('Buying House', o.house)
+    + infoItem('Country', countryVal) + infoItem('Merchant', merch?merch.name:'')
+    + infoItem('Order Confirmed', o.confirm_date?short(o.confirm_date):'') + infoItem('Quantity', o.qty?fmt(o.qty)+' pcs':'')
+    + '</div></div>'
+    + '<div style="padding:20px 28px"><table style="width:100%;border-collapse:collapse"><thead><tr>'
+    + '<th style="text-align:left;padding:0 14px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Milestone</th>'
+    + '<th style="text-align:left;padding:0 14px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Target Date</th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+    + '<div style="padding:14px 28px;border-top:1px solid #E5E2D9;font-size:10.5px;color:#A0A09A">Generated ' + genDate + ' by ' + S.user.name + '</div>'
+    + '</div>';
+
+  $('tnapdf-body').innerHTML = html;
+  closeModal('ov-tna-print-opts');
+  openModal('ov-tna-print');
+}
+function closeTNAPrint() {
+  $('ov-tna-print').classList.remove('printing');
+  closeModal('ov-tna-print');
+}
+function printTNADoc() {
+  document.querySelectorAll('.ov').forEach(function(o){ o.classList.remove('printing'); });
+  $('ov-tna-print').classList.add('printing');
+  window.print();
 }
 
 function openTNARequestForm(ordId, fieldName, fieldLabel, currentVal) {
