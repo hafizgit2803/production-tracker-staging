@@ -148,9 +148,23 @@ tbody tr.late td.stk{background-color:#FDECEA!important}
 .chip.bad{background:var(--red-soft);color:var(--red)}
 .chip.warn{background:var(--orange-soft);color:var(--orange)}
 .cell{display:flex;align-items:center;gap:5px;justify-content:flex-end}
-.qtyin{width:64px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;text-align:right;
+.qtyin{width:100%;box-sizing:border-box;padding:3px 5px;border:1px solid var(--line);border-radius:6px;text-align:right;
   font-family:var(--mono);font-size:12px;background:#FCFBF7}
 .qtyin:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);background:#fff}
+.qtyin-done{border-color:#86EFAC;background:#F0FDF4}
+[data-theme="dark"] .qtyin-done{border-color:#166534;background:#0E2018}
+/* Hide native spinner arrows — wastes space and the up/down click behavior is redundant with typing */
+.qtyin::-webkit-outer-spin-button,.qtyin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qtyin[type=number]{-moz-appearance:textfield}
+.prod-cell{display:flex;flex-direction:column;gap:3px;width:100%}
+.prod-readonly{text-align:right;font-family:var(--mono);font-size:11.5px;padding:3px 5px}
+.prod-bal-chip{width:100%;box-sizing:border-box;text-align:center;font-size:9.5px;font-weight:700;
+  padding:2px 4px;border-radius:6px;border:1px solid;letter-spacing:.01em;font-family:var(--mono)}
+.prod-bal-chip.short{background:#FEF2F2;color:#B91C1C;border-color:#FCA5A5}
+.prod-bal-chip.done{background:#16A34A;color:#fff;border-color:#15803D;font-family:inherit;letter-spacing:.02em}
+.prod-bal-chip.over{background:#16A34A;color:#fff;border-color:#15803D;font-family:inherit;letter-spacing:.02em}
+[data-theme="dark"] .prod-bal-chip.short{background:#2E1515;color:#FCA5A5;border-color:#7F1D1D}
+[data-theme="dark"] .prod-bal-chip.done,[data-theme="dark"] .prod-bal-chip.over{background:#15803D;color:#DCFCE7;border-color:#166534}
 .bar{height:3px;border-radius:3px;background:#E8E5DC;width:42px;overflow:hidden;flex:0 0 42px}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .bar i.full{background:var(--green)}
@@ -226,6 +240,9 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 #toast.show{opacity:1;transform:none}
 #toast.err{background:var(--red)}
 #toast.ok-t{background:var(--green)}
+.toast-undo-btn{margin-left:10px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);
+  color:#fff;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer}
+.toast-undo-btn:hover{background:rgba(255,255,255,.3)}
 
 /* Loading */
 .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--line);
@@ -407,52 +424,20 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 [data-theme="dark"] .ok-chip{background:#0E2018;border-color:#166534}
 [data-theme="dark"] .ok-chip:hover{background:#14532D}
 
-/* Expanded inline row */
-.exp-row td{padding:0!important;background:#FAFAF7!important;border-bottom:2px solid var(--accent)!important}
-.exp-row td.stk{background-color:#FAFAF7!important;z-index:20}
-[data-theme="dark"] .exp-row td{background:#1E1D1F!important}
-[data-theme="dark"] .exp-row td.stk{background-color:#1E1D1F!important}
-.exp-inner{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;min-height:160px}
-.exp-panel{padding:14px 16px;border-right:1px solid var(--line)}
-.exp-panel:last-child{border-right:none}
-.exp-panel-title{font-size:10px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--muted);font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.exp-mini-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}
-.exp-mini-table td{padding:4px 6px;border-bottom:1px solid #F0EDE4;vertical-align:middle}
-.exp-mini-table td:last-child{text-align:right;font-family:var(--mono)}
-.exp-tna-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;border-bottom:1px solid #F0EDE4}
-.exp-tna-row:last-child{border:none}
-.exp-tna-lbl{width:110px;flex-shrink:0;color:var(--muted);font-size:11px}
-.exp-tna-plan{width:68px;font-family:var(--mono);font-size:11px;flex-shrink:0}
-.exp-tna-actual{flex:1}
-.exp-tna-inp{padding:2px 6px;border:1px solid var(--line);border-radius:5px;
-  background:#FCFBF7;font-size:11px;width:108px;color:var(--ink)}
-.exp-tna-inp:focus{outline:none;border-color:var(--accent)}
-.exp-add-form{display:none;padding:6px 0 2px}
-.exp-add-form.open{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
-.exp-add-form input{padding:4px 7px;border:1px solid var(--line);border-radius:6px;
-  background:#FCFBF7;font-size:12px;color:var(--ink)}
-.exp-add-form input:focus{outline:none;border-color:var(--accent)}
-.exp-summary{display:flex;gap:12px;padding:6px 0;font-size:12px}
-.exp-summary .sv{font-weight:600;font-family:var(--mono)}
-.exp-summary .sv.bad{color:var(--red)}
-.exp-summary .sv.ok{color:var(--green)}
-.exp-apv-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;border-bottom:1px solid #F0EDE4}
-.exp-apv-grid{display:flex;flex-wrap:wrap;gap:10px}
-.exp-apv-item{width:104px}
-.exp-apv-item-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.exp-apv-row:last-child{border:none}
-.exp-apv-lbl{width:54px;flex-shrink:0;font-weight:600;font-size:11px;color:var(--muted)}
-.exp-apv-date{padding:2px 6px;border:1px solid var(--line);border-radius:5px;
-  background:#FCFBF7;font-size:11px;width:108px;color:var(--ink)}
-.exp-apv-date:focus{outline:none;border-color:var(--accent)}
+/* Activity modal */
+.exp-activity-list{max-height:280px;overflow-y:auto}
+.exp-activity-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #F0EDE4}
+.exp-activity-row:last-child{border-bottom:none}
+.exp-activity-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.exp-activity-line{font-size:11.5px}
+.exp-activity-detail{font-size:10.5px;color:var(--muted);margin-top:1px}
+.exp-activity-time{font-size:9.5px;color:var(--muted);margin-top:2px;font-style:italic}
+.ccs-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px}
+.ccs-row:hover{background:var(--accent-soft)}
+.ccs-row input{width:16px;height:16px;cursor:pointer}
 .exp-loading{padding:20px;text-align:center;color:var(--muted);font-size:12px}
-[data-theme="dark"] .exp-mini-table td{border-color:var(--line)}
-[data-theme="dark"] .exp-tna-inp,[data-theme="dark"] .exp-apv-date,[data-theme="dark"] .exp-add-form input{background:#2A2828;border-color:var(--line);color:var(--ink)}
-[data-theme="dark"] .exp-tna-row,[data-theme="dark"] .exp-apv-row{border-color:var(--line)}
 
 /* Edit qty modal */
-.eq-step{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 
 
 /* Compact inline columns for Yarn and PP */
@@ -969,7 +954,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-09 WF-5.4-ROWCOMPACT</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-6.3</p>
   </div>
 </div>
 
@@ -1004,7 +989,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-09 WF-5.4-ROWCOMPACT</div>
+  <div id="ver-stamp">v2026-09-10 WF-6.3</div>
 </div>
 
 
@@ -1185,23 +1170,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 </div>
 
 <!-- ═══ MODAL: EDIT COMPLETED QTY ═══ -->
-<div class="ov" id="ov-edit-qty" onclick="if(event.target===this)closeModal('ov-edit-qty')">
-  <div class="modal slim">
-    <div class="m-h"><div><h3>Edit quantity</h3><div class="msub">Order complete — update if incorrect</div></div>
-      <button class="btn" onclick="closeModal('ov-edit-qty')">Cancel</button></div>
-    <div class="m-b">
-      <div class="eq-step" id="eq-step" style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px"></div>
-      <div class="f"><label>New quantity (pcs)</label>
-        <input id="eq-val" type="number" min="0" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;font-size:16px;font-family:var(--mono);color:var(--ink)">
-      </div>
-      <div class="hint" style="margin-top:6px">Order qty: <strong id="eq-max"></strong> pcs. Enter a lower value to revert to active tracking.</div>
-    </div>
-    <div class="m-f">
-      <button class="btn" onclick="closeModal('ov-edit-qty')">Cancel</button>
-      <button class="btn pri" onclick="saveEditQty()">Update</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- ═══ MODAL: MATERIAL (Yarn/Fabric) ═══ -->
 <div class="ov" id="ov-material" onclick="if(event.target===this)closeModal('ov-material')">
@@ -1408,6 +1377,26 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   </div>
 </div>
 
+<!-- === ACTIVITY MODAL === -->
+<div class="ov" id="ov-activity" onclick="if(event.target===this)closeModal('ov-activity')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3 id="act-modal-title">Activity</h3><div class="msub" id="act-modal-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-activity')">Close</button></div>
+    <div class="m-b"><div id="act-modal-body" class="exp-activity-list" style="max-height:420px"></div></div>
+  </div>
+</div>
+
+<!-- === COPY COLUMN SETUP MODAL === -->
+<div class="ov" id="ov-copy-column-setup" onclick="if(event.target===this)closeModal('ov-copy-column-setup')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3>Copy Column Setup</h3><div class="msub" id="ccs-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-copy-column-setup')">Close</button></div>
+    <div class="m-b"><div id="ccs-body" style="max-height:340px;overflow-y:auto"></div>
+      <button class="btn pri" id="ccs-apply-btn" style="width:100%;margin-top:14px" onclick="applyCopyColumnSetup()">Copy setup</button>
+    </div>
+  </div>
+</div>
+
 <!-- === AVERAGE WEIGHT MODAL === -->
 <div class="ov" id="ov-avg-weight" onclick="if(event.target===this)closeModal('ov-avg-weight')">
   <div class="modal slim">
@@ -1554,8 +1543,6 @@ const S = {
   channel: null,
   detail: { orderId: null, order: null, bookings: [], receipts: [], approvals: [], tab: 'details', division: 'sweater' },
   alerts: [],
-  expandedRow: null,
-  expandedData: null,
   boardSummaries: {},
   tnaRequests: [],
   myAssignments: [],
@@ -1645,18 +1632,58 @@ function missedMiles(o) {
     return a ? toDate(a) > toDate(p) : daysTo(p) < 0;
   });
 }
+// Proactive companion to missedMiles: milestones due within the next 3 days that
+// haven't been submitted yet — catches problems BEFORE they become a miss/alert,
+// rather than only after.
+function atRiskMiles(o) {
+  return MILES.filter(m => {
+    const p = o['plan_' + m.k];
+    if (!p) return false;
+    const a = o['act_' + m.k];
+    if (a) return false; // already actioned
+    const d = daysTo(p);
+    return d >= 0 && d <= 3;
+  });
+}
 function pctPacked(o) {
   return o.qty > 0 ? Math.round(100 * (o.prod_packing || 0) / o.qty) : 0;
 }
 
 // ─── Toast ───
 let toastTimer;
+// Safe to embed free-text (style numbers, buyer/user names) inside a single-quoted
+// JS string literal within an onclick="..." attribute — an apostrophe in a buyer
+// name (e.g. "Macy's") would otherwise break the generated attribute outright.
+function jsAttrEsc(s) {
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function toast(msg, type = '') {
   const t = $('toast');
   t.textContent = msg;
   t.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.className = '', 2800);
+}
+
+// Toast with an inline Undo action — used for inline edits that save instantly
+// in the background with no confirmation step, so a mistyped value has a brief
+// window to be caught before it's forgotten.
+var _undoAction = null;
+function toastUndo(msg, undoFn, seconds) {
+  seconds = seconds || 6;
+  _undoAction = undoFn;
+  const t = $('toast');
+  t.innerHTML = msg + ' <button class="toast-undo-btn" onclick="runUndo()">Undo</button>';
+  t.className = 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; _undoAction = null; }, seconds * 1000);
+}
+function runUndo() {
+  if (_undoAction) { var fn = _undoAction; _undoAction = null; fn(); }
+  const t = $('toast');
+  t.className = '';
+  clearTimeout(toastTimer);
 }
 
 // ─── Modal ───
@@ -1948,6 +1975,16 @@ async function cleanOldArchive() {
   await db.from('orders').delete().eq('shipped', true).lt('shipped_on', cutStr);
 }
 
+// ─── ACTIVITY LOG ───
+// Fire-and-forget — logging must never slow down or block the actual save.
+function logActivity(orderId, action, detail) {
+  if (!orderId) return;
+  db.from('order_activity').insert({
+    order_id: orderId, actor_name: S.user.name, actor_role: S.user.role,
+    action: action, detail: detail || null, created_at: new Date().toISOString()
+  }).then(function(res){ if (res.error) console.error('logActivity error:', res.error); });
+}
+
 // ─── LOCAL ORDER CACHE PATCHING ───
 // Keeps S.orders / S.boardCache / S.archive in sync WITHOUT a network refetch,
 // so edits can be optimistic (show instantly, save quietly in the background)
@@ -2207,6 +2244,34 @@ function renderDashboard() {
       <div class="n">USD shipped this year</div></div>
   </div>`;
 
+  const atRisk = live.filter(o => atRiskMiles(o).length);
+
+  // At-risk widget — milestones due within 3 days with nothing submitted yet.
+  // This is deliberately placed above TNA misses: it's the "catch it before it
+  // becomes a miss" view, not the "already missed" view.
+  html += `<div class="card">
+    <div class="card-h"><h3>&#x26A0;&#xFE0F; At risk — due within 3 days</h3><span class="note">Milestones coming up with no actual entered yet</span></div>
+    ${atRisk.length ? `<div class="scroller"><table>
+      <thead><tr>
+        ${S.user.role !== 'merchant' ? '<th>Merchandiser</th>' : ''}
+        <th>Buyer</th><th>Style</th><th class="num">Order qty</th>
+        <th>Shipment</th><th>Due soon</th><th class="num">Days left</th><th></th>
+      </tr></thead>
+      <tbody>${atRisk.map(o => {
+        const rm = atRiskMiles(o);
+        const merch = S.users.find(u => u.id === o.merchant_id);
+        return `<tr>
+          ${S.user.role !== 'merchant' ? `<td>${merch ? merch.name : '—'}</td>` : ''}
+          <td>${o.buyer}</td><td class="sty">${o.style}</td>
+          <td class="num">${fmt(o.qty)}</td><td>${short(o.ship_date)}</td>
+          <td>${rm.map(x => x.n + ' (' + daysTo(o['plan_'+x.k]) + 'd)').join(', ')}</td>
+          <td class="num" style="color:var(--amber,#B45309);font-weight:700">${Math.min.apply(null, rm.map(x=>daysTo(o['plan_'+x.k])))}</td>
+          <td><button class="btn sm" onclick="openTNA('${o.id}')">TNA</button></td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`
+    : `<div class="empty"><h4>Nothing due soon</h4><div>No upcoming milestones in the next 3 days.</div></div>`}
+  </div>`;
+
   // TNA miss table
   html += `<div class="card">
     <div class="card-h"><h3>TNA misses</h3><span class="note">Milestones past their plan date with no actual entered</span></div>
@@ -2385,8 +2450,9 @@ async function renderBoard(uid) {
     else otherOrders.push(o);
   });
   myBuyers.forEach(function(b){
-    grouped[b.id].sort(function(a,b2){ return (a.confirm_date||'9999') < (b2.confirm_date||'9999') ? -1 : 1; });
+    grouped[b.id] = sortOrdersByStyleAndShip(grouped[b.id]);
   });
+  otherOrders = sortOrdersByStyleAndShip(otherOrders);
 
   var allHtml = '';
   myBuyers.forEach(function(b) {
@@ -2563,7 +2629,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;');
     if (itemByKey['_attachments']) cellsByKey['_attachments'] = singleTd('_attachments', '', '<button class="btn sm ghost" style="font-size:8.5px;padding:2px 8px" onclick="event.stopPropagation();toast(\'Attachments coming soon\')">&#x1F4CE; 0</button>');
-    if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + getStyleImage(uid,o.style) + '\',\'' + o.style + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + o.style + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
+    if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:9.5px;font-family:var(--mono);color:var(--muted);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
     if (itemByKey['_house']) cellsByKey['_house'] = singleTd('_house', '', (o.house||'\u2014'), 'font-size:9px;');
@@ -2597,18 +2663,23 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       var prFrozenCls = frozenClass(prIt);
       var prFrozenStyle = frozenStyle(prIt);
       cellsByKey['_production'] = VSTEPS.map(function(s, idx) {
-        const v = o[s.k] || 0, full = v >= (o.qty||0) && (o.qty||0) > 0;
-        const pct = o.qty ? Math.min(100, 100*v/o.qty) : 0;
+        const v = o[s.k] || 0;
+        const orderQty = o.qty || 0;
+        const balance = v - orderQty;
         var cls = idx === 0 ? prFrozenCls : '';
-        var stl = 'width:90px;min-width:90px;max-width:90px;' + (idx === 0 ? prFrozenStyle : '');
-        if (full && canEdit) return '<td class="' + cls + '" style="text-align:center;' + stl + '"><button class="ok-chip" style="font-size:8.5px;padding:2px 8px" onclick="event.stopPropagation();openEditQty(\'' + o.id + '\',\'' + s.k + '\',' + v + ',' + o.qty + ',\'' + s.n + '\')">&#x2713; OK</button></td>';
-        return '<td class="' + cls + '" style="' + stl + '"><div class="cell"><span class="bar" style="width:38px"><i style="width:' + pct + '%"></i></span>'
-          + (canEdit ? '<input class="qtyin" type="number" min="0" max="' + o.qty + '" value="' + v + '" style="width:56px" onchange="setProd(\'' + o.id + '\',\'' + s.k + '\',this.value)">' : '<span style="font-family:var(--mono);font-size:9.5px">' + fmt(v) + '</span>')
-          + '</div></td>';
+        var stl = 'width:92px;min-width:92px;max-width:92px;' + (idx === 0 ? prFrozenStyle : '');
+        var balHtml = balance < 0
+          ? '<div class="prod-bal-chip short">-' + fmt(Math.abs(balance)) + '</div>'
+          : balance === 0
+          ? '<div class="prod-bal-chip done">Done</div>'
+          : '<div class="prod-bal-chip over">Done +' + fmt(balance) + '</div>';
+        var topHtml = canEdit
+          ? '<input class="qtyin' + (balance >= 0 ? ' qtyin-done' : '') + '" type="number" min="0" value="' + v + '" onfocus="this.select()" onchange="setProd(\'' + o.id + '\',\'' + s.k + '\',this.value)">'
+          : '<div class="prod-readonly">' + fmt(v) + '</div>';
+        return '<td class="' + cls + '" style="' + stl + '"><div class="prod-cell">' + topHtml + balHtml + '</div></td>';
       }).join('');
     }
 
-    if (itemByKey['_balance']) cellsByKey['_balance'] = singleTd('_balance', 'num', fmt((o.qty||0)-(o.prod_packing||0)), 'font-weight:600;');
     if (itemByKey['_notes']) cellsByKey['_notes'] = singleTd('_notes', '', remCell);
 
     customFieldItems.forEach(function(f) {
@@ -2619,13 +2690,14 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     var rowCells = visItems.map(function(item){ return cellsByKey[item.key] || ''; }).join('');
 
-    return '<tr class="' + rowClass(o) + '" onclick="if(!event.target.closest(\'button,input,a,select\'))toggleRowExpand(\'' + o.id + '\',\'' + division + '\')">'
+    return '<tr class="' + rowClass(o) + '">'
       + rowCells
-      + '<td style="white-space:nowrap;width:180px;min-width:180px">'
+      + '<td style="white-space:nowrap;width:190px;min-width:190px">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
-      + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:8.5px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + o.style + '\',\'' + o.buyer + '\')">&#x2715;</button>' : '')
+      + ' <button class="btn sm" onclick="event.stopPropagation();openActivityModal(\'' + o.id + '\')" title="Activity history">&#x1F4DC;</button>'
+      + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:8.5px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + jsAttrEsc(o.style) + '\',\'' + jsAttrEsc(o.buyer) + '\')">&#x2715;</button>' : '')
       + '</td></tr>';
   }).join('');
 
@@ -2662,10 +2734,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th>';
     }
     else if (key === '_production') {
-      topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*90) + 'px;min-width:' + (VSTEPS.length*90) + 'px;max-width:' + (VSTEPS.length*90) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
-      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:90px;min-width:90px;max-width:90px;font-size:9px">'+s.n+'</th>';}).join('');
+      topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*92) + 'px;min-width:' + (VSTEPS.length*92) + 'px;max-width:' + (VSTEPS.length*92) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
+      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_balance') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Bal') + '</th>';
     else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Notes') + '</th>';
     else {
       var mf = getFieldByKey(key);
@@ -2673,7 +2744,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="' + mfWrapCls + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
-  topRow += '<th rowspan="2" style="width:180px;min-width:180px"></th>';
+  topRow += '<th rowspan="2" style="width:190px;min-width:190px"></th>';
 
   return '<div class="card"><div class="scroller dyn-scroller"><table class="dyn-board">'
     + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
@@ -2884,6 +2955,7 @@ async function saveOrder() {
     }
     closeModal('ov-order');
     toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
+    if (_editOrderId) logActivity(_editOrderId, 'Order details edited', styleVal ? ('Style ' + styleVal) : null);
     _editOrderId = null;
     delete S.boardCache[orderForMerchant];
     await loadDashOrders();
@@ -3024,16 +3096,20 @@ async function editOrder(orderId) {
 }
 
 
-async function setProd(ordId, key, val) {
+async function setProd(ordId, key, val, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
   if (!o) return;
-  const clamped = Math.max(0, Math.min(o.qty || 0, Number(val) || 0));
+  const oldVal = o[key] || 0;
+  // No longer capped at order quantity — overproduction is a real, valid state now
+  // (shown in the balance row), just guarded against an obvious fat-finger typo.
+  const clamped = Math.max(0, Math.min(999999, Number(val) || 0));
   const patch = { id: ordId, [key]: clamped, updated_at: new Date().toISOString(), updated_by: S.user.name };
 
   // Optimistic: reflect the change immediately, save quietly in the background —
   // no reload, no skeleton, no lost scroll position.
   upsertLocalOrder(Object.assign({}, o, patch));
   render();
+  logActivity(ordId, 'Production updated', key + ': ' + oldVal + ' \u2192 ' + clamped);
 
   const { error } = await db.from('orders').update({
     [key]: clamped, updated_at: new Date().toISOString(), updated_by: S.user.name
@@ -3044,6 +3120,9 @@ async function setProd(ordId, key, val) {
     render();
   } else {
     db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
+    if (!isUndo && oldVal !== clamped) {
+      toastUndo(key + ' set to ' + clamped, function(){ setProd(ordId, key, oldVal, true); });
+    }
   }
 }
 
@@ -3104,14 +3183,16 @@ function openTNA(ordId, division) {
   openModal('ov-tna');
 }
 
-async function setPlanDate(ordId, field, val, division) {
+async function setPlanDate(ordId, field, val, division, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  const oldVal = o ? (o[field] || null) : null;
   const patch = { id: ordId, [field]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
 
   // Optimistic: update locally and re-render immediately; save happens in the background.
   if (o) upsertLocalOrder(Object.assign({}, o, patch));
   render();
   openTNA(ordId, division);
+  logActivity(ordId, 'TNA plan date updated', field + ' set to ' + (val || 'cleared'));
 
   const { error } = await db.from('orders').update({ [field]: val||null, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('id', ordId);
   if (error) {
@@ -3121,12 +3202,16 @@ async function setPlanDate(ordId, field, val, division) {
     openTNA(ordId, division);
   } else {
     await loadDashOrders();
+    if (!isUndo && oldVal !== (val||null)) {
+      toastUndo(field + ' updated', function(){ setPlanDate(ordId, field, oldVal, division, true); });
+    }
   }
 }
 
 
-async function setAct(ordId, mKey, val, division, skipModalRefresh) {
+async function setAct(ordId, mKey, val, division, skipModalRefresh, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  const oldVal = o ? (o['act_' + mKey] || null) : null;
   const patch = { id: ordId, ['act_' + mKey]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
 
   // Optimistic: update locally and re-render immediately; the save itself happens
@@ -3136,6 +3221,7 @@ async function setAct(ordId, mKey, val, division, skipModalRefresh) {
   if (o) upsertLocalOrder(Object.assign({}, o, patch));
   if (!skipModalRefresh) openTNA(ordId, division);
   render();
+  logActivity(ordId, 'TNA actual date updated', mKey + ' actual set to ' + (val || 'cleared'));
 
   const { error } = await db.from('orders').update({
     ['act_' + mKey]: val || null,
@@ -3149,6 +3235,9 @@ async function setAct(ordId, mKey, val, division, skipModalRefresh) {
     render();
   } else {
     db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
+    if (!isUndo && oldVal !== (val||null)) {
+      toastUndo(mKey + ' actual date updated', function(){ setAct(ordId, mKey, oldVal, division, skipModalRefresh, true); });
+    }
   }
 }
 
@@ -3225,188 +3314,39 @@ function showShipResult(o, qty, date, isLate, isShort, daysLate, shortQty, value
 }
 
 // ─── EXPANDABLE ROWS ───
-async function toggleRowExpand(ordId, division) {
-  if (S.expandedRow === ordId) {
-    S.expandedRow = null;
-    S.expandedData = null;
-    renderBoard(S.view);
-    return;
-  }
-  S.expandedRow = ordId;
-  S.expandedData = null;
-  renderBoard(S.view); // show skeleton first
-  await refreshExpandedRow(ordId, division);
+async function openActivityModal(ordId) {
+  var o = findOrderAnywhere(ordId);
+  $('act-modal-title').textContent = 'Activity — ' + (o?o.style:'');
+  $('act-modal-sub').textContent = (o?o.buyer:'') || '';
+  $('act-modal-body').innerHTML = '<div class="exp-loading">Loading...</div>';
+  openModal('ov-activity');
+  var res = await db.from('order_activity').select('*').eq('order_id', ordId).order('created_at', { ascending: false }).limit(50);
+  $('act-modal-body').innerHTML = activityHTML(res.data || []);
 }
 
-// Reloads and re-renders an already-open expanded row's panels IN PLACE —
-// unlike toggleRowExpand, this never closes the panel, so it's safe to call
-// after any inline edit inside it (bookings, receipts, approvals, TNA actuals).
-async function refreshExpandedRow(ordId, division) {
-  // Load detail data
-  const [bk, rc, ap] = await Promise.all([
-    db.from('yarn_bookings').select('*').eq('order_id', ordId).order('booked_on'),
-    db.from('yarn_receipts').select('*').eq('order_id', ordId).order('received_on'),
-    db.from('approvals').select('*').eq('order_id', ordId).order('round'),
-  ]);
-  S.expandedData = { bookings: bk.data || [], receipts: rc.data || [], approvals: ap.data || [] };
-
-  const container = document.getElementById('exp-' + ordId);
-  if (!container) return;
-
-  const merch = S.users.find(u => u.id === S.view);
-  const div = division || (merch ? merch.division : 'sweater') || 'sweater';
-  const unit = div === 'knit' ? 'kgs' : 'lbs';
-  const matLabel = div === 'knit' ? 'Fabric' : 'Yarn';
-  const canEdit = S.user.role === 'management' || S.user.id === S.view;
-  const VMILES = getMiles(div);
-  const bkData = S.expandedData.bookings;
-  const rcData = S.expandedData.receipts;
-  const apData = S.expandedData.approvals;
-  const totalBk = bkData.reduce(function(s,x){return s+(x.qty||0);},0);
-  const totalRc = rcData.reduce(function(s,x){return s+(x.qty||0);},0);
-  const bal = totalBk - totalRc;
-
-  // Get the order from board cache
-  const o = (S.boardCache[S.view]||[]).find(function(x){return x.id===ordId;}) || {};
-  const today0 = new Date().toISOString().slice(0,10);
-
-  // Panel 1: Material
-  var bkRows = bkData.length ? bkData.map(function(b){
-    return '<tr><td>' + short(b.booked_on) + '</td><td>' + (b.supplier||'—') + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(b.qty) + '</td>'
-      + (canEdit ? '<td><button class="btn sm danger" style="padding:1px 6px" onclick="delBk(\''+b.id+'\',\''+ordId+'\',\''+division+'\')">×</button></td>' : '') + '</tr>';
-  }).join('') : '<tr><td colspan="4" style="color:var(--muted);font-size:11px">No bookings yet</td></tr>';
-
-  var rcRows = rcData.length ? rcData.map(function(r,i){
-    var run=rcData.slice(0,i+1).reduce(function(s,x){return s+(x.qty||0);},0);
-    return '<tr><td>' + short(r.received_on) + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(r.qty) + '</td><td style="text-align:right;font-family:var(--mono);color:var(--muted)">' + fmt(run) + '</td>'
-      + (canEdit ? '<td><button class="btn sm danger" style="padding:1px 6px" onclick="delRc(\''+r.id+'\',\''+ordId+'\',\''+division+'\')">×</button></td>' : '') + '</tr>';
-  }).join('') : '<tr><td colspan="4" style="color:var(--muted);font-size:11px">No receipts yet</td></tr>';
-
-  var matHTML = '<div class="exp-panel">'
-    + '<div class="exp-panel-title">' + matLabel + ' bookings (' + unit + ')'
-    + (canEdit ? ' <button class="btn sm pri" style="padding:2px 8px;font-size:11px" onclick="toggleExpForm(\'bk-form-'+ordId+'\')">+ Booking</button>' : '')
-    + '</div>'
-    + '<table class="exp-mini-table"><thead><tr><th>Date</th><th>Supplier</th><th style="text-align:right">Qty</th>' + (canEdit?'<th></th>':'') + '</tr></thead><tbody>' + bkRows + '</tbody></table>'
-    + (canEdit ? '<div id="bk-form-' + ordId + '" class="exp-add-form">'
-      + '<input type="date" id="bkd-'+ordId+'" value="'+today0+'" style="width:112px">'
-      + '<input type="text" id="bks-'+ordId+'" placeholder="Supplier" style="width:120px">'
-      + '<input type="number" id="bkq-'+ordId+'" placeholder="Qty" style="width:80px">'
-      + '<button class="btn sm pri" onclick="saveBk(\''+ordId+'\',\''+division+'\')">Save</button>'
-      + '<button class="btn sm ghost" onclick="toggleExpForm(\'bk-form-'+ordId+'\')">Cancel</button>'
-      + '</div>' : '')
-    + '<div style="font-size:11px;color:var(--muted);margin-top:8px;border-top:1px solid var(--line);padding-top:6px">' + matLabel + ' received'
-    + (canEdit ? ' <button class="btn sm" style="padding:1px 6px;font-size:11px;margin-left:4px" onclick="toggleExpForm(\'rc-form-'+ordId+'\')">+ Receipt</button>' : '')
-    + '</div>'
-    + '<table class="exp-mini-table"><thead><tr><th>Date</th><th style="text-align:right">Qty</th><th style="text-align:right">Total</th>' + (canEdit?'<th></th>':'') + '</tr></thead><tbody>' + rcRows + '</tbody></table>'
-    + (canEdit ? '<div id="rc-form-' + ordId + '" class="exp-add-form">'
-      + '<input type="date" id="rcd-'+ordId+'" value="'+today0+'" style="width:112px">'
-      + '<input type="number" id="rcq-'+ordId+'" placeholder="Qty" style="width:100px">'
-      + '<button class="btn sm pri" onclick="saveRc(\''+ordId+'\',\''+division+'\')">Save</button>'
-      + '<button class="btn sm ghost" onclick="toggleExpForm(\'rc-form-'+ordId+'\')">Cancel</button>'
-      + '</div>' : '')
-    + (totalBk ? '<div class="exp-summary"><span>Booked: <span class="sv">' + fmt(totalBk) + '</span></span><span>Rcvd: <span class="sv ' + (totalRc>=totalBk?'ok':'') + '">' + fmt(totalRc) + '</span></span><span>Bal: <span class="sv ' + (bal>0?'bad':bal===0?'ok':'') + '">' + fmt(bal) + '</span></span></div>' : '')
-    + '</div>';
-
-  // Panel 2: Approvals — one shared chip system for every approval type.
-  // Add a new type to APV_TYPE_CONFIG and it appears here automatically — nothing
-  // in this panel needs to change.
-  var apvHTML = '<div class="exp-panel"><div class="exp-panel-title">Approvals</div><div class="exp-apv-grid">'
-    + Object.keys(APV_TYPE_CONFIG).map(function(type) {
-        var cfg = APV_TYPE_CONFIG[type];
-        var planDate = cfg.planKey ? o[cfg.planKey] : (cfg.planFieldKey ? getFieldValue(ordId, cfg.planFieldKey) : null);
-        var sumForType = { ap: {} };
-        sumForType.ap[type] = apData.filter(function(a){ return a.type === type; });
-        return '<div class="exp-apv-item"><div class="exp-apv-item-lbl">' + cfg.label + '</div>' + apvChip(sumForType, type, ordId, division, canEdit, planDate) + '</div>';
-      }).join('')
-    + '</div></div>';
-
-  // Panel 3: TNA — read-only display of plan vs actual; editing only happens through
-  // the TNA pill/modal (same lock rules as everywhere else — see isTNALocked)
-  var tnaBypass = S.user.role === 'management' || S.user.role === 'admin';
-  var tnaRowsLocked = !tnaBypass && isTNALocked(ordId, o.merchant_id);
-  var tnaHTML = '<div class="exp-panel"><div class="exp-panel-title">TNA — Plan vs Actual' + (tnaRowsLocked ? ' <span style="font-weight:400;font-size:9.5px;color:var(--muted)">(locked — use the TNA pill)</span>' : '') + '</div>'
-    + VMILES.map(function(x){
-      var p = o['plan_'+x.k], a = o['act_'+x.k];
-      var delay = '', stCls = '';
-      if (p && a) { var dd=Math.round((toDate(a)-toDate(p))/86400000); delay=dd>0?'<span style="font-size:10px;color:var(--red)">+'+dd+'d</span>':'<span style="font-size:10px;color:var(--green)">✓</span>'; }
-      else if (p && !a) { var dd2=daysTo(p); if(dd2<0) delay='<span style="font-size:10px;color:var(--red)">+'+(-dd2)+'d</span>'; }
-      return '<div class="exp-tna-row"><div class="exp-tna-lbl">' + x.n + '</div>'
-        + '<div class="exp-tna-plan">' + short(p) + '</div>'
-        + '<div class="exp-tna-actual">' + (canEdit && !tnaRowsLocked
-          ? '<input class="exp-tna-inp" type="date" value="'+(a||'')+'" onchange="setActExp(\''+o.id+'\',\''+x.k+'\',this.value,\''+div+'\')">'
-          : '<span style="font-family:var(--mono);font-size:11px">' + short(a) + '</span>')
-        + '</div>' + delay + '</div>';
-    }).join('')
-    + '</div>';
-
-  container.innerHTML = matHTML + apvHTML + tnaHTML;
+function activityHTML(entries) {
+  var rows = entries.length ? entries.map(function(e){
+    return '<div class="exp-activity-row">'
+      + '<div class="exp-activity-dot"></div>'
+      + '<div class="exp-activity-body">'
+      + '<div class="exp-activity-line"><strong>' + e.actor_name + '</strong> &middot; ' + e.action + '</div>'
+      + (e.detail ? '<div class="exp-activity-detail">' + e.detail + '</div>' : '')
+      + '<div class="exp-activity-time">' + relTime(e.created_at) + '</div>'
+      + '</div></div>';
+  }).join('') : '<div style="color:var(--muted);font-size:12px;padding:10px 0">No activity recorded yet</div>';
+  return rows;
 }
 
-function toggleExpForm(id) {
-  var el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
+function relTime(iso) {
+  if (!iso) return '';
+  var diff = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+  return short(iso.slice(0,10));
 }
 
-// Inline booking/receipt/approval helpers (reuse existing fns but refresh inline)
-async function saveBk(ordId, division) {
-  var dt=document.getElementById('bkd-'+ordId).value;
-  var sup=document.getElementById('bks-'+ordId).value.trim();
-  var qty=parseFloat(document.getElementById('bkq-'+ordId).value)||0;
-  if (!dt||!qty){toast('Date and quantity required','err');return;}
-  await db.from('yarn_bookings').insert({order_id:ordId,booked_on:dt,qty:qty,supplier:sup});
-  await refreshExpandedRow(ordId, division);
-}
-async function delBk(id, ordId, division) {
-  if (!confirm('Remove?')) return;
-  await db.from('yarn_bookings').delete().eq('id',id);
-  await refreshExpandedRow(ordId, division);
-}
-async function saveRc(ordId, division) {
-  var dt=document.getElementById('rcd-'+ordId).value;
-  var qty=parseFloat(document.getElementById('rcq-'+ordId).value)||0;
-  if (!dt||!qty){toast('Date and quantity required','err');return;}
-  await db.from('yarn_receipts').insert({order_id:ordId,received_on:dt,qty:qty});
-  await refreshExpandedRow(ordId, division);
-}
-async function delRc(id, ordId, division) {
-  if (!confirm('Remove?')) return;
-  await db.from('yarn_receipts').delete().eq('id',id);
-  await refreshExpandedRow(ordId, division);
-}
-async function addApvRound(ordId, type, division) {
-  var existing=(S.expandedData&&S.expandedData.approvals||[]).filter(function(a){return a.type===type;});
-  var nextR=existing.length?Math.max.apply(null,existing.map(function(r){return r.round;}))+1:1;
-  await db.from('approvals').insert({order_id:ordId,type:type,round:nextR});
-  await refreshExpandedRow(ordId, division);
-}
-async function updApv(id, field, val, ordId, division) {
-  var obj={}; obj[field]=val||null;
-  await db.from('approvals').update(obj).eq('id',id);
-  S.expandedData = null; // force reload
-  await refreshExpandedRow(ordId, division);
-}
-async function setActExp(ordId, mKey, val, div) {
-  await setAct(ordId, mKey, val, div, true);
-  // Refresh the expanded row's own TNA panel (setAct already re-rendered the board)
-  if (S.expandedRow === ordId) {
-    await refreshExpandedRow(ordId, div);
-  }
-}
-
-// ─── EDIT COMPLETED QTY ───
-var _eqTarget = {ordId:null, key:null, orderQty:0};
-function openEditQty(ordId, key, currentVal, orderQty, stepName) {
-  _eqTarget = {ordId:ordId, key:key, orderQty:orderQty};
-  $('eq-step').textContent = stepName + ' — ' + fmt(currentVal) + ' pcs';
-  $('eq-max').textContent = fmt(orderQty);
-  $('eq-val').value = currentVal;
-  openModal('ov-edit-qty');
-}
-async function saveEditQty() {
-  const val = parseInt($('eq-val').value)||0;
-  await setProd(_eqTarget.ordId, _eqTarget.key, val);
-  closeModal('ov-edit-qty');
-}
 
 // ─── PDF DOWNLOAD ───
 function downloadPDF() {
@@ -3655,7 +3595,6 @@ async function openApvFlow(ordId, type, division) {
     });
     o = o || {};
     if (!$('apvf-title')) { console.error('apvf-title missing'); toast('Modal not found — refresh page', 'err'); return; }
-    console.log('openApvFlow type:', type, 'ordId:', ordId);
     $('apvf-title').textContent = label;
     $('apvf-sub').textContent = (o.style||'') + (o.buyer ? ' — ' + o.buyer : '') + (o.qty ? ' · ' + fmt(o.qty) + ' pcs' : '');
     var res = await db.from('approvals').select('*').eq('order_id', ordId).eq('type', type).order('round');
@@ -3795,6 +3734,7 @@ async function apvDoSubmit() {
   });
   if (error) { toast('Error saving', 'err'); return; }
   toast('Submission recorded', 'ok-t');
+  logActivity(S_apv.ordId, 'Approval submitted', (APV_TYPE_CONFIG[S_apv.type]||{}).label + ' — round ' + nextRound + ' submitted');
   await reloadSummaries(S.view);
   renderBoard(S.view);
   if (S.view === 'laying-goods') renderLayingGoods();
@@ -3834,6 +3774,7 @@ async function apvDoResult(outcome) {
   }
 
   toast(outcome === 'approve' ? 'Approved!' : 'Rejection recorded', outcome === 'approve' ? 'ok-t' : '');
+  logActivity(S_apv.ordId, outcome === 'approve' ? 'Approval accepted' : 'Approval rejected', (APV_TYPE_CONFIG[S_apv.type]||{}).label + ' on ' + date);
   await reloadSummaries(S.view);
   renderBoard(S.view);
   if (S.view === 'laying-goods') renderLayingGoods();
@@ -3886,7 +3827,9 @@ async function submitTNARequest() {
 
     const payload = {
       order_id: _tnareq.ordId,
-      merchant_id: S.user.id,
+      merchant_id: o.merchant_id || S.user.id, // the order's actual owning merchant — NOT necessarily whoever is submitting (a JM can submit on a merchant's behalf)
+      requested_by: S.user.id,
+      requested_by_name: S.user.name,
       field_name: _tnareq.field,
       field_label: _tnareq.label,
       current_val: _tnareq.current || null,
@@ -3906,6 +3849,7 @@ async function submitTNARequest() {
     await loadTNARequests();
     renderRail();
     toast('Request submitted — awaiting HOD/Manager approval');
+    logActivity(_tnareq.ordId, 'TNA change requested', _tnareq.label + ': ' + (_tnareq.current||'none') + ' \u2192 ' + proposed);
   } catch(err) {
     console.error('submitTNARequest exception:', err);
     toast('Unexpected error — check console', 'err');
@@ -3935,10 +3879,12 @@ function renderRequestsView() {
   $('content').innerHTML = '<div class="card" style="padding:16px 20px">'
     + pending.map(function(r) {
         const merch = S.users.find(function(u){ return u.id === r.merchant_id; });
+        const submittedByJM = r.requested_by && r.requested_by !== r.merchant_id;
+        const whoLine = (merch ? merch.name : 'Unknown') + (submittedByJM && r.requested_by_name ? ' &middot; requested by <strong style="color:#DB2777">' + r.requested_by_name + '</strong> (JM)' : '');
         return '<div class="req-card pending">'
           + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>'
           + '<span class="chip warn" style="font-size:10px">Pending</span></div>'
-          + '<div class="req-card-meta">' + (merch ? merch.name : 'Unknown') + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</div>'
+          + '<div class="req-card-meta">' + whoLine + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</div>'
           + '<div class="req-card-change"><span class="lbl" style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0">' + r.field_label + '</span><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
           + '<div class="req-card-reason">"' + r.reason + '"</div>'
           + '<div class="req-card-actions">'
@@ -3976,6 +3922,7 @@ async function reviewRequest(reqId, decision, ordId, fieldName, proposedVal) {
   }
 
   toast(decision === 'approved' ? 'Approved — TNA updated automatically' : 'Request rejected', decision==='approved'?'ok-t':'');
+  logActivity(ordId, decision === 'approved' ? 'TNA request approved' : 'TNA request rejected', fieldName + (decision==='approved' ? ' \u2192 ' + proposedVal : ''));
   await loadTNARequests();
   await loadDashOrders();
   renderRail();
@@ -3986,41 +3933,55 @@ async function reviewRequest(reqId, decision, ordId, fieldName, proposedVal) {
 function renderMyRequests() {
   $('crumb').textContent = 'My Requests';
   $('page-title').textContent = 'My TNA Requests';
-  $('page-sub').innerHTML = 'Status of your change requests';
+  $('page-sub').innerHTML = S.user.role === 'jm' ? 'Status of TNA change requests for your assigned merchants' : 'Status of your change requests';
   $('stamp').innerHTML = '';
   $('act-row').innerHTML = '';
 
-  if (!S.tnaRequests.length) {
+  const visible = S.tnaRequests.filter(function(r){ return !isDismissedByMe(r); });
+  if (!visible.length) {
     $('content').innerHTML = '<div class="card"><div class="empty"><h4>No requests</h4><div>When you request a TNA date change, it will appear here.</div></div></div>';
     return;
   }
 
   $('content').innerHTML = '<div class="card" style="padding:16px 20px">'
-    + S.tnaRequests.map(function(r) {
+    + visible.map(function(r) {
         const cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
         const badge = r.status === 'approved'
           ? '<span class="chip ok" style="font-size:10px">Approved</span>'
           : r.status === 'rejected'
           ? '<span class="chip bad" style="font-size:10px">Rejected</span>'
           : '<span class="chip warn" style="font-size:10px">Pending review</span>';
+        const byLine = r.requested_by_name ? (r.requested_by === S.user.id ? 'You' : r.requested_by_name) : null;
         return '<div class="req-card ' + cls + '">'
           + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>' + badge + '</div>'
-          + '<div class="req-card-meta">' + r.field_label + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + '</div>'
+          + '<div class="req-card-meta">' + r.field_label + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + (byLine ? ' &middot; requested by <strong>' + byLine + '</strong>' : '') + '</div>'
           + '<div class="req-card-change"><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
           + '<div class="req-card-reason">"' + r.reason + '"</div>'
           + (r.status === 'approved' ? '<div style="font-size:12px;color:var(--green);margin-bottom:8px">&#x2713; TNA date updated automatically on ' + new Date(r.reviewed_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + '</div>' : '')
           + (r.status === 'rejected' ? '<div style="font-size:12px;color:var(--red);margin-bottom:8px">&#x2717; Rejected by ' + r.reviewed_by + '</div>' : '')
-          + (r.status !== 'pending' ? '<button class="btn sm ghost" onclick="deleteMyRequest(\'' + r.id + '\')">Remove</button>' : '<button class="btn sm danger" onclick="cancelRequest(\'' + r.id + '\')">Cancel request</button>')
+          + (r.status !== 'pending' ? '<button class="btn sm ghost" onclick="deleteMyRequest(\'' + r.id + '\')">Remove</button>' : ((r.requested_by ? r.requested_by===S.user.id : r.merchant_id===S.user.id) ? '<button class="btn sm danger" onclick="cancelRequest(\'' + r.id + '\')">Cancel request</button>' : ''))
           + '</div>';
       }).join('')
     + '</div>';
 }
 
 async function deleteMyRequest(reqId) {
-  await db.from('tna_requests').delete().eq('id', reqId);
+  // Personal dismiss, not a shared delete — the other party (merchant or JM) on this
+  // request still needs to see it in their own list, so we only hide it for whoever
+  // clicked Remove, tracked as a list of user ids on the row itself.
+  var req = S.tnaRequests.find(function(r){ return r.id === reqId; });
+  var dismissed = [];
+  try { dismissed = req && req.dismissed_by ? JSON.parse(req.dismissed_by) : []; } catch(e) { dismissed = []; }
+  if (!dismissed.includes(S.user.id)) dismissed.push(S.user.id);
+  await db.from('tna_requests').update({ dismissed_by: JSON.stringify(dismissed) }).eq('id', reqId);
   await loadTNARequests();
   renderRail();
   renderMyRequests();
+}
+
+function isDismissedByMe(r) {
+  if (!r.dismissed_by) return false;
+  try { return (JSON.parse(r.dismissed_by) || []).includes(S.user.id); } catch(e) { return false; }
 }
 
 async function cancelRequest(reqId) {
@@ -5065,9 +5026,12 @@ function renderRail() {
     var ib=pr+al;
     html+=ni('requests','&#x1F4EC;','Inbox',ib,ib>0);
   }
-  if(isMerchant){
-    var unr=(S.tnaRequests||[]).filter(function(r2){return r2.status!=='pending'&&!r2.merchant_seen;}).length;
-    html+=ni('my-requests','&#x1F4CB;','My Requests',unr||(S.tnaRequests||[]).length,unr>0);
+  if(isMerchant || isJM){
+    var visReqs = (S.tnaRequests||[]).filter(function(r2){ return !isDismissedByMe(r2); });
+    var unr = isJM
+      ? visReqs.filter(function(r2){ return r2.status!=='pending' && r2.requested_by===S.user.id && !r2.requester_seen; }).length
+      : visReqs.filter(function(r2){return r2.status!=='pending'&&!r2.merchant_seen;}).length;
+    html+=ni('my-requests','&#x1F4CB;','My Requests',unr||visReqs.length,unr>0);
   }
   if(isAdmin){
     html+='<div class="rail-sep"></div>';
@@ -5096,9 +5060,24 @@ async function loadTNARequests() {
     var newResolved = S.tnaRequests.filter(function(req){ return req.status!=='pending'&&!req.merchant_seen; });
     if (newResolved.length) {
       newResolved.forEach(function(req){
-        toast((req.status==='approved'?'\u2713 TNA updated: ':'\u2717 Rejected: ') + req.field_label, req.status==='approved'?'ok-t':'err');
+        var who = req.requested_by && req.requested_by !== S.user.id && req.requested_by_name ? (' (requested by ' + req.requested_by_name + ')') : '';
+        toast((req.status==='approved'?'\u2713 TNA updated: ':'\u2717 Rejected: ') + req.field_label + who, req.status==='approved'?'ok-t':'err');
       });
       await db.from('tna_requests').update({ merchant_seen: true }).in('id', newResolved.map(function(req){ return req.id; }));
+    }
+  } else if (r === 'jm') {
+    // A JM sees the same request list as any merchant they're assigned to — same
+    // information, but each person's own "have I seen this resolved" state is
+    // tracked separately (requester_seen) so both get notified independently.
+    if (!S.myJMMerchants || !S.myJMMerchants.length) { S.tnaRequests = []; return; }
+    var res4 = await db.from('tna_requests').select('*').in('merchant_id', S.myJMMerchants).order('created_at', { ascending: false });
+    S.tnaRequests = res4.data || [];
+    var newResolvedJM = S.tnaRequests.filter(function(req){ return req.status!=='pending' && req.requested_by===S.user.id && !req.requester_seen; });
+    if (newResolvedJM.length) {
+      newResolvedJM.forEach(function(req){
+        toast((req.status==='approved'?'\u2713 TNA updated: ':'\u2717 Rejected: ') + req.field_label, req.status==='approved'?'ok-t':'err');
+      });
+      await db.from('tna_requests').update({ requester_seen: true }).in('id', newResolvedJM.map(function(req){ return req.id; }));
     }
   } else if (r === 'admin' || r === 'hod') {
     var res2 = await db.from('tna_requests').select('*').eq('status','pending').order('created_at', { ascending: false });
@@ -5930,7 +5909,6 @@ var FIXED_BLOCKS = [
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
-  { key:'_balance',     name:'Balance',      width:65,  mandatory:false },
   { key:'_notes',       name:'Notes',        width:100, wrap:true, mandatory:false },
 ];
 
@@ -6216,9 +6194,12 @@ async function renderBuyerColumnTable(buyerId) {
   var maxFreeze = items.length;
   _cmItems = items;
   $('cm-body').innerHTML = '<div style="padding:12px 16px 8px;font-size:12px;color:var(--muted)">Configuring columns for <strong>' + (buyer?buyer.name:'') + '</strong>. Changes save instantly. Fixed columns and custom fields share one order &mdash; reorder freely. Leave <strong>Display name</strong> blank to use the default.</div>'
-    + '<div style="padding:0 16px 10px;position:relative">'
+    + '<div style="padding:0 16px 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    + '<div style="position:relative">'
     + '<input type="text" id="cm-search-input" placeholder="&#x1F50D; Search columns&hellip;" autocomplete="off" oninput="cmSearchFields(this.value)" onkeydown="if(event.key===\'Escape\')cmClearSearch()" onblur="setTimeout(cmClearSearch,180)" style="width:280px;max-width:100%;padding:8px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:13px;background:#FCFBF7;color:var(--ink)">'
     + '<div id="cm-search-suggestions" class="cm-search-suggestions" style="display:none"></div>'
+    + '</div>'
+    + '<button class="btn sm" onclick="openCopyColumnSetup(\'' + buyerId + '\')">&#x1F4CB; Copy this setup to other buyers&hellip;</button>'
     + '</div>'
     + '<div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px">'
     + '<span style="font-size:12px;font-weight:600;color:var(--ink)">&#x1F9CA; Freeze first</span>'
@@ -6227,6 +6208,43 @@ async function renderBuyerColumnTable(buyerId) {
     + '</div>'
     + '<table class="cm-table"><thead><tr><th>Column</th><th>Display name</th><th class="center">Show</th><th class="center">Live</th><th class="center">Laying</th><th class="center">Shipped</th><th class="center">Order</th></tr></thead>'
     + '<tbody>' + rows + '</tbody></table>';
+}
+
+// ─── COPY COLUMN SETUP TO OTHER BUYERS ───
+var _ccsSourceBuyer = null;
+function openCopyColumnSetup(buyerId) {
+  _ccsSourceBuyer = buyerId;
+  var srcBuyer = S.buyers.find(function(b){ return b.id === buyerId; });
+  var others = S.buyers.filter(function(b){ return b.id !== buyerId; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  $('ccs-sub').textContent = 'Copy ' + (srcBuyer?srcBuyer.name:'this buyer') + '\u2019s column setup (visibility, order, display names, freeze count) onto:';
+  $('ccs-body').innerHTML = others.length
+    ? others.map(function(b){
+        return '<label class="ccs-row"><input type="checkbox" class="ccs-check" value="' + b.id + '"> <span>' + b.name + '</span></label>';
+      }).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:10px 0">No other buyers to copy to.</div>';
+  openModal('ov-copy-column-setup');
+}
+async function applyCopyColumnSetup() {
+  var checked = Array.prototype.slice.call(document.querySelectorAll('.ccs-check:checked')).map(function(cb){ return cb.value; });
+  if (!checked.length) { toast('Select at least one buyer', 'err'); return; }
+  var sourceItems = getUnifiedOrderedItems(_ccsSourceBuyer);
+  var sourceFreeze = getBuyerFreezeCount(_ccsSourceBuyer);
+  var btn = $('ccs-apply-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Copying\u2026'; }
+  for (var t = 0; t < checked.length; t++) {
+    var targetId = checked[t];
+    for (var i = 0; i < sourceItems.length; i++) {
+      var item = sourceItems[i];
+      var cfgCopy = Object.assign({}, item.cfg, { buyer_id: targetId, field_key: item.key });
+      delete cfgCopy.id; // let the target row keep/create its own primary key
+      await db.from('buyer_field_visibility').upsert(cfgCopy, { onConflict: 'buyer_id,field_key' });
+    }
+    await setBuyerFreezeCount(targetId, sourceFreeze); // the modal promises this too — don't leave it out
+    delete S.fieldVisibility[targetId]; // force a fresh read next time that buyer's board renders
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Copy setup'; }
+  toast('Column setup copied to ' + checked.length + ' buyer' + (checked.length>1?'s':''), 'ok-t');
+  closeModal('ov-copy-column-setup');
 }
 
 function cmSearchFields(query) {
@@ -6418,6 +6436,37 @@ function renderDelayCell(orderId) {
   var color = diff <= 0 ? 'var(--green)' : 'var(--red)';
   var sign = diff > 0 ? '+' : '';
   return '<span style="color:' + color + ';font-weight:700;font-family:var(--mono);font-size:12px">' + sign + diff + 'd</span>';
+}
+
+// Board display order: POs sharing a style stay grouped together, and groups (plus
+// orders within a group) are ordered by ship date — earliest first. A style with no
+// ship date sorts last. Ties fall back to created_at then id so the order never
+// drifts between refreshes.
+function sortOrdersByStyleAndShip(list) {
+  var styleMinShip = {};
+  list.forEach(function(o) {
+    var key = o.style || '';
+    var sd = o.ship_date || '9999-12-31';
+    if (!styleMinShip[key] || sd < styleMinShip[key]) styleMinShip[key] = sd;
+  });
+  return list.slice().sort(function(a, b) {
+    var ga = styleMinShip[a.style || ''] || '9999-12-31';
+    var gb = styleMinShip[b.style || ''] || '9999-12-31';
+    if (ga < gb) return -1;
+    if (ga > gb) return 1;
+    var sa = a.style || '', sb = b.style || '';
+    if (sa < sb) return -1;
+    if (sa > sb) return 1;
+    var da = a.ship_date || '9999-12-31', db2 = b.ship_date || '9999-12-31';
+    if (da < db2) return -1;
+    if (da > db2) return 1;
+    var ca = a.created_at || '', cb = b.created_at || '';
+    if (ca < cb) return -1;
+    if (ca > cb) return 1;
+    if (a.id < b.id) return -1;
+    if (a.id > b.id) return 1;
+    return 0;
+  });
 }
 
 function findOrderAnywhere(orderId) {
