@@ -169,9 +169,6 @@ tbody tr.late td.stk{background-color:#FDECEA!important}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .bar i.full{background:var(--green)}
 .done-lbl{font-size:10.5px;font-weight:700;color:var(--green);letter-spacing:.03em}
-.rem-in{width:120px;padding:3px 6px;border:1px solid transparent;border-radius:6px;background:transparent;font-size:12px}
-.rem-in:hover{border-color:var(--line);background:#FCFBF7}
-.rem-in:focus{outline:none;border-color:var(--accent);background:#fff}
 
 /* ── LOGIN ── */
 #login-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200}
@@ -297,8 +294,6 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 [data-theme="dark"] .f input[readonly]{background:#252325;color:var(--muted)}
 [data-theme="dark"] .qtyin{background:#2A2828;border-color:var(--line);color:var(--ink)}
 [data-theme="dark"] .qtyin:focus{background:#333133}
-[data-theme="dark"] .rem-in:hover{background:#2A2828;border-color:var(--line)}
-[data-theme="dark"] .rem-in:focus{background:#333133;color:var(--ink)}
 [data-theme="dark"] .note-card{background:#2A2610;border-color:#4A4220}
 [data-theme="dark"] .note-card.closed{background:#252325}
 [data-theme="dark"] .tna-kpis>div{background:#252325}
@@ -435,6 +430,26 @@ table.tna-t td.early-c{color:var(--green);font-weight:600}
 .ccs-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px}
 .ccs-row:hover{background:var(--accent-soft)}
 .ccs-row input{width:16px;height:16px;cursor:pointer}
+
+/* Header hover tooltip */
+.th-tip{position:relative;cursor:help;border-bottom:1px dotted rgba(0,0,0,.3)}
+.th-tip:hover::after{
+  content:attr(data-tip);position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  background:#1F1F1F;color:#fff;padding:8px 10px;border-radius:8px;font-size:10.5px;
+  font-weight:500;line-height:1.4;white-space:normal;width:180px;z-index:200;margin-top:7px;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);text-align:left;text-transform:none;letter-spacing:normal}
+.th-tip:hover::before{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%) rotate(45deg);
+  width:8px;height:8px;background:#1F1F1F;z-index:200;margin-top:3px}
+
+/* Order notes modal */
+.notes-textarea{width:100%;min-height:320px;box-sizing:border-box;padding:14px 16px;
+  border:1.5px solid var(--line);border-radius:10px;background:#FCFBF7;color:var(--ink);
+  font-size:14px;line-height:1.7;font-family:inherit;resize:vertical}
+.notes-textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+.notes-textarea:read-only{background:var(--panel);color:var(--muted);cursor:default}
+[data-theme="dark"] .notes-textarea{background:#2A2828}
+.notes-hint{font-size:11px;color:var(--muted);margin-top:8px}
 .exp-loading{padding:20px;text-align:center;color:var(--muted);font-size:12px}
 
 /* Edit qty modal */
@@ -492,9 +507,14 @@ button.apv-chip{font-family:inherit}
 [data-theme="dark"] .apv-chip.submitted{background:#B45309;color:#FEF3C7;border-color:#92400E}
 [data-theme="dark"] .apv-chip.approved{background:#15803D;color:#DCFCE7;border-color:#166534}
 [data-theme="dark"] .apv-chip.rejected{background:#B91C1C;color:#FEE2E2;border-color:#991B1B}
-.apv-date-line{font-size:8px;color:var(--muted);margin-top:2px;font-family:var(--mono);line-height:1.3}
-.apv-manual-date{margin-top:2px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;
-  font-size:8px;background:#FCFBF7;color:var(--ink);width:100%;box-sizing:border-box}
+.apv-date-line{margin-top:3px;padding:2px 5px;border-radius:5px;background:var(--accent-soft);
+  color:var(--accent);font-size:9.5px;font-weight:700;font-family:var(--mono);line-height:1.4;
+  text-align:center;border:1px solid #E8CFC2;box-sizing:border-box}
+[data-theme="dark"] .apv-date-line{background:#3A2C24;color:#E8B4A0;border-color:#5A4335}
+.apv-date-line.empty{background:transparent;color:var(--muted);border-color:var(--line);font-weight:600}
+[data-theme="dark"] .apv-date-line.empty{background:transparent;border-color:var(--line)}
+.apv-manual-date{margin-top:3px;padding:3px 5px;border:1.5px solid var(--line);border-radius:5px;
+  font-size:9.5px;font-weight:700;background:#FCFBF7;color:var(--ink);width:100%;box-sizing:border-box}
 .apv-col{width:108px;text-align:center;vertical-align:middle;padding:2px 4px !important}
 .apv-outcome-btn{padding:14px 10px;border-radius:10px;border:2px solid;font-size:14px;
   font-weight:600;cursor:pointer;text-align:center;transition:all .12s;
@@ -955,7 +975,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-6.4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-7.0</p>
   </div>
 </div>
 
@@ -990,7 +1010,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-6.4</div>
+  <div id="ver-stamp">v2026-09-10 WF-7.0</div>
 </div>
 
 
@@ -1378,6 +1398,18 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   </div>
 </div>
 
+<!-- === ORDER NOTES MODAL === -->
+<div class="ov" id="ov-order-notes" onclick="if(event.target===this)closeNotesModal()">
+  <div class="modal slim">
+    <div class="m-h"><div><h3 id="on-modal-title">Notes</h3><div class="msub" id="on-modal-sub"></div></div>
+      <button class="btn" onclick="closeNotesModal()">Close</button></div>
+    <div class="m-b">
+      <textarea id="on-modal-textarea" class="notes-textarea" oninput="scheduleNotesSave()" onkeydown="onNotesTextareaKeydown(event)" onblur="saveOrderNotes()"></textarea>
+      <div class="notes-hint">Saves automatically as you type. Start a line with &#x2022; for a bullet \u2014 press Enter to continue the list.</div>
+    </div>
+  </div>
+</div>
+
 <!-- === ACTIVITY MODAL === -->
 <div class="ov" id="ov-activity" onclick="if(event.target===this)closeModal('ov-activity')">
   <div class="modal slim">
@@ -1659,6 +1691,11 @@ function jsAttrEsc(s) {
   return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
+// Safe to embed free-text inside HTML attribute values (title="...") or text content.
+function htmlEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function toast(msg, type = '') {
   const t = $('toast');
   t.textContent = msg;
@@ -1691,7 +1728,14 @@ function runUndo() {
 function openModal(id) { $(id).classList.add('open'); }
 function closeModal(id) { $(id).classList.remove('open'); }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('.ov.open').forEach(o => o.classList.remove('open'));
+  if (e.key === 'Escape') {
+    // The notes modal autosaves on a delay while typing — if Escape closes it
+    // through this global path instead of the textarea's own handler, flush
+    // first so the last few keystrokes aren't lost.
+    var notesModal = document.getElementById('ov-order-notes');
+    if (notesModal && notesModal.classList.contains('open')) { closeNotesModal(); return; }
+    document.querySelectorAll('.ov.open').forEach(o => o.classList.remove('open'));
+  }
 });
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('[data-close]');
@@ -2597,9 +2641,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ms = missedMiles(o), dl = daysTo(o.ship_date);
     const sum = sums[o.id] || {bk:0, rc:0, ap:{}, acc:{}};
 
-    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn) + '<div class="apv-date-line">' + (o.plan_yarn ? 'TNA: '+short(o.plan_yarn) : 'No TNA date') + '</div>';
-    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew) + '<div class="apv-date-line">' + (o.plan_sew ? 'TNA: '+short(o.plan_sew) : 'No TNA date') + '</div>';
-    const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp) + '<div class="apv-date-line">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
+    const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, o.plan_yarn) + '<div class="apv-date-line' + (o.plan_yarn?'':' empty') + '">' + (o.plan_yarn ? 'TNA: '+short(o.plan_yarn) : 'No TNA date') + '</div>';
+    const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, o.plan_sew) + '<div class="apv-date-line' + (o.plan_sew?'':' empty') + '">' + (o.plan_sew ? 'TNA: '+short(o.plan_sew) : 'No TNA date') + '</div>';
+    const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp) + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
 
@@ -2610,11 +2654,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
         + '<div class="row"><span class="k">Bal</span><span class="v ' + (bal>0?'bad':bal===0&&totalBk>0?'ok':'') + '">' + fmt(bal) + '</span></div>'
       : '<div style="color:var(--muted);font-size:8.5px;padding:2px 0">No booking</div>';
 
-    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px">'+dl+'</span>' : dl;
+    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : '<span style="font-weight:700">'+dl+'</span>';
 
-    const remCell = canEdit
-      ? '<input class="rem-in" style="width:100%" value="' + (o.remarks||'').replace(/"/g,'&quot;') + '" placeholder="Note\u2026" onchange="setRemark(\'' + o.id + '\',this.value)">'
-      : '<span class="sub2">' + (o.remarks||'\u2014') + '</span>';
+    const notesText = (o.remarks||'').trim();
+    const notesPreviewRaw = notesText ? notesText.replace(/\u2022\s*/g,'').split('\n')[0].slice(0,28) : '';
+    const remCell = '<button class="cf-chip' + (notesText?' has-val':'') + '" onclick="event.stopPropagation();openOrderNotesModal(\'' + o.id + '\')" title="' + htmlEsc(notesText || 'Click to add notes') + '">' + (notesText ? '&#x1F4DD; ' + htmlEsc(notesPreviewRaw) + (notesText.length>28?'\u2026':'') : '+ Note') + '</button>';
 
     // Build cell HTML keyed by column key — every cell carries width + frozen positioning
     var cellsByKey = {};
@@ -2631,16 +2675,16 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;');
     if (itemByKey['_attachments']) cellsByKey['_attachments'] = singleTd('_attachments', '', '<button class="btn sm ghost" style="font-size:8.5px;padding:2px 8px" onclick="event.stopPropagation();toast(\'Attachments coming soon\')">&#x1F4CE; 0</button>');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
-    if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:9.5px;font-family:var(--mono);color:var(--muted);');
+    if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11.5px;font-weight:700;font-family:var(--mono);color:var(--ink);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
     if (itemByKey['_house']) cellsByKey['_house'] = singleTd('_house', '', (o.house||'\u2014'), 'font-size:9px;');
     if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:9px;');
     if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:9px;');
     if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:9px;');
-    if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty));
-    if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2));
-    if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)));
-    if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:9px;');
+    if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty), 'font-weight:700;');
+    if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2), 'font-weight:700;');
+    if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)), 'font-weight:700;');
+    if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:9px;font-weight:700;');
     if (itemByKey['_days']) cellsByKey['_days'] = singleTd('_days', 'num', dlSpan);
     if (itemByKey['_yarn']) {
       var yarnHtml = yarnInner + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '');
@@ -2738,7 +2782,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*92) + 'px;min-width:' + (VSTEPS.length*92) + 'px;max-width:' + (VSTEPS.length*92) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
       bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Notes') + '</th>';
+    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2"><span class="th-tip" data-tip="Free-form notes for this order \u2014 click any cell in this column to open and type, like a small text document. Saves automatically.">' + (lbl||'Notes') + '</span></th>';
     else {
       var mf = getFieldByKey(key);
       var mfWrapCls = (mf && mf.wrap) ? ' wrap2' : '';
@@ -3127,12 +3171,75 @@ async function setProd(ordId, key, val, isUndo) {
   }
 }
 
-async function setRemark(ordId, val) {
-  await db.from('orders').update({
-    remarks: val, updated_at: new Date().toISOString(), updated_by: S.user.name
-  }).eq('id', ordId);
-  await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', S.user.id);
-  toast('Note saved');
+// ─── ORDER NOTES (single free-form text area, stored in orders.remarks) ───
+// Old bullet-list JSON from an earlier version gets flattened back into plain
+// lines automatically — nothing is lost either direction.
+function notesAsText(raw) {
+  if (!raw) return '';
+  try {
+    var parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(function(n){ return '\u2022 ' + (n.text||''); }).join('\n');
+    }
+  } catch(e) {}
+  return raw;
+}
+
+var _notesTarget = null;
+var _notesSaveTimer = null;
+function openOrderNotesModal(orderId) {
+  var o = findOrderAnywhere(orderId);
+  if (!o) return;
+  _notesTarget = orderId;
+  $('on-modal-title').textContent = 'Notes \u2014 ' + (o.style||'');
+  $('on-modal-sub').textContent = (o.buyer||'');
+  var canEditNotes = actsAsMerchant(o.merchant_id) || S.user.role==='admin' || S.user.role==='management' || S.user.role==='manager';
+  var ta = $('on-modal-textarea');
+  ta.value = notesAsText(o.remarks);
+  ta.readOnly = !canEditNotes;
+  ta.placeholder = canEditNotes ? 'Type notes here \u2014 start a line with \u2022 for a bullet point\u2026' : 'No notes yet';
+  openModal('ov-order-notes');
+  if (canEditNotes) setTimeout(function(){ ta.focus(); }, 50);
+}
+function onNotesTextareaKeydown(e) {
+  if (e.key === 'Escape') {
+    e.stopPropagation();
+    closeNotesModal();
+    return;
+  }
+  // Pressing Enter after a bullet line auto-continues the next line as a bullet too
+  if (e.key !== 'Enter') return;
+  var ta = e.target;
+  var pos = ta.selectionStart;
+  var before = ta.value.slice(0, pos);
+  var lineStart = before.lastIndexOf('\n') + 1;
+  var currentLine = before.slice(lineStart);
+  if (/^\u2022\s/.test(currentLine)) {
+    e.preventDefault();
+    var insert = '\n\u2022 ';
+    ta.value = ta.value.slice(0, pos) + insert + ta.value.slice(pos);
+    ta.selectionStart = ta.selectionEnd = pos + insert.length;
+    scheduleNotesSave();
+  }
+}
+function scheduleNotesSave() {
+  clearTimeout(_notesSaveTimer);
+  _notesSaveTimer = setTimeout(saveOrderNotes, 700);
+}
+async function saveOrderNotes() {
+  if (!_notesTarget) return;
+  var ta = $('on-modal-textarea');
+  if (!ta || ta.readOnly) return;
+  var text = ta.value;
+  var o = findOrderAnywhere(_notesTarget);
+  if (o) upsertLocalOrder(Object.assign({}, o, { id: _notesTarget, remarks: text }));
+  render();
+  await db.from('orders').update({ remarks: text, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('id', _notesTarget);
+}
+function closeNotesModal() {
+  clearTimeout(_notesSaveTimer);
+  saveOrderNotes(); // flush any unsaved typing before closing
+  closeModal('ov-order-notes');
 }
 
 // ─── TNA MODAL ───
@@ -5939,7 +6046,7 @@ function isFixedKey(key) {
 
 var MASTER_FIELDS = [
   // ── LIVE ORDERS FIELDS ──────────────────────────────────────────────────
-  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:128, defLoc:{live:true,laying:false,shipped:false} },
+  { key:'country',       name:'Country',        type:'dropdown', options:WORLD_COUNTRIES_LIST, width:134, defLoc:{live:true,laying:false,shipped:false} },
   { key:'season',         name:'Season',         type:'text',     width:70, defLoc:{live:true,laying:false,shipped:false} },
   { key:'department',     name:'Department',     type:'text',     width:100, defLoc:{live:true,laying:false,shipped:false} },
   { key:'article_no',     name:'Article Number', type:'text',     defLoc:{live:true,laying:false,shipped:false} },
@@ -6412,7 +6519,7 @@ function renderApprovalFieldCell(field, orderId) {
   var dateHtml = '';
   if (cfg.planKey || cfg.planFieldKey) {
     // TNA-linked: date is set elsewhere (New Order form / that field) — shown here read-only for reference
-    dateHtml = '<div class="apv-date-line">' + (planDate ? 'TNA: ' + short(planDate) : 'No TNA date') + '</div>';
+    dateHtml = '<div class="apv-date-line' + (planDate?'':' empty') + '">' + (planDate ? 'TNA: ' + short(planDate) : 'No TNA date') + '</div>';
   } else if (cfg.manualDate) {
     // Not tied to TNA — merchant records the reference date directly in this column
     var manualKey = 'apv_manual_' + apvType + '_date';
