@@ -263,6 +263,13 @@ table.tna-t td.sty{font-weight:600}
 .btna-row-main{flex:1;min-width:0}
 .btna-row-style{font-size:13.5px;font-weight:700}
 .btna-row-meta{font-size:11px;color:var(--muted);margin-top:1px}
+/* Visible, easy-to-grab scrollbar for the print preview panes — makes it obvious
+   there's more content below rather than looking like it's simply cut off */
+#tnapdf-body,#btnapdf-body{scrollbar-width:auto;scrollbar-color:var(--accent) #E5E2D9}
+#tnapdf-body::-webkit-scrollbar,#btnapdf-body::-webkit-scrollbar{width:14px}
+#tnapdf-body::-webkit-scrollbar-track,#btnapdf-body::-webkit-scrollbar-track{background:#E5E2D9;border-radius:8px}
+#tnapdf-body::-webkit-scrollbar-thumb,#btnapdf-body::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;border:3px solid #E5E2D9}
+#tnapdf-body::-webkit-scrollbar-thumb:hover,#btnapdf-body::-webkit-scrollbar-thumb:hover{background:#A85838}
 .tna-table-glass{background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(150%);
   -webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.65);
   border-radius:14px;padding:6px 10px;box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
@@ -477,6 +484,16 @@ table.tna-t td.sty{font-weight:600}
 .ccs-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px}
 .ccs-row:hover{background:var(--accent-soft)}
 .ccs-row input{width:16px;height:16px;cursor:pointer}
+.mpo-row{background:rgba(255,255,255,.6);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+[data-theme="dark"] .mpo-row{background:rgba(42,40,40,.5)}
+.mpo-row-grid{display:grid;grid-template-columns:1.2fr 1.3fr 0.9fr 1.1fr 1.1fr;gap:10px}
+.mpo-row-grid label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;display:block}
+.mpo-row-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.mpo-colour-link{background:none;border:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:2px 0}
+.mpo-colour-link:hover{text-decoration:underline}
+.mpo-remove{background:none;border:none;color:var(--red);font-size:11.5px;font-weight:600;cursor:pointer;padding:2px 6px}
+.mpo-remove:hover{text-decoration:underline}
+.mpo-colour-override{margin-top:8px}
 
 /* Header hover tooltip trigger — the actual floating tooltip is a single shared
    element (#floating-tip) positioned in JS and appended to body, so it can never
@@ -487,15 +504,15 @@ table.tna-t td.sty{font-weight:600}
 /* Floating tooltip — liquid-glass style, positioned in JS, lives at the end of
    <body> so it renders above everything regardless of table stacking contexts */
 #floating-tip{
-  position:fixed;z-index:9999;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);
-  transition:opacity .14s ease,transform .14s ease;
+  position:fixed;z-index:9999;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97) translateZ(0);
+  transition:opacity .14s ease,transform .14s ease;will-change:opacity,transform;
   max-width:220px;padding:9px 13px;border-radius:14px;
   background:rgba(255,255,255,.68);backdrop-filter:blur(20px) saturate(190%);
   -webkit-backdrop-filter:blur(20px) saturate(190%);
   border:1px solid rgba(255,255,255,.55);
   box-shadow:0 10px 34px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.6);
   color:#1F1F1F;font-size:11.5px;font-weight:500;line-height:1.45;text-align:left}
-#floating-tip.show{opacity:1;transform:translateY(0) scale(1)}
+#floating-tip.show{opacity:1;transform:translateY(0) scale(1) translateZ(0)}
 [data-theme="dark"] #floating-tip{
   background:rgba(40,38,38,.62);border-color:rgba(255,255,255,.12);color:#F2F0EB;
   box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
@@ -508,8 +525,9 @@ table.tna-t td.sty{font-weight:600}
   -webkit-backdrop-filter:blur(10px) saturate(180%);
   border:1px solid rgba(255,255,255,.6);
   box-shadow:0 2px 8px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5);
-  transition:transform .12s ease,box-shadow .12s ease}
-.notes-chip:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.6)}
+  transition:transform .12s ease,box-shadow .12s ease;
+  will-change:transform;transform:translateZ(0)}
+.notes-chip:hover{transform:translateY(-1px) translateZ(0);box-shadow:0 4px 14px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.6)}
 .notes-chip.has-val{color:var(--accent);background:rgba(232,207,194,.45);border-color:rgba(232,207,194,.8)}
 [data-theme="dark"] .notes-chip{background:rgba(50,48,48,.5);border-color:rgba(255,255,255,.1);color:var(--muted);
   box-shadow:0 2px 8px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05)}
@@ -517,11 +535,15 @@ table.tna-t td.sty{font-weight:600}
 
 /* Order notes modal */
 .notes-textarea{width:100%;min-height:320px;box-sizing:border-box;padding:14px 16px;
-  border:1.5px solid var(--line);border-radius:10px;background:#FCFBF7;color:var(--ink);
-  font-size:14px;line-height:1.7;font-family:inherit;resize:vertical}
-.notes-textarea:focus{outline:none;border-color:var(--accent);background:#fff}
-.notes-textarea:read-only{background:var(--panel);color:var(--muted);cursor:default}
-[data-theme="dark"] .notes-textarea{background:#2A2828}
+  border:1px solid rgba(255,255,255,.65);border-radius:14px;color:var(--ink);
+  font-size:14px;line-height:1.7;font-family:inherit;resize:vertical;
+  background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
+.notes-textarea:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,.75)}
+.notes-textarea:read-only{background:rgba(255,255,255,.4);color:var(--muted);cursor:default}
+[data-theme="dark"] .notes-textarea{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.1);
+  box-shadow:0 6px 20px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
 .notes-hint{font-size:11px;color:var(--muted);margin-top:8px}
 .exp-loading{padding:20px;text-align:center;color:var(--muted);font-size:12px}
 
@@ -1024,6 +1046,7 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
 .rh-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .rh-card-icon{width:26px;height:26px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .rh-card-style{font-family:var(--serif);font-size:15.5px;font-weight:700;color:var(--accent)}
+.rh-card-gen{margin-left:auto;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:rgba(0,0,0,.04);padding:3px 8px;border-radius:10px}
 .rh-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
 .rh-lbl{color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:600}
 .rh-val{font-weight:600;font-size:13px}
@@ -1079,7 +1102,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-8.1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-8.7</p>
   </div>
 </div>
 
@@ -1114,7 +1137,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-8.1</div>
+  <div id="ver-stamp">v2026-09-10 WF-8.7</div>
 </div>
 
 
@@ -1134,7 +1157,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
         </div>
         <div id="o_repeat_fields" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #E8CFC2">
           <div class="grid2" style="margin-bottom:10px">
-            <div class="f"><label>Previous Style Number <span style="color:var(--red)">*</span></label><input id="o_repeat_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. KB-6210"></div>
+            <div class="f"><label>Previous Style Number <span style="color:var(--red)">*</span></label><input id="o_repeat_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink);text-transform:uppercase" placeholder="e.g. KB-6210" oninput="this.value=this.value.toUpperCase()"></div>
             <div class="f"><label>Previous Season</label><input id="o_repeat_season" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)" placeholder="e.g. Fall/Winter 2025"></div>
           </div>
           <div class="grid2">
@@ -1144,24 +1167,50 @@ table.dyn-board thead th.stk-dyn{z-index:35}
         </div>
       </div>
 
-      <div class="card-h" style="padding:0 0 10px;border:0"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">Order Details</h3></div>
+      <div class="f" id="o_multi_po_box" style="margin-bottom:14px;background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:9px;padding:12px 14px">
+        <label style="margin-bottom:8px">Does this style have multiple POs? <span style="font-size:11px;color:var(--muted);font-weight:400">(same style, shipping under different POs/countries — most fields are shared automatically)</span></label>
+        <div style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_multi_po" value="yes" onchange="onMultiPOChange(this)"> Yes</label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_multi_po" value="no" onchange="onMultiPOChange(this)" checked> No</label>
+        </div>
+      </div>
+
+      <div class="card-h" style="padding:0 0 10px;border:0;display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">Order Details</h3><span style="font-size:11px;color:var(--muted)"><span style="color:var(--red)">*</span> Required</span></div>
 
       <div class="grid3" style="margin-bottom:10px">
-        <div class="f"><label>Style / SKU</label><input id="o_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. KB-7742"></div>
-        <div class="f"><label>PO Number</label><input id="o_po" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. PO-2026-001"></div>
-        <div class="f"><label>Order Confirm Date</label><input id="o_confirm_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Style / SKU <span style="color:var(--red)">*</span></label><input id="o_style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink);text-transform:uppercase" placeholder="e.g. KB-7742" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="f" id="o_po_wrap"><label>PO Number</label><input id="o_po" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. PO-2026-001"></div>
+        <div class="f"><label>Order Confirm Date <span style="color:var(--red)">*</span></label><input id="o_confirm_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
       </div>
       <div class="grid3" style="margin-bottom:10px">
-        <div class="f"><label>Buyer</label><select id="o_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select buyer --</option></select></div>
+        <div class="f"><label>Buyer <span style="color:var(--red)">*</span></label><select id="o_buyer" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select buyer --</option></select></div>
         <div class="f"><label>Buying house</label><input id="o_house" list="dl_house" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" autocomplete="off"></div>
-        <div class="f"><label>Shipment Date</label><input id="o_ship_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="syncShipDateToTNA()"><div id="o_ship_request_link" style="display:none;margin-top:4px"></div></div>
+        <div class="f" id="o_ship_date_wrap"><label>Shipment Date <span style="color:var(--red)">*</span></label><input id="o_ship_date" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="syncShipDateToTNA()"><div id="o_ship_request_link" style="display:none;margin-top:4px"></div></div>
+      </div>
+
+      <div class="grid3" style="margin-bottom:10px" id="o_country_row">
+        <div class="f" id="o_country_wrap"><label>Country <span style="color:var(--red)">*</span></label>
+          <select id="o_country" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select --</option></select>
+        </div>
+        <div class="f" id="o_article_wrap"><label>Article Number</label><input id="o_article_no" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="optional"></div>
+        <div class="f"><label>Season <span style="font-size:10px;color:var(--muted);font-weight:400">(e.g. SS27)</span></label><input id="o_season" maxlength="5" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink);text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+      </div>
+
+      <div id="o_multi_po_rows_section" style="display:none;margin-bottom:14px">
+        <div class="card-h" style="padding:0 0 10px;border:0"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">POs for this style</h3></div>
+        <div id="o_multi_po_rows"></div>
+        <button type="button" class="btn sm" onclick="addMultiPORow()">+ Add another PO</button>
+      </div>
+      <div class="grid3" style="margin-bottom:10px">
+        <div class="f"><label>Department</label><input id="o_department" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. Ladies, Kids"></div>
+        <div class="f"><label>Average Weight <span style="font-size:10px;color:var(--muted);font-weight:400">(contract weight, lbs)</span></label><input id="o_avg_weight" type="number" step="0.01" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
       </div>
 
       <div class="f" style="margin-bottom:10px"><label>Product Photo <span style="font-size:11px;color:var(--muted);font-weight:400">(optional - shared across all POs of this style)</span></label>
         <div class="img-upload-area" id="order-img-drop"><input type="file" id="o_image" accept="image/*" onchange="handleOrderImageUpload(this)"><div id="order-img-placeholder" style="font-size:13px;color:var(--muted)">&#x1F4F7; Click to upload product photo<br><span style="font-size:11px">Auto-compressed to under 200KB</span></div><img id="order-img-preview" class="img-upload-preview" alt="Preview"></div></div>
 
       <div class="grid3" style="margin-bottom:10px">
-        <div class="f"><label>Gauge</label>
+        <div class="f"><label>Gauge <span style="color:var(--red)">*</span></label>
           <select id="o_gauge" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)">
             <option value="">-- Select --</option>
             <option value="3GG">3GG</option><option value="5GG">5GG</option><option value="7GG">7GG</option>
@@ -1170,8 +1219,8 @@ table.dyn-board thead th.stk-dyn{z-index:35}
             <option value="14GG">14GG</option><option value="16GG">16GG</option>
           </select>
         </div>
-        <div class="f"><label>Order qty (pcs)</label><input id="o_qty" type="number" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
-        <div class="f"><label>FOB (USD)</label><input id="o_fob" type="number" step="0.01" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
+        <div class="f" id="o_qty_wrap"><label>Order qty (pcs) <span style="color:var(--red)">*</span></label><input id="o_qty" type="number" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
+        <div class="f"><label>FOB (USD) <span style="color:var(--red)">*</span></label><input id="o_fob" type="number" step="0.01" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" onchange="calcTotal()"></div>
       </div>
       <div class="grid3" style="margin-bottom:14px">
         <div class="f"><label>Total value (USD)</label><input id="o_total" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" readonly></div>
@@ -1179,7 +1228,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 
       <div class="grid2" style="margin-bottom:14px">
         <div class="f">
-          <label>Colours</label>
+          <label>Colours <span style="color:var(--red)">*</span></label>
           <div style="display:flex;gap:6px">
             <input id="o_color_new" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="Type a colour, press Add" onkeydown="if(event.key==='Enter'){event.preventDefault();addColourTag();}">
             <button type="button" class="btn sm" onclick="addColourTag()">+ Add</button>
@@ -1187,7 +1236,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
           <div id="o_colors_list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
         </div>
         <div class="f">
-          <label>Compositions</label>
+          <label>Compositions <span style="color:var(--red)">*</span></label>
           <div style="display:flex;gap:6px">
             <input id="o_comp_new" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="e.g. 100% Cotton, press Add" onkeydown="if(event.key==='Enter'){event.preventDefault();addCompTag();}">
             <button type="button" class="btn sm" onclick="addCompTag()">+ Add</button>
@@ -1208,13 +1257,13 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <div class="card-h" style="padding:14px 0 10px;border-top:1px solid var(--line)"><h3 style="font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">TNA Plan Dates</h3></div>
       <div id="o_tna_lock_note" style="display:none;margin-bottom:10px;background:var(--amber-soft);border:1px solid #F6D860;border-radius:8px;padding:9px 12px;font-size:12.5px">&#x1F512; <strong>TNA Locked</strong> &mdash; these dates can no longer be edited here. Use the TNA pill on the order row to request a change.</div>
       <div class="grid3" style="margin-bottom:10px">
-        <div class="f"><label>Yarn Inhouse</label><input id="p_yarn" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>PP Approval</label><input id="p_pp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Sewing Item Inhouse</label><input id="p_sew" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Yarn Inhouse <span style="color:var(--red)">*</span></label><input id="p_yarn" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>PP Approval <span style="color:var(--red)">*</span></label><input id="p_pp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Sewing Item Inhouse <span style="color:var(--red)">*</span></label><input id="p_sew" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
       </div>
       <div class="grid3">
-        <div class="f"><label>Packing Item Inhouse</label><input id="p_pack" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
-        <div class="f"><label>Final Inspection Date</label><input id="p_insp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Packing Item Inhouse <span style="color:var(--red)">*</span></label><input id="p_pack" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
+        <div class="f"><label>Final Inspection Date <span style="color:var(--red)">*</span></label><input id="p_insp" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>
         <div class="f"><label>Ship Date <span style="font-size:10px;color:var(--muted);font-weight:400">(synced from above)</span></label><input id="p_ship" type="date" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#F3F1EA;color:var(--muted)" readonly></div>
       </div>
 
@@ -1256,16 +1305,16 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-b">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
         <button class="tna-audience-btn" id="tna-aud-planning" onclick="selectTNAAudience('planning')">
-          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Yes \u2014 Planning Team</div>
+          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Planning Team</div>
         </button>
         <button class="tna-audience-btn" id="tna-aud-mgmt" onclick="selectTNAAudience('management')">
-          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">No \u2014 Management</div>
+          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">Management</div>
         </button>
       </div>
       <div id="tna-buffer-row" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
         <label style="font-size:12.5px;font-weight:600;color:var(--muted)">Show Final Inspection &amp; Ship Date this many days earlier</label>
         <input type="number" id="tna-buffer-days" min="0" max="60" value="3" style="width:100%;margin-top:6px;padding:8px 11px;border:1.5px solid var(--line);border-radius:8px;background:#FCFBF7;font-size:15px;font-family:var(--mono);color:var(--ink)">
-        <div class="hint" style="margin-top:6px">Only affects this printout \u2014 the real dates in the system never change.</div>
+        <div class="hint" style="margin-top:6px">Only affects this printout — the real dates in the system never change.</div>
       </div>
     </div>
     <div class="m-f"><button class="btn pri" id="tna-print-generate-btn" style="width:100%" disabled onclick="generateTNAPrint()">Generate</button></div>
@@ -1302,10 +1351,10 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <div id="btna-count" style="font-size:12.5px;color:var(--muted);text-align:center">0 orders selected</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <button class="tna-audience-btn" id="btna-aud-planning" onclick="selectBulkTNAAudience('planning')">
-          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Yes \u2014 Planning Team</div>
+          <div class="tna-audience-ico">&#x2713;</div><div class="tna-audience-lbl">Planning Team</div>
         </button>
         <button class="tna-audience-btn" id="btna-aud-mgmt" onclick="selectBulkTNAAudience('management')">
-          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">No \u2014 Management</div>
+          <div class="tna-audience-ico">&#x2715;</div><div class="tna-audience-lbl">Management</div>
         </button>
       </div>
       <div id="btna-buffer-row" style="display:none">
@@ -1590,9 +1639,9 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   <div class="modal slim">
     <div class="m-h"><div><h3 id="on-modal-title">Notes</h3><div class="msub" id="on-modal-sub"></div></div>
       <button class="btn" onclick="closeNotesModal()">Close</button></div>
-    <div class="m-b">
+    <div class="m-b glass-backdrop">
       <textarea id="on-modal-textarea" class="notes-textarea" oninput="scheduleNotesSave()" onkeydown="onNotesTextareaKeydown(event)" onblur="saveOrderNotes()"></textarea>
-      <div class="notes-hint">Saves automatically as you type. Start a line with &#x2022; for a bullet \u2014 press Enter to continue the list.</div>
+      <div class="notes-hint">Saves automatically as you type. Start a line with &#x2022; for a bullet — press Enter to continue the list.</div>
     </div>
   </div>
 </div>
@@ -2103,6 +2152,11 @@ function autolinkBuyerId(orders) {
       var match = S.buyers.find(function(b){ return b.name.toLowerCase()===o.buyer.toLowerCase(); });
       if (match) o.buyer_id = match.id;
     }
+    // Style is always displayed and compared in uppercase, regardless of how it
+    // was originally typed or what's already sitting in the database — this
+    // normalizes it the moment data enters memory, so every screen, sort, and
+    // lookup downstream sees one consistent form without needing its own fix.
+    if (o.style) o.style = o.style.toUpperCase();
   });
   return orders;
 }
@@ -2196,7 +2250,7 @@ async function loadArchiveData() {
   else if (S.user.role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
   else if (S.user.role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
   const { data } = await q;
-  S.archive = data || [];
+  S.archive = (data || []).map(function(o){ if (o.style) o.style = o.style.toUpperCase(); return o; });
   S.archiveLoaded = true;
 }
 
@@ -2476,14 +2530,14 @@ function renderDashboard() {
         if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
           const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
           const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
-          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + a.style + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
         }
         const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
         const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
         let detail = '';
         if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
         if (a.alert_type === 'late' || a.alert_type === 'both') detail += '<strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong>';
-        return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + a.style + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+        return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
       }).join('') + '</div>';
   }
 
@@ -3070,6 +3124,224 @@ function renderArchive() {
 // ─── ORDER ACTIONS ───
 let orderForMerchant = null;
 
+function populateCountryDropdown(selectId, selectedVal) {
+  var sel = $(selectId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Select --</option>'
+    + WORLD_COUNTRIES_LIST.map(function(c){ return '<option value="'+c+'"' + (c===selectedVal?' selected':'') + '>'+c+'</option>'; }).join('');
+}
+function getCountryFieldValue() {
+  var el = $('o_country');
+  return el ? el.value : '';
+}
+
+// ─── MULTIPLE-PO BATCH CREATION ───
+// When one style ships under several POs (usually to different countries), most
+// of the form is identical for every one of them. This lets the merchant fill
+// the shared fields once, then add only what genuinely varies per PO.
+var _mpoRowCounter = 0;
+
+function onMultiPOChange(radio) {
+  toggleMultiPOMode(radio.value === 'yes');
+}
+function toggleMultiPOMode(isMulti) {
+  ['o_po_wrap','o_country_wrap','o_article_wrap','o_ship_date_wrap','o_qty_wrap'].forEach(function(id){
+    var el = $(id);
+    if (el) el.style.display = isMulti ? 'none' : '';
+  });
+  var section = $('o_multi_po_rows_section');
+  if (section) section.style.display = isMulti ? 'block' : 'none';
+  // Repeat order is a property of the STYLE, not any one PO, so it stays available
+  // and applies identically to every order created in the batch.
+  if (isMulti && document.querySelectorAll('.mpo-row').length === 0) {
+    addMultiPORow();
+    addMultiPORow();
+  }
+  updateSaveButtonLabel();
+}
+function resetMultiPOState() {
+  var noRadio = document.querySelector('input[name="o_multi_po"][value="no"]');
+  if (noRadio) noRadio.checked = true;
+  toggleMultiPOMode(false);
+  var rowsEl = $('o_multi_po_rows');
+  if (rowsEl) rowsEl.innerHTML = '';
+  _mpoRowCounter = 0;
+}
+function addMultiPORow() {
+  _mpoRowCounter++;
+  var idx = _mpoRowCounter;
+  var countryOpts = '<option value="">-- Select --</option>' + WORLD_COUNTRIES_LIST.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+  var inputStyle = 'width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font-size:13px';
+  var html = '<div class="mpo-row" data-idx="' + idx + '">'
+    + '<div class="mpo-row-grid">'
+    + '<div class="f"><label>PO Number <span style="color:var(--red)">*</span></label><input class="mpo-po" style="' + inputStyle + '" placeholder="e.g. PO-2026-002"></div>'
+    + '<div class="f"><label>Country <span style="color:var(--red)">*</span></label><select class="mpo-country" style="' + inputStyle + '">' + countryOpts + '</select></div>'
+    + '<div class="f"><label>Qty (pcs) <span style="color:var(--red)">*</span></label><input type="number" class="mpo-qty" style="' + inputStyle + '"></div>'
+    + '<div class="f"><label>Ship Date <span style="color:var(--red)">*</span></label><input type="date" class="mpo-ship" style="' + inputStyle + '"></div>'
+    + '<div class="f"><label>Article No</label><input class="mpo-article" style="' + inputStyle + '" placeholder="optional"></div>'
+    + '</div>'
+    + '<div class="mpo-row-footer">'
+    + '<button type="button" class="mpo-colour-link" onclick="toggleMpoColourOverride(this)">&#x270E; Different colours for this PO?</button>'
+    + '<button type="button" class="mpo-remove" onclick="removeMultiPORow(this)">&#x2715; Remove</button>'
+    + '</div>'
+    + '<div class="mpo-colour-override" style="display:none"><input class="mpo-colour-override-input" style="' + inputStyle + '" placeholder="e.g. Navy, Charcoal \u2014 leave blank to use the shared colours above"></div>'
+    + '</div>';
+  $('o_multi_po_rows').insertAdjacentHTML('beforeend', html);
+  updateSaveButtonLabel();
+}
+function removeMultiPORow(btn) {
+  var row = btn.closest('.mpo-row');
+  if (row) row.remove();
+  updateSaveButtonLabel();
+}
+function toggleMpoColourOverride(btn) {
+  var box = btn.closest('.mpo-row').querySelector('.mpo-colour-override');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+function updateSaveButtonLabel() {
+  var btn = $('save-order-btn');
+  if (!btn) return;
+  var isMulti = (document.querySelector('input[name="o_multi_po"]:checked')||{}).value === 'yes';
+  if (isMulti) {
+    var n = document.querySelectorAll('.mpo-row').length;
+    btn.textContent = n ? ('Create ' + n + ' order' + (n===1?'':'s')) : 'Add at least one PO';
+  } else {
+    btn.textContent = _editOrderId ? 'Save changes' : 'Add order';
+  }
+}
+
+async function saveMultiPOOrders() {
+  var buyerVal = ($('o_buyer')&&$('o_buyer').value)||'';
+  const style = $('o_style').value.trim().toUpperCase();
+
+  // Shared-field validation — everything except PO/Country/Qty/Ship Date, which
+  // are checked per row below since those are the fields that genuinely vary.
+  var missing = [];
+  if (!style) missing.push(['o_style', 'Style / SKU']);
+  if (!$('o_confirm_date').value) missing.push(['o_confirm_date', 'Order Confirm Date']);
+  if (!buyerVal) missing.push(['o_buyer', 'Buyer']);
+  if (!$('o_gauge').value) missing.push(['o_gauge', 'Gauge']);
+  if (!Number($('o_fob').value)) missing.push(['o_fob', 'FOB']);
+  if (!_orderColors.length) missing.push(['o_color_new', 'Colours (add at least one)']);
+  if (!_orderComps.length) missing.push(['o_comp_new', 'Composition (add at least one)']);
+  if (!$('p_yarn').value) missing.push(['p_yarn', 'TNA: Yarn Inhouse date']);
+  if (!$('p_pp').value) missing.push(['p_pp', 'TNA: PP Approval date']);
+  if (!($('p_sew')&&$('p_sew').value)) missing.push(['p_sew', 'TNA: Sewing Item Inhouse date']);
+  if (!($('p_pack')&&$('p_pack').value)) missing.push(['p_pack', 'TNA: Packing Item Inhouse date']);
+  if (!$('p_insp').value) missing.push(['p_insp', 'TNA: Final Inspection date']);
+
+  var rowEls = Array.prototype.slice.call(document.querySelectorAll('.mpo-row'));
+  if (!rowEls.length) missing.push([null, 'At least one PO (or switch back to "No" for a single order)']);
+
+  var isRepeat = (document.querySelector('input[name="o_repeat"]:checked')||{}).value === 'yes';
+  var prevStyleVal = ($('o_repeat_style').value||'').trim();
+  if (isRepeat && !prevStyleVal) missing.push(['o_repeat_style', 'Previous style number (repeat order)']);
+
+  var rowData = [];
+  var rowErrLabels = [];
+  rowEls.forEach(function(rowEl, i) {
+    var po = rowEl.querySelector('.mpo-po').value.trim();
+    var country = rowEl.querySelector('.mpo-country').value;
+    var qty = Number(rowEl.querySelector('.mpo-qty').value) || 0;
+    var ship = rowEl.querySelector('.mpo-ship').value;
+    var article = rowEl.querySelector('.mpo-article').value.trim();
+    var colourOverrideEl = rowEl.querySelector('.mpo-colour-override-input');
+    var colourOverride = colourOverrideEl && colourOverrideEl.value.trim() ? colourOverrideEl.value.trim() : null;
+    if (!po || !country || !qty || !ship) rowErrLabels.push('PO row ' + (i + 1));
+    rowData.push({ po: po, country: country, qty: qty, ship: ship, article: article, colourOverride: colourOverride });
+  });
+  if (rowErrLabels.length) missing.push([null, 'Missing PO Number/Country/Qty/Ship Date on: ' + rowErrLabels.join(', ')]);
+
+  if (missing.length) {
+    $('ord-err').innerHTML = 'Please fill in: <strong>' + missing.map(function(m){ return m[1]; }).join(', ') + '</strong>';
+    $('ord-err').style.display = 'block';
+    if (missing[0][0]) { var el = $(missing[0][0]); if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); } }
+    return;
+  }
+  $('ord-err').style.display = 'none';
+  $('save-order-btn').disabled = true;
+  $('save-order-btn').textContent = 'Creating\u2026';
+
+  var buyerObj = S.buyers.find(function(b){ return b.id === buyerVal; });
+  var buyerName = buyerObj ? buyerObj.name : buyerVal;
+  var styleVal = style.toUpperCase();
+  var sharedColorStr = _orderColors.join(', ');
+  var sharedColorsJson = JSON.stringify(_orderColors);
+  var compStr = _orderComps.join(', ');
+  var compsJson = JSON.stringify(_orderComps);
+  var recycled = (document.querySelector('input[name="o_recycled"]:checked')||{}).value === 'yes';
+  var houseVal = $('o_house').value;
+  var confirmDateVal = $('o_confirm_date').value || null;
+  var gaugeVal = $('o_gauge').value;
+  var fobVal = Number($('o_fob').value) || 0;
+  var seasonVal = $('o_season').value.trim();
+  var deptVal = $('o_department').value.trim();
+  var avgWeightVal = $('o_avg_weight').value;
+  var planYarn = $('p_yarn').value||null, planPP = $('p_pp').value||null;
+  var planSew = ($('p_sew')&&$('p_sew').value)||null, planPack = ($('p_pack')&&$('p_pack').value)||null;
+  var planInsp = $('p_insp').value||null;
+
+  // Repeat history is a style-level property — computed once, applied identically
+  // to every order in this batch, same chain-building logic as the single-order form.
+  var repeatHistoryJSON = null;
+  if (isRepeat) {
+    var seasonTyped = ($('o_repeat_season').value||'').trim();
+    var priceTyped = $('o_repeat_price').value;
+    var qtyTyped = $('o_repeat_qty').value;
+    var chain = await buildRepeatChain(prevStyleVal, seasonTyped, priceTyped, qtyTyped);
+    repeatHistoryJSON = JSON.stringify(chain);
+  }
+
+  var created = 0, failed = 0;
+  for (var i = 0; i < rowData.length; i++) {
+    var rd = rowData[i];
+    var rowColorStr = rd.colourOverride || sharedColorStr;
+    var rowColorsJson = rd.colourOverride
+      ? JSON.stringify(rd.colourOverride.split(',').map(function(s){ return s.trim(); }).filter(Boolean))
+      : sharedColorsJson;
+    var row = {
+      merchant_id: orderForMerchant,
+      house: houseVal, buyer: buyerName, buyer_id: buyerVal,
+      po_number: rd.po, confirm_date: confirmDateVal,
+      style: styleVal, gauge: gaugeVal,
+      color: rowColorStr, comp: compStr,
+      qty: rd.qty, fob: fobVal,
+      ship_date: rd.ship,
+      colours_json: rowColorsJson, compositions_json: compsJson,
+      contains_recycled: recycled, needs_tc: _needsTC,
+      is_repeat: isRepeat, repeat_history: repeatHistoryJSON,
+      plan_yarn: planYarn, plan_pp: planPP, plan_sew: planSew, plan_pack: planPack, plan_insp: planInsp,
+      plan_ship: rd.ship,
+      stage: 'live', created_at: new Date().toISOString(),
+      updated_by: S.user.name, updated_at: new Date().toISOString()
+    };
+    var res = await db.from('orders').insert(row).select().single();
+    if (res.error || !res.data) { failed++; console.error('multi-PO create failed for', rd.po, res.error); continue; }
+    created++;
+    var newId = res.data.id;
+    var extras = [['article_no', rd.article], ['country', rd.country], ['season', seasonVal], ['department', deptVal], ['avg_weight', avgWeightVal]];
+    for (var j = 0; j < extras.length; j++) { if (extras[j][1]) await saveFieldValue(newId, extras[j][0], extras[j][1]); }
+  }
+
+  // Photo is shared by style, not by individual order — one upload covers every PO
+  var imgFile = $('o_image');
+  if (imgFile && imgFile.files && imgFile.files[0] && styleVal) {
+    try { await uploadStyleImage(orderForMerchant, styleVal, imgFile.files[0]); } catch(e) { console.error('img:', e); }
+  }
+  if (houseVal) saveMemo('house', houseVal);
+  if (buyerName) saveMemo('buyer', buyerName);
+  await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
+
+  closeModal('ov-order');
+  if (failed) toast(created + ' order(s) created, ' + failed + ' failed \u2014 check those POs and retry', created ? '' : 'err');
+  else toast(created + ' order' + (created===1?'':'s') + ' created', 'ok-t');
+  delete S.boardCache[orderForMerchant];
+  await loadDashOrders();
+  render();
+  $('save-order-btn').disabled = false;
+  updateSaveButtonLabel();
+}
+
 async function openOrder(mid) {
   _editOrderId = null;
   document.querySelector('#ov-order h3').textContent = 'New order';
@@ -3081,7 +3353,8 @@ async function openOrder(mid) {
   $('ord-sub').textContent = 'For ' + (m ? m.name : '');
   $('ord-err').style.display = 'none';
   ['o_house','o_buyer','o_style','o_gauge','o_qty','o_fob',
-   'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_insp','p_ship'].forEach(id => { const el=$(id); if(el) el.value=''; });
+   'o_po','o_confirm_date','p_yarn','p_pp','p_sew','p_pack','p_insp','p_ship',
+   'o_article_no','o_season','o_department','o_avg_weight'].forEach(id => { const el=$(id); if(el) el.value=''; });
   // A prior edit session may have greyed these out — a brand new order is never locked
   ['o_ship_date','p_yarn','p_pp','p_sew','p_pack','p_insp'].forEach(id => {
     const el = $(id);
@@ -3098,6 +3371,9 @@ async function openOrder(mid) {
   var ph=$('order-img-placeholder');if(ph)ph.style.display='block';
   var fi=$('o_image');if(fi)fi.value='';
   resetOrderFormExtras();
+  resetMultiPOState();
+  $('o_multi_po_box').style.display = '';
+  populateCountryDropdown('o_country');
   // Populate buyer dropdown
   try{ await loadBuyers(); await loadBuyerAssignments(); }catch(e){ console.error('buyer reload failed:', e); }
   var buyerSel=$('o_buyer');
@@ -3124,14 +3400,75 @@ function syncShip() {
   if (v && !$('p_yarn').value) { /* Could auto-fill TNA here */ }
 }
 
+// ─── REPEAT ORDER CHAIN ───
+// Repeat history is an ancestry, not a single link: if C repeats A, and A itself
+// was a repeat of B, then C's history should show BOTH A and B — the whole chain
+// a style has been carried through, not just the immediately previous one.
+async function findStyleRepeatChain(styleName) {
+  if (!styleName) return [];
+  var upper = styleName.trim().toUpperCase();
+  var found = null;
+  Object.keys(S.boardCache).forEach(function(m){ if (!found) found = (S.boardCache[m]||[]).find(function(o){ return (o.style||'').toUpperCase() === upper; }); });
+  if (!found && S.archive) found = S.archive.find(function(o){ return (o.style||'').toUpperCase() === upper; });
+  if (!found) {
+    try {
+      var res = await db.from('orders').select('repeat_history').ilike('style', upper).limit(1);
+      if (res.data && res.data[0]) found = res.data[0];
+    } catch (e) { /* best-effort — worst case the chain just starts fresh at this link */ }
+  }
+  if (!found || !found.repeat_history) return [];
+  try { return JSON.parse(found.repeat_history) || []; } catch (e) { return []; }
+}
+
+// Builds the full repeat_history array to store on a NEW order that repeats
+// prevStyle, given whatever the merchant typed for that previous style's own
+// season/price/qty. Prepends onto whatever chain prevStyle itself already carries.
+async function buildRepeatChain(prevStyle, season, price, qty) {
+  var newEntry = {
+    prev_style: prevStyle,
+    season: season || null,
+    price: price != null ? Number(price) : null,
+    qty: qty != null ? Number(qty) : null,
+    recorded_at: new Date().toISOString()
+  };
+  var parentChain = await findStyleRepeatChain(prevStyle);
+  return [newEntry].concat(parentChain);
+}
+
 async function saveOrder() {
+  var isMultiPO = (document.querySelector('input[name="o_multi_po"]:checked')||{}).value === 'yes';
+  if (isMultiPO && !_editOrderId) return saveMultiPOOrders();
+
   var buyerVal=($('o_buyer')&&$('o_buyer').value)||'';
-  if(!buyerVal){$('ord-err').textContent='Please select a buyer.';$('ord-err').style.display='block';return;}
-  const style = $('o_style').value.trim();
+  const style = $('o_style').value.trim().toUpperCase();
   const qty = Number($('o_qty').value) || 0;
-  if (!style || !qty) {
-    $('ord-err').textContent = 'Style number and order quantity are required.';
-    $('ord-err').style.display = 'block'; return;
+  const fobVal = Number($('o_fob').value) || 0;
+
+  // Every mandatory field, checked together so the merchant sees one clear error
+  // rather than fixing them one at a time. First invalid field gets focus.
+  var missing = [];
+  if (!style) missing.push(['o_style', 'Style / SKU']);
+  if (!$('o_confirm_date').value) missing.push(['o_confirm_date', 'Order Confirm Date']);
+  if (!buyerVal) missing.push(['o_buyer', 'Buyer']);
+  if (!($('o_ship_date')&&$('o_ship_date').value)) missing.push(['o_ship_date', 'Shipment Date']);
+  if (!$('o_gauge').value) missing.push(['o_gauge', 'Gauge']);
+  if (!qty) missing.push(['o_qty', 'Order Quantity']);
+  if (!fobVal) missing.push(['o_fob', 'FOB']);
+  if (!_orderColors.length) missing.push(['o_color_new', 'Colours (add at least one)']);
+  if (!_orderComps.length) missing.push(['o_comp_new', 'Composition (add at least one)']);
+  if (!$('p_yarn').value) missing.push(['p_yarn', 'TNA: Yarn Inhouse date']);
+  if (!$('p_pp').value) missing.push(['p_pp', 'TNA: PP Approval date']);
+  if (!($('p_sew')&&$('p_sew').value)) missing.push(['p_sew', 'TNA: Sewing Item Inhouse date']);
+  if (!($('p_pack')&&$('p_pack').value)) missing.push(['p_pack', 'TNA: Packing Item Inhouse date']);
+  if (!$('p_insp').value) missing.push(['p_insp', 'TNA: Final Inspection date']);
+  if (!getCountryFieldValue()) missing.push(['o_country', 'Country']);
+
+  if (missing.length) {
+    $('ord-err').innerHTML = 'Please fill in: <strong>' + missing.map(function(m){return m[1];}).join(', ') + '</strong>';
+    $('ord-err').style.display = 'block';
+    var firstEl = $(missing[0][0]);
+    if (firstEl) { firstEl.scrollIntoView({behavior:'smooth', block:'center'}); firstEl.focus(); }
+    return;
   }
   var isRepeat = (document.querySelector('input[name="o_repeat"]:checked')||{}).value === 'yes';
   var repeatHistoryJSON = null;
@@ -3143,22 +3480,27 @@ async function saveOrder() {
       $('o_repeat_style').focus();
       return;
     }
-    var newEntry = {
-      prev_style: prevStyle,
-      season: ($('o_repeat_season').value||'').trim() || null,
-      price: $('o_repeat_price').value ? Number($('o_repeat_price').value) : null,
-      qty: $('o_repeat_qty').value ? Number($('o_repeat_qty').value) : null,
-      recorded_at: new Date().toISOString()
-    };
+    var seasonTyped = ($('o_repeat_season').value||'').trim();
+    var priceTyped = $('o_repeat_price').value;
+    var qtyTyped = $('o_repeat_qty').value;
     var priorHistory = [];
+    var sameAncestorAsBefore = false;
     if (_editOrderId) {
       var existingOrd = S.boardCache[S.view] ? S.boardCache[S.view].find(function(x){return x.id===_editOrderId;}) : null;
       if (existingOrd && existingOrd.repeat_history) {
         try { priorHistory = JSON.parse(existingOrd.repeat_history) || []; } catch(e) { priorHistory = []; }
       }
+      sameAncestorAsBefore = priorHistory.length > 0 && priorHistory[0].prev_style === prevStyle;
     }
-    // Editing the same repeat entry just updates it rather than duplicating
-    if (priorHistory.length) { priorHistory[0] = newEntry; } else { priorHistory = [newEntry]; }
+    if (sameAncestorAsBefore) {
+      // Same ancestor as last save — just refresh its details, keep the rest of
+      // the chain (grandparent, etc.) exactly as it already was.
+      priorHistory[0] = { prev_style: prevStyle, season: seasonTyped||null, price: priceTyped?Number(priceTyped):null, qty: qtyTyped?Number(qtyTyped):null, recorded_at: new Date().toISOString() };
+    } else {
+      // New link, or the ancestor was changed — rebuild the chain by looking up
+      // whatever history that ancestor style itself already carries.
+      priorHistory = await buildRepeatChain(prevStyle, seasonTyped, priceTyped, qtyTyped);
+    }
     repeatHistoryJSON = JSON.stringify(priorHistory);
   }
   $('ord-err').style.display = 'none';
@@ -3195,13 +3537,14 @@ async function saveOrder() {
   };
   if (!_editOrderId) { row.stage = 'live'; row.created_at = new Date().toISOString(); }
 
-  var error;
+  var error, newOrderId = _editOrderId;
   if (_editOrderId) {
     var res = await db.from('orders').update(row).eq('id', _editOrderId);
     error = res.error;
   } else {
-    var res2 = await db.from('orders').insert(row);
+    var res2 = await db.from('orders').insert(row).select().single();
     error = res2.error;
+    if (!error && res2.data) newOrderId = res2.data.id;
   }
 
   if (!error) {
@@ -3213,6 +3556,21 @@ async function saveOrder() {
     var styleVal = ($('o_style').value||'').trim().toUpperCase();
     if (imgFile && imgFile.files && imgFile.files[0] && styleVal) {
       try { await uploadStyleImage(orderForMerchant, styleVal, imgFile.files[0]); } catch(e) { console.error('img:', e); }
+    }
+    // The extra fields (Article No, Country, Season, Department, Average Weight)
+    // live in order_field_values, not the orders table itself, so they're saved
+    // as a separate step once we know the order's real id.
+    if (newOrderId) {
+      var extraFields = [
+        ['article_no', $('o_article_no').value.trim()],
+        ['country', $('o_country').value],
+        ['season', $('o_season').value.trim()],
+        ['department', $('o_department').value.trim()],
+        ['avg_weight', $('o_avg_weight').value]
+      ];
+      for (const [fk, fv] of extraFields) {
+        if (fv) await saveFieldValue(newOrderId, fk, fv);
+      }
     }
     closeModal('ov-order');
     toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
@@ -3240,6 +3598,8 @@ async function editOrder(orderId) {
 
   $('ord-sub').textContent = 'Editing ' + o.style;
   $('ord-err').style.display = 'none';
+  resetMultiPOState();
+  $('o_multi_po_box').style.display = 'none'; // editing is always single-order — the batch flow only applies when creating new POs together
 
   // Check if shipment date / TNA plan dates are locked (fit approved, order 5+ days old,
   // or order shipped) for merchants — mirrors the lock logic in the TNA pill exactly.
@@ -3287,6 +3647,13 @@ async function editOrder(orderId) {
   if ($('o_confirm_date')) $('o_confirm_date').value = o.confirm_date || '';
   if ($('o_ship_date')) $('o_ship_date').value = o.ship_date || '';
   calcTotal();
+
+  // Extra fields live in order_field_values, not on the order row itself
+  if ($('o_article_no')) $('o_article_no').value = getFieldValue(orderId, 'article_no') || '';
+  populateCountryDropdown('o_country', getFieldValue(orderId, 'country') || '');
+  if ($('o_season')) $('o_season').value = getFieldValue(orderId, 'season') || '';
+  if ($('o_department')) $('o_department').value = getFieldValue(orderId, 'department') || '';
+  if ($('o_avg_weight')) $('o_avg_weight').value = getFieldValue(orderId, 'avg_weight') || '';
 
   // Restore colours/compositions as tags
   try { _orderColors = o.colours_json ? JSON.parse(o.colours_json) : (o.color ? o.color.split(',').map(function(s){return s.trim();}).filter(Boolean) : []); } catch(e) { _orderColors = []; }
@@ -3902,12 +4269,30 @@ async function setMilestoneActual(orderId, milesKey, dateVal) {
   var field = 'act_' + milesKey;
   var current = o ? (o[field] || null) : undefined;
   var next = dateVal || null;
-  if (current === next) return; // already correct — skip the redundant write/log
-  var patch = { id: orderId };
-  patch[field] = next;
-  if (o) upsertLocalOrder(Object.assign({}, o, patch, { updated_at: new Date().toISOString(), updated_by: S.user.name }));
+  if (current === next) return true; // already correct — skip the redundant write/log
+
+  // Optimistic local update happens first (so the screen feels instant), but this
+  // MUST be confirmed by the database write below — if that write fails, the local
+  // change is rolled back and the user is told plainly, rather than silently
+  // showing a value on screen that was never actually saved.
+  if (o) upsertLocalOrder(Object.assign({}, o, (function(){ var p={id:orderId}; p[field]=next; return p; })(), { updated_at: new Date().toISOString(), updated_by: S.user.name }));
+
   var upd = {}; upd[field] = next; upd.updated_at = new Date().toISOString(); upd.updated_by = S.user.name;
-  await db.from('orders').update(upd).eq('id', orderId);
+  var res;
+  try {
+    res = await db.from('orders').update(upd).eq('id', orderId);
+  } catch (e) {
+    res = { error: e };
+  }
+  if (res && res.error) {
+    console.error('setMilestoneActual failed:', res.error);
+    toast('\u26A0\uFE0F TNA date failed to save (' + milesKey + ') \u2014 please try again', 'err');
+    // Roll back the optimistic value so the screen doesn't lie about what's saved
+    if (o) upsertLocalOrder(Object.assign({}, o, (function(){ var p={id:orderId}; p[field]=current; return p; })()));
+    if (S.view) renderBoard(S.view);
+    return false;
+  }
+  return true;
 }
 
 // Which approval types auto-set which TNA milestone's actual date on approval.
@@ -3919,6 +4304,38 @@ async function setMilestoneActual(orderId, milesKey, dateVal) {
 // approvals — not TNA milestones — so they must NEVER auto-set a milestone's
 // actual date, no matter how loosely related they might seem.
 var APV_TO_MILES = { pp: 'pp', final_insp: 'insp' };
+
+// One-time maintenance: fills in act_pp/act_insp for orders where PP or Final
+// Inspection was approved BEFORE the auto-link feature existed (so that approve
+// action never had a chance to set it). Only ever fills a BLANK field — never
+// overwrites a value that's already there, so it's safe to run more than once.
+async function backfillTNAApprovalLinks() {
+  if (!confirm('Sync TNA actual dates from approval history?\n\nThis only fills in BLANK PP/Final Inspection actual dates from already-approved rounds. It will never overwrite a date that\'s already set.')) return;
+  toast('Scanning approvals\u2026');
+  var res = await db.from('approvals').select('*').in('type', ['pp','final_insp']).not('approved_on', 'is', null);
+  var approvals = res.data || [];
+  var latestByKey = {};
+  approvals.forEach(function(a){
+    var key = a.order_id + '|' + a.type;
+    if (!latestByKey[key] || (a.round||0) > (latestByKey[key].round||0)) latestByKey[key] = a;
+  });
+  var keys = Object.keys(latestByKey);
+  var updated = 0;
+  for (var i = 0; i < keys.length; i++) {
+    var a = latestByKey[keys[i]];
+    var milesKey = APV_TO_MILES[a.type];
+    if (!milesKey) continue;
+    var field = 'act_' + milesKey;
+    var ordRes = await db.from('orders').select('id,' + field).eq('id', a.order_id).single();
+    if (ordRes.data && !ordRes.data[field]) {
+      var upd = {}; upd[field] = a.approved_on;
+      await db.from('orders').update(upd).eq('id', a.order_id);
+      updated++;
+    }
+  }
+  S.boardCache = {}; // force a fresh read everywhere next time a board is opened
+  toast(updated + ' order' + (updated===1?'':'s') + ' synced', 'ok-t');
+}
 
 // ─── YARN INHOUSE ACTUAL-DATE AUTO-LINK ───
 // Recomputes act_yarn from the real booking/receipt totals every time either
@@ -4167,7 +4584,12 @@ async function apvDoResult(outcome) {
   // Auto-link to the TNA actual date — no more entering the same date twice.
   var linkedMiles = APV_TO_MILES[S_apv.type];
   if (linkedMiles) {
-    await setMilestoneActual(S_apv.ordId, linkedMiles, outcome === 'approve' ? date : null);
+    var linkOk = await setMilestoneActual(S_apv.ordId, linkedMiles, outcome === 'approve' ? date : null);
+    if (linkOk && outcome === 'approve') {
+      logActivity(S_apv.ordId, 'TNA auto-linked', (APV_TYPE_CONFIG[S_apv.type]||{}).label + ' approval \u2192 TNA ' + linkedMiles + ' actual date set to ' + date);
+    }
+    // If linkOk is false, setMilestoneActual has already shown its own error toast
+    // and rolled back the optimistic value — nothing further to do here.
   }
 
   // If this is a TNA-linked approval type and it came in AFTER the TNA plan date,
@@ -4339,12 +4761,15 @@ async function generateBulkTNAPrint() {
 
   var headerCells = VMILES.map(function(x){ return '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817;white-space:nowrap">'+x.n+'</th>'; }).join('');
   var bodyRows = orders.map(function(o) {
+    var photoUrl = getStyleImage(o.merchant_id, o.style);
     var cells = VMILES.map(function(x){
       var p = o['plan_' + x.k];
       if (buffer && (x.k === 'insp' || x.k === 'ship')) p = shiftDate(p, buffer);
       return '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-family:Georgia,serif;font-size:12.5px;white-space:nowrap">'+(p?short(p):'\u2014')+'</td>';
     }).join('');
-    return '<tr><td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-weight:700;white-space:nowrap">'+o.style+'</td>'
+    return '<tr>'
+      + '<td style="padding:6px 10px;border-bottom:1px solid #E5E2D9">'+(photoUrl?'<img src="'+photoUrl+'" style="width:36px;height:36px;border-radius:6px;object-fit:cover;display:block">':'')+'</td>'
+      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-weight:700;white-space:nowrap">'+o.style+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+(o.po_number||'\u2014')+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+o.buyer+'</td>'
       + cells + '</tr>';
@@ -4360,6 +4785,7 @@ async function generateBulkTNAPrint() {
     + '<div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#A0A09A;margin-top:3px;font-weight:700">For: ' + audienceLabel + '</div></div>'
     + '</div>'
     + '<div style="padding:20px 28px;overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'
+    + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Photo</th>'
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Style</th>'
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">PO</th>'
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Buyer</th>'
@@ -4858,7 +5284,8 @@ function renderAdminPage() {
   $('act-row').innerHTML = '<button class="btn pri" onclick="openMerchantAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F517;</span> Merchant Assignment</button>'
     + ' <button class="btn" onclick="openBuyerAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F6CD;</span> Buyer Assignment</button>'
     + ' <button class="btn" onclick="openColumnManagerHub()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x2699;</span> Column Manager</button>'
-    + ' <button class="btn" onclick="openJMAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F9D1;&#x200D;&#x1F4BC;</span> Junior Merchandiser Assignment</button>';
+    + ' <button class="btn" onclick="openJMAssign()" style="display:flex;align-items:center;gap:8px;padding:9px 16px"><span style="font-size:16px">&#x1F9D1;&#x200D;&#x1F4BC;</span> Junior Merchandiser Assignment</button>'
+    + ' <button class="btn" onclick="backfillTNAApprovalLinks()" style="display:flex;align-items:center;gap:8px;padding:9px 16px" title="Fills in blank TNA actual dates for PP/Final Inspection approvals that were approved BEFORE the auto-link feature existed. Never overwrites a date that\'s already set."><span style="font-size:16px">&#x1F504;</span> Sync TNA from Approvals</button>';
 
   var inp = 'class="adm-inp"';
   var sel = 'class="adm-sel"';
@@ -5944,7 +6371,7 @@ async function loadLayingGoods(){
   else if(r==='jm') q=q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
   else if(r==='manager') q=q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
   var res=await q;
-  S.layingGoods=res.data||[];
+  S.layingGoods=(res.data||[]).map(function(o){ if (o.style) o.style = o.style.toUpperCase(); return o; });
   S.layingLoaded=true;
   try { await loadFieldValues(S.layingGoods.map(function(o){ return o.id; })); } catch(e) { console.error('loadFieldValues laying:', e); }
 }
@@ -6248,7 +6675,7 @@ async function loadStyleImages(merchantId) {
 }
 
 function getStyleImage(merchantId,style){
-  var entry=_styleImagesCache[merchantId+'_'+style];
+  var entry=_styleImagesCache[merchantId+'_'+String(style||'').toUpperCase()];
   return entry ? (entry.url||entry) : null;
 }
 
@@ -7120,16 +7547,16 @@ function renderDelayCell(orderId) {
 function sortOrdersByStyleAndShip(list) {
   var styleMinShip = {};
   list.forEach(function(o) {
-    var key = o.style || '';
+    var key = (o.style || '').toUpperCase();
     var sd = o.ship_date || '9999-12-31';
     if (!styleMinShip[key] || sd < styleMinShip[key]) styleMinShip[key] = sd;
   });
   return list.slice().sort(function(a, b) {
-    var ga = styleMinShip[a.style || ''] || '9999-12-31';
-    var gb = styleMinShip[b.style || ''] || '9999-12-31';
+    var ga = styleMinShip[(a.style || '').toUpperCase()] || '9999-12-31';
+    var gb = styleMinShip[(b.style || '').toUpperCase()] || '9999-12-31';
     if (ga < gb) return -1;
     if (ga > gb) return 1;
-    var sa = a.style || '', sb = b.style || '';
+    var sa = (a.style || '').toUpperCase(), sb = (b.style || '').toUpperCase();
     if (sa < sb) return -1;
     if (sa > sb) return 1;
     var da = a.ship_date || '9999-12-31', db2 = b.ship_date || '9999-12-31';
@@ -7420,9 +7847,10 @@ function openRepeatHistoryModal(orderId) {
   if (!hist.length) {
     $('rh-body').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No repeat history recorded for this order.</div>';
   } else {
-    $('rh-body').innerHTML = hist.map(function(h){
+    $('rh-body').innerHTML = hist.map(function(h, i){
+      var genLabel = i === 0 ? 'Direct predecessor' : (i+1) + ' generations back';
       return '<div class="rh-card">'
-        + '<div class="rh-card-hdr"><div class="rh-card-icon">&#x1F501;</div><span class="rh-card-style">' + (h.prev_style||'\u2014') + '</span></div>'
+        + '<div class="rh-card-hdr"><div class="rh-card-icon">&#x1F501;</div><span class="rh-card-style">' + (h.prev_style||'\u2014') + '</span><span class="rh-card-gen">' + genLabel + '</span></div>'
         + '<div class="rh-grid">'
         + '<div><div class="rh-lbl">Season</div><div class="rh-val">' + (h.season||'\u2014') + '</div></div>'
         + '<div><div class="rh-lbl">Quantity</div><div class="rh-val">' + (h.qty!=null?fmt(h.qty)+' pcs':'\u2014') + '</div></div>'
@@ -7583,7 +8011,7 @@ async function renderJMOverview(jmId) {
       var stageColor = { live: '#065F46', laying: '#92400E', shipped: '#1E40AF' }[a.stage] || 'var(--muted)';
       return '<tr>'
         + '<td style="font-size:11px;color:var(--muted);white-space:nowrap">' + ago(a.updated_at) + '</td>'
-        + '<td class="sty">' + a.style + (a.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + a.po_number + '</div>' : '') + '</td>'
+        + '<td class="sty">' + (a.style||'').toUpperCase() + (a.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + a.po_number + '</div>' : '') + '</td>'
         + '<td>' + (a.buyer||'&mdash;') + '</td>'
         + '<td>' + (merch ? merch.name : '&mdash;') + '</td>'
         + '<td><span style="font-size:10.5px;font-weight:700;color:' + stageColor + '">' + stageLabel + '</span></td>'
