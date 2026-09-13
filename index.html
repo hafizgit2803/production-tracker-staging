@@ -648,59 +648,62 @@ button.apv-chip{font-family:inherit}
 .mt-reply-row input:focus{outline:none;border-color:var(--accent)}
 
 /* Yarn — table pill */
-.yarn-pill{position:relative;height:22px;border-radius:11px;background:#EFECE3;overflow:hidden;
-  display:flex;align-items:center;min-width:64px}
-.yarn-pill-fill{position:absolute;left:0;top:0;bottom:0;border-radius:11px;transition:width .2s ease}
+.yarn-pill{position:relative;height:24px;border-radius:8px;background:var(--panel);
+  border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;min-width:78px}
+.yarn-pill-fill{position:absolute;left:0;top:0;bottom:0;transition:width .2s ease}
 .yarn-pill.empty .yarn-pill-fill{background:transparent}
-.yarn-pill.partial .yarn-pill-fill{background:#F0B94D}
-.yarn-pill.complete .yarn-pill-fill{background:var(--green)}
-.yarn-pill-label{position:relative;z-index:1;font-size:9px;font-weight:700;color:var(--ink);
-  padding:0 8px;white-space:nowrap;text-shadow:0 1px 2px rgba(255,255,255,.5)}
+.yarn-pill.partial .yarn-pill-fill{background:#F6D186}
+.yarn-pill.complete .yarn-pill-fill{background:#86EFAC}
+.yarn-pill-label{position:relative;z-index:1;font-size:10px;font-weight:700;color:var(--ink);
+  padding:0 8px;white-space:nowrap}
 
-/* Yarn modal — liquid glass */
-.yarn-overall-card{background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(150%);
-  -webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.65);
-  border-radius:16px;padding:16px 18px;box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
-[data-theme="dark"] .yarn-overall-card{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.1)}
+/* Yarn modal */
+.yarn-overall-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
 .yarn-overall-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
 .yarn-overall-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .yarn-overall-nums{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink)}
-.yarn-bar-track{height:14px;border-radius:8px;background:rgba(0,0,0,.06);overflow:hidden}
+.yarn-bar-track{height:14px;border-radius:8px;background:#EFECE3;overflow:hidden}
 .yarn-bar-track.sm{height:8px;margin-top:8px}
+[data-theme="dark"] .yarn-bar-track{background:#2A2828}
 .yarn-bar-fill{height:100%;border-radius:8px;transition:width .25s ease}
 .yarn-bar-fill.empty{background:transparent}
-.yarn-bar-fill.partial{background:linear-gradient(90deg,#F0B94D,#E8A83D)}
-.yarn-bar-fill.complete{background:linear-gradient(90deg,#4ADE80,#22C55E)}
+.yarn-bar-fill.partial{background:#F0B94D}
+.yarn-bar-fill.complete{background:var(--green)}
 
-.yarn-booking-card{background:rgba(255,255,255,.55);backdrop-filter:blur(12px) saturate(150%);
-  -webkit-backdrop-filter:blur(12px) saturate(150%);border:1px solid rgba(255,255,255,.6);
-  border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 3px 12px rgba(0,0,0,.05)}
-[data-theme="dark"] .yarn-booking-card{background:rgba(42,40,40,.5);border-color:rgba(255,255,255,.1)}
+.yarn-booking-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;margin-bottom:12px}
 .yarn-booking-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.yarn-booking-supplier{font-size:14px;font-weight:700;color:var(--ink)}
-.yarn-booking-meta{font-size:11px;color:var(--muted);margin-top:2px}
-.yarn-booking-nums{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:5px;text-align:right}
-.yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}
+.yarn-booking-supplier{font-size:16px;font-weight:800;color:var(--ink)}
+.yarn-booking-meta{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px}
+.yarn-booking-nums{font-size:13px;font-weight:700;color:var(--ink);margin-top:6px;text-align:right}
+.yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0}
 .yarn-x:hover{opacity:.7}
-.yarn-receipts-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
-.yarn-receipt-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.5);
-  border-radius:8px;padding:5px 8px}
-[data-theme="dark"] .yarn-receipt-row{background:rgba(30,28,28,.5)}
-.yarn-receipt-row input{border:1px solid rgba(0,0,0,.08);border-radius:6px;padding:4px 7px;
-  font-size:12px;background:rgba(255,255,255,.7);color:var(--ink)}
-.yarn-receipt-row input[type="date"]{width:130px}
-.yarn-receipt-row input[type="number"]{width:80px}
-.yarn-receipt-row input:disabled{opacity:.6;background:transparent;border-color:transparent}
 
-.yarn-form-card{background:rgba(255,255,255,.65);backdrop-filter:blur(14px) saturate(160%);
-  -webkit-backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.7);
-  border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.07)}
-[data-theme="dark"] .yarn-form-card{background:rgba(48,46,46,.6);border-color:rgba(255,255,255,.12)}
+/* Inhouse entries — a plain read-only table. Once added, an entry can only be
+   removed, not edited in place, so the history stays a clean, trustworthy
+   record rather than something that quietly drifts. */
+.yarn-receipts-table{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.yarn-receipts-hdr{display:grid;grid-template-columns:1fr 1fr 32px;background:#F3F1EA;
+  padding:6px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+[data-theme="dark"] .yarn-receipts-hdr{background:#252325}
+.yarn-receipt-row{display:grid;grid-template-columns:1fr 1fr 32px;align-items:center;
+  padding:8px 10px;border-top:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink)}
+.yarn-receipts-empty{padding:10px;font-size:12.5px;color:var(--muted);text-align:center}
+
+.yarn-form-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:16px;margin-bottom:14px}
 .yarn-form-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:10px}
 .yarn-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .yarn-form-grid input,.yarn-form-grid select{width:100%;padding:7px 9px;border:1px solid var(--line);
   border-radius:8px;background:#FCFBF7;color:var(--ink);font-size:13px}
+.yarn-add-receipt-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;
+  padding:8px 10px;border-top:1px solid var(--line);background:#F9F8F4}
+[data-theme="dark"] .yarn-add-receipt-row{background:#242222}
+.yarn-add-receipt-row input{padding:5px 8px;border:1px solid var(--line);border-radius:7px;
+  background:#fff;color:var(--ink);font-size:13px}
+[data-theme="dark"] .yarn-add-receipt-row input{background:#2A2828}
+
 .sm-action-toggle{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);
   margin-top:12px;padding-top:12px;border-top:1px solid var(--line);cursor:pointer;line-height:1.4}
 .sm-action-toggle input{margin-top:2px;width:15px;height:15px;flex-shrink:0;cursor:pointer}
@@ -1177,7 +1180,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.5</p>
   </div>
 </div>
 
@@ -1212,7 +1215,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.4</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.5</div>
 </div>
 
 
@@ -1509,8 +1512,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   <div class="modal" style="max-width:640px;max-height:88vh;display:flex;flex-direction:column">
     <div class="m-h" style="flex-shrink:0"><div><h3 id="mat-title">Yarn Booking</h3><div class="msub" id="mat-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-material')">Close</button></div>
-    <div class="m-b glass-backdrop" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
-    <div class="m-f" style="flex-shrink:0"><button class="btn" onclick="closeModal('ov-material')">Close</button></div>
+    <div class="m-b" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
   </div>
 </div>
 
@@ -3117,8 +3119,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     const totalBk = sum.bk, totalRc = sum.rc;
     const yarnPct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
+    const yarnUnitLabel = division === 'knit' ? 'kgs' : 'lbs';
     const yarnInner = '<div class="yarn-pill ' + yarnBarClass(yarnPct) + '"><div class="yarn-pill-fill" style="width:' + yarnPct + '%"></div>'
-      + '<span class="yarn-pill-label">' + (totalBk > 0 ? (fmt(totalRc) + ' / ' + fmt(totalBk)) : 'No booking') + '</span></div>';
+      + '<span class="yarn-pill-label">' + (totalBk > 0 ? (fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + yarnUnitLabel) : 'No booking') + '</span></div>';
 
     const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : '<span style="font-weight:700">'+dl+'</span>';
 
@@ -4418,12 +4421,16 @@ async function renderMaterialModalBody() {
     var bPct = b.qty > 0 ? Math.min(100, Math.round((bReceived/b.qty)*100)) : 0;
     var receiptRows = myReceipts.map(function(r){
       return '<div class="yarn-receipt-row">'
-        + '<input type="date" value="'+r.received_on+'" ' + (canEdit?'':'disabled') + ' onchange="editReceipt(\''+r.id+'\',\'received_on\',this.value)">'
-        + '<input type="number" step="0.01" value="'+r.qty+'" ' + (canEdit?'':'disabled') + ' onchange="editReceipt(\''+r.id+'\',\'qty\',this.value)">'
-        + '<span style="font-size:11px;color:var(--muted)">'+_yarnUnit+'</span>'
-        + (canEdit ? '<button class="yarn-x" onclick="deleteReceipt(\''+r.id+'\')">&#x2715;</button>' : '')
+        + '<span>' + short(r.received_on) + '</span>'
+        + '<span>' + fmt(r.qty) + ' ' + _yarnUnit + '</span>'
+        + (canEdit ? '<button class="yarn-x" onclick="deleteReceipt(\''+r.id+'\')">&#x2715;</button>' : '<span></span>')
         + '</div>';
     }).join('');
+    var receiptsTableHtml = '<div class="yarn-receipts-table">'
+      + '<div class="yarn-receipts-hdr"><span>Date</span><span>Quantity</span><span></span></div>'
+      + (receiptRows || '<div class="yarn-receipts-empty">No inhouse entries yet</div>')
+      + '<div id="yarn-add-row-'+b.id+'"></div>'
+      + '</div>';
     return '<div class="yarn-booking-card">'
       + '<div class="yarn-booking-hdr">'
       + '<div><div class="yarn-booking-supplier">'+htmlEsc(b.supplier)+'</div>'
@@ -4432,8 +4439,8 @@ async function renderMaterialModalBody() {
       + '</div>'
       + '<div class="yarn-bar-track sm"><div class="yarn-bar-fill sm ' + yarnBarClass(bPct) + '" style="width:'+bPct+'%"></div></div>'
       + '<div class="yarn-booking-nums">'+fmt(bReceived)+' / '+fmt(b.qty)+' '+_yarnUnit+'</div>'
-      + '<div class="yarn-receipts-list" id="yarn-receipts-'+b.id+'">'+receiptRows+'</div>'
-      + (canEdit ? '<button class="btn sm ghost" style="margin-top:6px" onclick="addReceiptRow(\''+b.id+'\')">+ Add Inhouse</button>' : '')
+      + receiptsTableHtml
+      + (canEdit ? '<button class="btn sm ghost" style="margin-top:8px" onclick="addReceiptRow(\''+b.id+'\')">+ Add Inhouse</button>' : '')
       + '</div>';
   }).join('');
 
@@ -4510,13 +4517,13 @@ function addReceiptRow(bookingId) {
   var existing = document.getElementById('yarn-new-receipt-'+bookingId);
   if (existing) { existing.remove(); return; }
   var today0 = new Date().toISOString().slice(0,10);
-  var html = '<div class="yarn-receipt-row" id="yarn-new-receipt-'+bookingId+'">'
+  var html = '<div class="yarn-add-receipt-row" id="yarn-new-receipt-'+bookingId+'">'
     + '<input type="date" id="yb-new-rc-date-'+bookingId+'" value="'+today0+'">'
-    + '<input type="number" step="0.01" id="yb-new-rc-qty-'+bookingId+'" placeholder="0">'
+    + '<input type="number" step="0.01" id="yb-new-rc-qty-'+bookingId+'" placeholder="Qty">'
     + '<button class="btn sm pri" onclick="saveNewReceipt(\''+bookingId+'\')">Add</button>'
     + '</div>';
-  var list = $('yarn-receipts-'+bookingId);
-  if (list) list.insertAdjacentHTML('beforeend', html);
+  var target = $('yarn-add-row-'+bookingId);
+  if (target) target.outerHTML = '<div id="yarn-add-row-'+bookingId+'">' + html + '</div>';
 }
 async function saveNewReceipt(bookingId) {
   var date = $('yb-new-rc-date-'+bookingId).value;
@@ -4524,14 +4531,6 @@ async function saveNewReceipt(bookingId) {
   if (!date || !qty) { toast('Date and quantity required', 'err'); return; }
   await db.from('yarn_receipts').insert({ booking_id: bookingId, received_on: date, qty: qty, created_by: S.user.name });
   toast('Inhouse recorded', 'ok-t');
-  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
-  await reloadSummaries(_yarnMerchantId);
-  renderBoard(S.view);
-  await renderMaterialModalBody();
-}
-async function editReceipt(id, field, val) {
-  var upd = {}; upd[field] = field==='qty' ? (parseFloat(val)||0) : val;
-  await db.from('yarn_receipts').update(upd).eq('id', id);
   await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
   await reloadSummaries(_yarnMerchantId);
   renderBoard(S.view);
@@ -5907,11 +5906,11 @@ function renderODMaterial() {
   const today0 = new Date().toISOString().slice(0,10);
 
   let bkRows = bk.length ? '<table class="mat-table"><thead><tr><th>Date</th><th>Supplier</th><th style="text-align:right">Qty (' + unit + ')</th>' + (canEdit?'<th></th>':'') + '</tr></thead><tbody>' +
-    bk.map(function(b){ return '<tr><td style="font-family:var(--mono);font-size:12px">' + short(b.booked_on) + '</td><td>' + (b.supplier||'--') + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(b.qty) + '</td>' + (canEdit?'<td><button class="btn sm danger" onclick="deleteBooking(\'' + b.id + '\')">x</button></td>':'') + '</tr>'; }).join('') +
+    bk.map(function(b){ return '<tr><td style="font-family:var(--mono);font-size:12px">' + short(b.booked_on) + '</td><td>' + (b.supplier||'--') + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(b.qty) + '</td>' + (canEdit?'<td><button class="btn sm danger" onclick="odDeleteBooking(\'' + b.id + '\')">x</button></td>':'') + '</tr>'; }).join('') +
     '</tbody></table>' : '<div style="color:var(--muted);font-size:13px;padding:6px 0">No bookings yet.</div>';
 
   let rcRows = rc.length ? '<table class="mat-table"><thead><tr><th>Date</th><th style="text-align:right">Qty (' + unit + ')</th><th style="text-align:right">Running total</th>' + (canEdit?'<th></th>':'') + '</tr></thead><tbody>' +
-    rc.map(function(r,i){ const run=rc.slice(0,i+1).reduce(function(s,x){return s+(x.qty||0);},0); return '<tr><td style="font-family:var(--mono);font-size:12px">' + short(r.received_on) + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(r.qty) + '</td><td style="text-align:right;font-family:var(--mono);color:var(--muted)">' + fmt(run) + '</td>' + (canEdit?'<td><button class="btn sm danger" onclick="deleteReceipt(\'' + r.id + '\')">x</button></td>':'') + '</tr>'; }).join('') +
+    rc.map(function(r,i){ const run=rc.slice(0,i+1).reduce(function(s,x){return s+(x.qty||0);},0); return '<tr><td style="font-family:var(--mono);font-size:12px">' + short(r.received_on) + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(r.qty) + '</td><td style="text-align:right;font-family:var(--mono);color:var(--muted)">' + fmt(run) + '</td>' + (canEdit?'<td><button class="btn sm danger" onclick="odDeleteReceipt(\'' + r.id + '\')">x</button></td>':'') + '</tr>'; }).join('') +
     '</tbody></table>' : '<div style="color:var(--muted);font-size:13px;padding:6px 0">No receipts yet.</div>';
 
   const addBkBtn = canEdit ? '<button class="btn sm pri" onclick="showAddBookingForm()">+ Add booking</button>' : '';
@@ -5980,7 +5979,7 @@ async function saveBooking() {
   else toast('Error saving','err');
 }
 
-async function deleteBooking(id) {
+async function odDeleteBooking(id) {
   if (!confirm('Remove this booking?')) return;
   await db.from('yarn_bookings').delete().eq('id',id);
   await loadOrderDetailData(S.detail.orderId); renderODContent();
@@ -5994,7 +5993,7 @@ async function saveReceipt() {
   else toast('Error saving','err');
 }
 
-async function deleteReceipt(id) {
+async function odDeleteReceipt(id) {
   if (!confirm('Remove this receipt?')) return;
   await db.from('yarn_receipts').delete().eq('id',id);
   await loadOrderDetailData(S.detail.orderId); renderODContent();
