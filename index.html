@@ -652,14 +652,14 @@ button.apv-chip{font-family:inherit}
 .mt-reply-row input:focus{outline:none;border-color:var(--accent)}
 
 /* Yarn — table pill */
-.yarn-pill{position:relative;height:24px;border-radius:8px;background:var(--panel);
-  border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;min-width:78px}
+.yarn-pill{position:relative;height:36px;border-radius:8px;background:var(--panel);
+  border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;width:100%}
 .yarn-pill-fill{position:absolute;left:0;top:0;bottom:0;transition:width .2s ease}
 .yarn-pill.empty .yarn-pill-fill{background:transparent}
 .yarn-pill.partial .yarn-pill-fill{background:#F6D186}
 .yarn-pill.complete .yarn-pill-fill{background:#86EFAC}
-.yarn-pill-label{position:relative;z-index:1;font-size:10px;font-weight:700;color:var(--ink);
-  padding:0 8px;white-space:nowrap}
+.yarn-pill-label{position:relative;z-index:1;font-size:9.5px;font-weight:700;color:var(--ink);
+  padding:0 4px;white-space:nowrap;text-align:center}
 
 /* Yarn modal */
 .yarn-overall-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
@@ -681,8 +681,6 @@ button.apv-chip{font-family:inherit}
 .yarn-booking-meta{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px}
 .yarn-booking-nums{font-size:13px;font-weight:700;color:var(--ink);margin-top:6px;text-align:right}
 .yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0}
-.attach-chip{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:9.5px;
-  font-weight:700;padding:2px 7px;border-radius:8px;margin:1px 2px 1px 0}
 .acc-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
   width:100%;padding:7px 8px;border-radius:10px;font-size:12px;font-weight:800;line-height:1.25;
   border:1.5px solid transparent;cursor:pointer;font-family:inherit}
@@ -1200,7 +1198,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.11</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.13</p>
   </div>
 </div>
 
@@ -1235,7 +1233,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.11</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.13</div>
 </div>
 
 
@@ -3002,7 +3000,8 @@ async function renderBoard(uid) {
   var jmBadgeHtml = jmUser
     ? `<span class="jm-badge" onclick="setView('jm_${jmUser.id}')" title="Click to view ${jmUser.name}'s activity"><span class="jm-icon">&#x1F9D1;&#x200D;&#x1F4BC;</span>Working with ${jmUser.name}</span>`
     : '';
-  $('page-title').innerHTML = merch.name +
+  var designationLabel = titleOf(merch);
+  $('page-title').innerHTML = '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px">' + htmlEsc(designationLabel) + '</div>' + merch.name +
     `<span class="div-badge ${division}">${division === 'knit' ? 'Knit' : 'Sweater'}</span>` + jmBadgeHtml;
   $('page-sub').innerHTML = `${merch.team||''} \u00b7 ${os.length} live orders \u00b7 ${fmt(os.reduce((s,o)=>s+(o.qty||0)-(o.prod_packing||0),0))} pcs remaining`;
   $('stamp').innerHTML = `<div class="lab">Last updated</div>
@@ -3234,11 +3233,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     }
     if (itemByKey['_attachment']) {
       var attachList = (sum.attach || []);
-      var attachInner = attachList.length
-        ? attachList.map(function(a){ return '<span class="attach-chip">' + htmlEsc(a) + '</span>'; }).join(' ')
-        : '<span style="color:var(--muted);font-size:10px">No attachment</span>';
-      var attachHtml = '<div onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')" style="cursor:pointer">' + attachInner + '</div>';
-      cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml);
+      var attachText = attachList.length
+        ? htmlEsc(attachList.join(', '))
+        : '<span style="color:var(--muted)">No attachment</span>';
+      var attachHtml = '<div onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')" style="cursor:pointer">' + attachText + '</div>';
+      cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml, 'font-size:9px;');
     }
     if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
 
@@ -5196,7 +5195,7 @@ async function generateBulkTNAPrint() {
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-weight:700;white-space:nowrap">'+o.style+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+(o.po_number||'\u2014')+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+o.buyer+'</td>'
-      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:11.5px;max-width:140px">'+(attachList.length?attachList.join(', '):'\u2014')+'</td>'
+      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;font-weight:700;max-width:140px;background:#FBEFE8">'+(attachList.length?attachList.join(', '):'<span style="font-weight:400;color:#A0A09A">\u2014</span>')+'</td>'
       + cells + '</tr>';
   }).join('');
 
@@ -5306,8 +5305,11 @@ function generateTNAPrint() {
     + infoItem('PO Number', o.po_number) + infoItem('Buyer', o.buyer) + infoItem('Buying House', o.house)
     + infoItem('Country', countryVal) + infoItem('Merchant', merch?merch.name:'')
     + infoItem('Order Confirmed', o.confirm_date?short(o.confirm_date):'') + infoItem('Quantity', o.qty?fmt(o.qty)+' pcs':'')
-    + infoItem('Attachment', attachList.length ? attachList.join(', ') : 'No attachment')
     + '</div></div>'
+    + '<div style="padding:12px 28px;background:#FBEFE8;border-bottom:2px solid #E8CFC2;font-size:15px;font-weight:700;color:#191817">'
+    + '<span style="font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#B25A2E;margin-right:6px">&#x1F9F5; Attachment:</span>'
+    + (attachList.length ? attachList.join(', ') : 'No attachment')
+    + '</div>'
     + '<div style="padding:20px 28px"><table style="width:100%;border-collapse:collapse"><thead><tr>'
     + '<th style="text-align:left;padding:0 14px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Milestone</th>'
     + '<th style="text-align:left;padding:0 14px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Target Date</th>'
@@ -7611,8 +7613,8 @@ var FIXED_BLOCKS = [
   { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:78,  wrap:true, mandatory:false },
   { key:'_days',        name:'Days Left',    width:70,  mandatory:false },
-  { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
-  { key:'_attachment',  name:'Garment Attachment', width:120, wrap:true, mandatory:false },
+  { key:'_yarn',        name:'Yarn / Fabric',width:84,  mandatory:false },
+  { key:'_attachment',  name:'Garment Attachment', width:95,  wrap:true, mandatory:false },
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
