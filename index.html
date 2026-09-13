@@ -652,12 +652,24 @@ button.apv-chip{font-family:inherit}
 .mt-reply-row input:focus{outline:none;border-color:var(--accent)}
 
 /* Yarn — table pill */
+.attach-pill{display:block;width:100%;padding:7px 9px;border-radius:9px;font-size:11px;
+  font-weight:700;text-align:center;cursor:pointer;font-family:inherit;line-height:1.3;
+  background:#E8D8CC;color:#8A4A24;border:1.5px solid #D8B99E;transition:transform .1s ease}
+.attach-pill:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.attach-pill:not(.has-val){background:#EFECE3;color:#8A8574;border-color:#DCD7C9;font-weight:600}
+[data-theme="dark"] .attach-pill{background:#4A3826;color:#E8C4A0;border-color:#5A4530}
+[data-theme="dark"] .attach-pill:not(.has-val){background:#2E2C28;color:#A8A399;border-color:#443F35}
+
 .yarn-pill{position:relative;height:36px;border-radius:8px;background:var(--panel);
   border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;width:100%}
 .yarn-pill-fill{position:absolute;left:0;top:0;bottom:0;transition:width .2s ease}
 .yarn-pill.empty .yarn-pill-fill{background:transparent}
 .yarn-pill.partial .yarn-pill-fill{background:#F6D186}
 .yarn-pill.complete .yarn-pill-fill{background:#86EFAC}
+.yarn-pill.no-booking{background:#EFECE3;border-color:#DCD7C9}
+.yarn-pill.no-booking .yarn-pill-label{color:#8A8574;font-weight:600}
+[data-theme="dark"] .yarn-pill.no-booking{background:#2E2C28;border-color:#443F35}
+[data-theme="dark"] .yarn-pill.no-booking .yarn-pill-label{color:#A8A399}
 .yarn-pill-label{position:relative;z-index:1;font-size:9.5px;font-weight:700;color:var(--ink);
   padding:0 4px;white-space:nowrap;text-align:center}
 
@@ -1198,7 +1210,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.13</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.15</p>
   </div>
 </div>
 
@@ -1233,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.13</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.15</div>
 </div>
 
 
@@ -3193,8 +3205,10 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const totalBk = sum.bk, totalRc = sum.rc;
     const yarnPct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
     const yarnUnitLabel = division === 'knit' ? 'kgs' : 'lbs';
-    const yarnInner = '<div class="yarn-pill ' + yarnBarClass(yarnPct) + '"><div class="yarn-pill-fill" style="width:' + yarnPct + '%"></div>'
-      + '<span class="yarn-pill-label">' + (totalBk > 0 ? (fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + yarnUnitLabel) : 'No booking') + '</span></div>';
+    const yarnInner = totalBk > 0
+      ? '<div class="yarn-pill ' + yarnBarClass(yarnPct) + '"><div class="yarn-pill-fill" style="width:' + yarnPct + '%"></div>'
+        + '<span class="yarn-pill-label">' + fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + yarnUnitLabel + '</span></div>'
+      : '<div class="yarn-pill no-booking"><span class="yarn-pill-label">No booking</span></div>';
 
     const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : '<span style="font-weight:700">'+dl+' days</span>';
 
@@ -3214,14 +3228,14 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
-    if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;');
+    if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11.5px;font-weight:700;font-family:var(--mono);color:var(--ink);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
     if (itemByKey['_house']) cellsByKey['_house'] = singleTd('_house', '', (o.house||'\u2014'), 'font-size:9px;');
-    if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:9px;');
-    if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:9px;');
-    if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:9px;');
+    if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:9px;font-weight:700;');
+    if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:9px;font-weight:700;');
+    if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:9px;font-weight:700;');
     if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty), 'font-weight:700;');
     if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2), 'font-weight:700;');
     if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)), 'font-weight:700;');
@@ -3233,11 +3247,10 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     }
     if (itemByKey['_attachment']) {
       var attachList = (sum.attach || []);
-      var attachText = attachList.length
-        ? htmlEsc(attachList.join(', '))
-        : '<span style="color:var(--muted)">No attachment</span>';
-      var attachHtml = '<div onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')" style="cursor:pointer">' + attachText + '</div>';
-      cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml, 'font-size:9px;');
+      var attachPillCls = attachList.length ? 'has-val' : '';
+      var attachText = attachList.length ? htmlEsc(attachList.join(', ')) : 'No attachment';
+      var attachHtml = '<button type="button" class="attach-pill ' + attachPillCls + '" onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')">' + attachText + '</button>';
+      cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml);
     }
     if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
 
