@@ -348,8 +348,6 @@ table.tna-t td.sty{font-weight:600}
 [data-theme="dark"] .f input[readonly]{background:#252325;color:var(--muted)}
 [data-theme="dark"] .qtyin{background:#2A2828;border-color:var(--line);color:var(--ink)}
 [data-theme="dark"] .qtyin:focus{background:#333133}
-[data-theme="dark"] .note-card{background:#2A2610;border-color:#4A4220}
-[data-theme="dark"] .note-card.closed{background:#252325}
 [data-theme="dark"] .tna-kpis>div{background:#252325}
 [data-theme="dark"] .xbtn:hover{background:#333133}
 [data-theme="dark"] .bar{background:#3A3838}
@@ -394,19 +392,6 @@ table.tna-t td.sty{font-weight:600}
 .theme-btn{border:0;background:none;color:var(--muted);font-size:16px;
   padding:4px 5px;border-radius:6px;line-height:1;cursor:pointer}
 .theme-btn:hover{background:rgba(0,0,0,.07);color:var(--ink)}
-
-/* ── NOTES BANNER ── */
-.notes-wrap{padding:0 0 14px}
-.note-card{display:flex;gap:12px;align-items:flex-start;background:#FFFBEB;
-  border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.note-card.closed{background:#F7F5EF;border-color:var(--line);opacity:.6}
-.note-icon{font-size:16px;flex:0 0 20px;margin-top:1px}
-.note-body{flex:1;min-width:0}
-.note-meta{font-size:11px;color:var(--muted);margin-bottom:3px}
-.note-text{font-size:13.5px;line-height:1.5}
-.note-text.done{text-decoration:line-through;color:var(--muted)}
-.note-actions{display:flex;gap:6px;margin-top:8px}
-.note-empty{font-size:12px;color:var(--muted);padding:6px 0}
 
 /* ── DIVISION BADGE ── */
 .div-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10.5px;
@@ -629,6 +614,51 @@ button.apv-chip{font-family:inherit}
   border-radius:5px;background:#F3F1EA;border:1px solid var(--line);color:var(--muted);
   font-size:11px;cursor:pointer;transition:all .1s}
 .tna-lock:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+/* Inbox: tabs */
+.inbox-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:2px solid var(--line)}
+.inbox-tab-btn{background:none;border:none;padding:10px 16px;font-size:13.5px;font-weight:600;
+  color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .12s}
+.inbox-tab-btn:hover{color:var(--ink)}
+.inbox-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.inbox-tab-count{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:10px;margin-left:4px}
+
+/* Inbox: message thread list */
+.msg-thread-row{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:12px 4px;border-bottom:1px solid #F0EDE4;cursor:pointer;transition:background .12s}
+.msg-thread-row:hover{background:var(--accent-soft)}
+.msg-thread-row:last-child{border-bottom:none}
+.msg-thread-row.unread .msg-thread-name{font-weight:800}
+.msg-thread-main{flex:1;min-width:0}
+.msg-thread-name{font-size:13.5px;font-weight:600;color:var(--ink)}
+.msg-unread-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:3px}
+.msg-thread-preview{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg-thread-time{font-size:10.5px;color:var(--muted);flex-shrink:0}
+
+/* Inbox: message thread modal (chat bubbles) */
+.mt-msg{max-width:80%;margin-bottom:10px;padding:9px 13px;border-radius:14px;background:var(--panel);
+  border:1px solid var(--line)}
+.mt-msg.mine{margin-left:auto;background:var(--accent-soft);border-color:#E8CFC2}
+.mt-msg-subject{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.mt-msg-body{font-size:13.5px;line-height:1.5;color:var(--ink);word-wrap:break-word}
+.mt-msg-time{font-size:10px;color:var(--muted);margin-top:4px}
+.mt-reply-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line);flex-shrink:0}
+.mt-reply-row input{flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:20px;
+  background:#FCFBF7;font-size:13.5px;color:var(--ink)}
+.mt-reply-row input:focus{outline:none;border-color:var(--accent)}
+.sm-action-toggle{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--line);cursor:pointer;line-height:1.4}
+.sm-action-toggle input{margin-top:2px;width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.action-badge{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;
+  text-transform:uppercase;letter-spacing:.03em;margin-left:6px}
+.action-badge.open{background:var(--amber-soft);color:var(--amber)}
+.action-badge.done{background:var(--green-soft);color:var(--green)}
+.action-badge.resolved{background:#EFEDE8;color:var(--muted)}
+.mt-action-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 16px;background:var(--amber-soft);border-bottom:1px solid #F6D860;font-size:12.5px}
+.mt-action-bar.done{background:var(--green-soft);border-bottom-color:#86EFAC}
+.mt-action-bar.resolved{background:#F3F1EA;border-bottom-color:var(--line)}
+
 .req-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
   padding:14px 16px;margin-bottom:10px}
 .req-card.pending{border-left:3px solid var(--amber)}
@@ -645,16 +675,6 @@ button.apv-chip{font-family:inherit}
 .req-card-actions{display:flex;gap:8px}
 [data-theme="dark"] .req-card{background:var(--panel)}
 [data-theme="dark"] .req-card-reason{background:#252325}
-
-
-/* Note replies */
-.note-reply-box{background:var(--accent-soft);border:1px solid var(--line);border-radius:7px;
-  padding:8px 11px;margin-top:8px;font-size:12.5px}
-.note-reply-box .rl{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--muted);font-weight:700;margin-bottom:4px}
-.note-reply-form{display:flex;gap:8px;margin-top:8px;align-items:flex-end}
-.note-reply-form textarea{flex:1;padding:6px 9px;border:1px solid var(--line);border-radius:8px;
-  background:#FCFBF7;font-size:12.5px;resize:none;color:var(--ink)}
 
 
 /* Manager assignment inline panel */
@@ -1102,7 +1122,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-8.7</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.2</p>
   </div>
 </div>
 
@@ -1137,7 +1157,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-8.7</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.2</div>
 </div>
 
 
@@ -1699,24 +1719,43 @@ table.dyn-board thead th.stk-dyn{z-index:35}
   </div>
 </div>
 
-<!-- ═══ MODAL: ADD NOTE ═══ -->
-<div class="ov" id="ov-note" onclick="if(event.target===this)closeModal('ov-note')">
+<!-- === SEND MESSAGE MODAL === -->
+<div class="ov" id="ov-send-message" onclick="if(event.target===this)closeModal('ov-send-message')">
   <div class="modal slim">
-    <div class="m-h">
-      <div><h3>Add note</h3><div class="msub" id="note-sub">Note will appear at the top of the merchant's board</div></div>
-    </div>
+    <div class="m-h"><div><h3>Send Message</h3><div class="msub">Goes straight to their inbox</div></div>
+      <button class="btn" onclick="closeModal('ov-send-message')">Cancel</button></div>
     <div class="m-b">
-      <div class="f">
-        <label>Note / instruction</label>
-        <textarea id="note-content" rows="4" style="width:100%;padding:8px 10px;border:1px solid var(--line);
-          border-radius:8px;background:#FCFBF7;resize:vertical;font-size:13.5px;line-height:1.5"
-          placeholder="e.g. Place dyeing order for KB-7742 before Friday"></textarea>
+      <div class="f" style="margin-bottom:10px">
+        <label>To <span style="color:var(--red)">*</span></label>
+        <select id="sm-recipient" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"><option value="">-- Select recipient --</option></select>
       </div>
-      <div class="hint" style="margin-top:8px">The merchandiser will see this at the top of their board and can mark it done when complete.</div>
+      <div class="f" style="margin-bottom:10px">
+        <label>Subject</label>
+        <input id="sm-subject" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="optional">
+      </div>
+      <div class="f">
+        <label>Message <span style="color:var(--red)">*</span></label>
+        <textarea id="sm-body" rows="5" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;resize:vertical;font-size:13.5px;line-height:1.5" placeholder="Type your message\u2026"></textarea>
+      </div>
+      <label class="sm-action-toggle"><input type="checkbox" id="sm-action-item"> This needs a response \u2014 track it as an action item until it's marked done</label>
+      <div class="form-err" id="sm-err" style="display:none;margin-top:10px"></div>
     </div>
     <div class="m-f">
-      <button class="btn" onclick="closeModal('ov-note')">Cancel</button>
-      <button class="btn pri" id="save-note-btn" onclick="saveNote()">Add note</button>
+      <button class="btn" onclick="closeModal('ov-send-message')">Cancel</button>
+      <button class="btn pri" id="sm-send-btn" onclick="sendMessageNow()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- === MESSAGE THREAD MODAL === -->
+<div class="ov" id="ov-message-thread" onclick="if(event.target===this)closeModal('ov-message-thread')">
+  <div class="modal" style="max-width:520px;max-height:82vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3 id="mt-title">Conversation</h3></div>
+      <button class="btn" onclick="closeModal('ov-message-thread')">Close</button></div>
+    <div class="m-b" id="mt-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+    <div class="mt-reply-row" id="mt-reply-row">
+      <input type="text" id="mt-reply-input" placeholder="Type a reply\u2026" onkeydown="if(event.key==='Enter')sendThreadReply()">
+      <button class="btn pri" onclick="sendThreadReply()">Send</button>
     </div>
   </div>
 </div>
@@ -1802,7 +1841,6 @@ const S = {
   users: [],
   orders: [],       // lightweight live orders (dashboard cols only)
   archive: [],
-  notes: [],
   memo: {},
   boardCache: {},   // { merchantId: fullOrders[] } — cached on first click
   view: 'dashboard',
@@ -1815,6 +1853,8 @@ const S = {
   alerts: [],
   boardSummaries: {},
   tnaRequests: [],
+  messages: [],
+  inboxTab: 'messages',
   myAssignments: [],
   buyers: [],
   buyerAssignments: {},
@@ -1867,6 +1907,106 @@ function can(action, merchantId) {
     default: return false;
   }
 }
+
+// ─── MESSAGING PERMISSION MATRIX ───
+// Admin/Management/HOD: message anyone.
+// Audit: never sends — read-only inbox, purely for oversight/record-keeping.
+// Manager: their assigned merchants + those merchants' JMs (subordinates), plus
+//          Admin/Management/HOD (their own chain of command).
+// Merchant/JM: their assigned manager only, plus Admin/Management/HOD directly —
+//              never another merchant or JM.
+function getMessageableUsers() {
+  if (!S.user) return [];
+  var role = S.user.role;
+  var others = S.users.filter(function(u){ return u.id !== S.user.id; });
+
+  if (['admin','management','hod'].includes(role)) return others;
+  if (role === 'audit') return [];
+
+  var bosses = others.filter(function(u){ return ['admin','management','hod'].includes(u.role); });
+
+  if (role === 'manager') {
+    var myMerchantIds = S.myAssignments || [];
+    var subs = others.filter(function(u){ return u.role === 'merchant' && myMerchantIds.includes(u.id); });
+    var jmIds = {};
+    myMerchantIds.forEach(function(mid){
+      var jmId = S.allJMAssignments ? S.allJMAssignments[mid] : null;
+      if (jmId) jmIds[jmId] = true;
+    });
+    var jms = others.filter(function(u){ return u.role === 'jm' && jmIds[u.id]; });
+    return subs.concat(jms).concat(bosses);
+  }
+
+  if (role === 'merchant' || role === 'jm') {
+    var managerIds = S.myManagerIds || [];
+    var managers = others.filter(function(u){ return u.role === 'manager' && managerIds.includes(u.id); });
+    return managers.concat(bosses);
+  }
+
+  return [];
+}
+
+// ─── SEND MESSAGE ───
+function openSendMessageModal(presetRecipientId) {
+  var eligible = getMessageableUsers();
+  var sel = $('sm-recipient');
+  if (!eligible.length) {
+    toast('You don\u2019t have anyone available to message', 'err');
+    return;
+  }
+  sel.innerHTML = '<option value="">-- Select recipient --</option>'
+    + eligible.map(function(u){ return '<option value="' + u.id + '"' + (u.id===presetRecipientId?' selected':'') + '>' + u.name + ' (' + u.role + ')</option>'; }).join('');
+  $('sm-subject').value = '';
+  $('sm-body').value = '';
+  $('sm-action-item').checked = false;
+  $('sm-err').style.display = 'none';
+  openModal('ov-send-message');
+}
+
+async function sendMessageNow() {
+  var recipientId = $('sm-recipient').value;
+  var body = $('sm-body').value.trim();
+  if (!recipientId || !body) {
+    $('sm-err').textContent = 'Please choose a recipient and type a message.';
+    $('sm-err').style.display = 'block';
+    return;
+  }
+  // Defensive re-check — the eligible list is trusted client-side, but never
+  // trust a dropdown value alone for something access-control related.
+  var eligible = getMessageableUsers();
+  if (!eligible.some(function(u){ return u.id === recipientId; })) {
+    $('sm-err').textContent = 'You\u2019re not able to message this person.';
+    $('sm-err').style.display = 'block';
+    return;
+  }
+  var recipient = S.users.find(function(u){ return u.id === recipientId; });
+  var subject = $('sm-subject').value.trim();
+  var isActionItem = $('sm-action-item').checked;
+  var threadId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+
+  $('sm-send-btn').disabled = true;
+  $('sm-send-btn').textContent = 'Sending\u2026';
+  var res = await db.from('messages').insert({
+    id: threadId, thread_id: threadId, parent_id: null,
+    sender_id: S.user.id, sender_name: S.user.name,
+    recipient_id: recipientId, recipient_name: recipient ? recipient.name : '',
+    subject: subject || null, body: body,
+    action_status: isActionItem ? 'open' : null,
+    created_at: new Date().toISOString()
+  });
+  $('sm-send-btn').disabled = false;
+  $('sm-send-btn').textContent = 'Send';
+
+  if (res.error) {
+    $('sm-err').textContent = 'Could not send \u2014 please try again.';
+    $('sm-err').style.display = 'block';
+    console.error('sendMessageNow error:', res.error);
+    return;
+  }
+  closeModal('ov-send-message');
+  toast('Message sent', 'ok-t');
+}
+
 
 const fmt = n => n == null ? '—' : Number(n).toLocaleString('en-US');
 const fmtGauge = g => !g ? '' : (g.toLowerCase().includes('gg') ? g : g + 'GG');
@@ -2116,11 +2256,12 @@ async function startApp() {
 
   try { await loadMyAssignments(); } catch(e) { console.error('loadMyAssignments:', e); }
   try { await loadMyJMAssignments(); } catch(e) { console.error('loadMyJMAssignments:', e); }
+  try { await loadMyManager(); } catch(e) { console.error('loadMyManager:', e); }
   try { await loadAllJMAssignments(); } catch(e) { console.error('loadAllJMAssignments:', e); }
   try { await loadDashOrders(); } catch(e) { console.error('loadDashOrders:', e); }
-  try { await loadNotes(); } catch(e) { console.error('loadNotes:', e); }
   try { await loadMemo(); } catch(e) { console.error('loadMemo:', e); }
   try { await loadTNARequests(); } catch(e) { console.error('loadTNARequests:', e); }
+  try { await loadMessages(); } catch(e) { console.error('loadMessages:', e); }
   try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
   try { await loadBuyers(); } catch(e) { console.error('loadBuyers:', e); }
   try { await loadBuyerAssignments(); } catch(e) { console.error('loadBuyerAssignments:', e); }
@@ -2267,13 +2408,6 @@ async function loadMemo() {
   });
 }
 
-async function loadNotes() {
-  let q = db.from('notes').select('*').order('created_at', { ascending: false });
-  if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
-  const { data } = await q;
-  S.notes = data || [];
-}
-
 async function saveMemo(field, value) {
   if (!value) return;
   await db.from('memo').upsert({ field, value }, { onConflict: 'field,value' });
@@ -2358,12 +2492,21 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, async () => {
       await loadUsers(); renderRail();
     })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, async () => {
-      await loadNotes(); render();
-    })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tna_requests' }, async () => {
       await loadTNARequests(); renderRail();
-      if (S.view === 'requests' || S.view === 'my-requests') render();
+      if (S.view === 'requests' || S.view === 'my-requests' || S.view === 'inbox') render();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async (payload) => {
+      var involvesMe = payload.new && (payload.new.sender_id === S.user.id || payload.new.recipient_id === S.user.id);
+      var involvedMe = payload.old && (payload.old.sender_id === S.user.id || payload.old.recipient_id === S.user.id);
+      if (!involvesMe && !involvedMe) return; // not any of my conversations — ignore
+      await loadMessages();
+      renderRail();
+      if (S.view === 'inbox') renderInboxTabBody();
+      if (_openThreadId) {
+        var openThread = getMyThreads().find(function(t){ return t.thread_id === _openThreadId; });
+        if (openThread) renderMessageThreadBody(openThread);
+      }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yarn_bookings' }, async () => {
       // Booking/receipt/approval/accessory changes don't touch order ROW data (style,
@@ -2390,6 +2533,7 @@ function render() {
   else if (S.view === 'shipped' || S.view === 'archive') renderShippedPage();
   else if (S.view === 'requests') renderRequestsView();
   else if (S.view === 'my-requests') renderMyRequests();
+  else if (S.view === 'inbox') renderInbox();
   else if (S.view === 'laying-goods') renderLayingGoods();
   else if (S.view === 'admin') renderAdminPage();
   else if (typeof S.view === 'string' && S.view.indexOf('jm_') === 0) renderJMOverview(S.view.slice(3));
@@ -2403,7 +2547,7 @@ function setView(v) {
     return;
   }
   if (!isJMOverview && S.user.role === 'manager' &&
-      !['dashboard','shipped','requests','my-requests','admin'].includes(v) &&
+      !['dashboard','shipped','requests','my-requests','admin','inbox'].includes(v) &&
       v !== S.user.id) {
     if (!S.myAssignments.includes(v)) {
       toast('You are not assigned to this merchant');
@@ -2411,7 +2555,7 @@ function setView(v) {
     }
   }
   if (!isJMOverview && S.user.role === 'jm' &&
-      !['dashboard','shipped','requests','my-requests','admin','laying-goods'].includes(v)) {
+      !['dashboard','shipped','requests','my-requests','admin','laying-goods','inbox'].includes(v)) {
     if (!S.myJMMerchants || !S.myJMMerchants.includes(v)) {
       toast('You are not assigned to this merchant');
       return;
@@ -2423,6 +2567,7 @@ function setView(v) {
   else if (v === 'shipped' || v === 'archive') renderShippedPage();
   else if (v === 'requests') renderRequestsView();
   else if (v === 'my-requests') renderMyRequests();
+  else if (v === 'inbox') renderInbox();
   else if (v === 'laying-goods') { renderLayingGoods(); return; }
   else if (v === 'admin') { try { renderAdminPage(); } catch(e) { console.error('renderAdminPage error:',e); $('content').innerHTML='<div style="padding:20px;color:red">Admin page error: '+e.message+'</div>'; } }
   else if (isJMOverview) { renderJMOverview(v.slice(3)); }
@@ -2442,6 +2587,25 @@ async function loadMyJMAssignments() {
   const { data } = await db.from('jm_assignments')
     .select('merchant_id').eq('jm_id', S.user.id);
   S.myJMMerchants = (data || []).map(function(a){ return a.merchant_id; });
+}
+
+// Reverse lookup: given I'm a merchant or JM, who is MY manager? Needed for the
+// messaging permission matrix (merchants/JMs can message their manager, but not
+// each other). A JM can help more than one merchant, so collects every distinct
+// manager across all merchants they're assigned to.
+async function loadMyManager() {
+  S.myManagerIds = [];
+  if (S.user.role === 'merchant') {
+    const { data } = await db.from('manager_assignments').select('manager_id').eq('merchant_id', S.user.id);
+    S.myManagerIds = (data || []).map(function(a){ return a.manager_id; });
+  } else if (S.user.role === 'jm') {
+    if (S.myJMMerchants && S.myJMMerchants.length) {
+      const { data } = await db.from('manager_assignments').select('manager_id').in('merchant_id', S.myJMMerchants);
+      var seen = {};
+      (data || []).forEach(function(a){ seen[a.manager_id] = true; });
+      S.myManagerIds = Object.keys(seen);
+    }
+  }
 }
 
 // ─── ASSIGNMENT MODAL (Admin only) ───
@@ -2523,22 +2687,7 @@ function renderDashboard() {
   let alertHtml = '';
   if (can('inbox') && S.alerts && S.alerts.length) {
     alertHtml = '<div class="alert-cards"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Shipment alerts — ' + S.alerts.length + ' unresolved</div>' +
-      S.alerts.map(function(a) {
-        // Generic "TNA-linked approval came in late" alert — covers pp_late, labdip_late,
-        // fit_late, fri_late, etc. (see the late-check in apvDoResult / APV_TYPE_CONFIG)
-        var apvLateType = a.alert_type && a.alert_type.slice(-5) === '_late' ? a.alert_type.slice(0,-5) : null;
-        if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
-          const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
-          const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
-          return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
-        }
-        const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
-        const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
-        let detail = '';
-        if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
-        if (a.alert_type === 'late' || a.alert_type === 'both') detail += '<strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong>';
-        return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
-      }).join('') + '</div>';
+      buildAlertCardsHTML() + '</div>';
   }
 
   let html = alertHtml + `<div class="stats">
@@ -2689,7 +2838,7 @@ async function renderBoard(uid) {
   const stale = merch.updated_at && (Date.now() - new Date(merch.updated_at).getTime()) > 86400000;
   const isMgmt  = S.user.role === 'management';
   const canEdit = can('edit', uid);
-  const canNote = can('send_notes');
+  const canMessageThisMerchant = getMessageableUsers().some(function(u){ return u.id === uid; });
 
   var jmForThisMerchant = S.allJMAssignments ? S.allJMAssignments[uid] : null;
   var jmUser = jmForThisMerchant ? S.users.find(function(u){ return u.id === jmForThisMerchant; }) : null;
@@ -2705,53 +2854,21 @@ async function renderBoard(uid) {
 
   let actBtns = '';
   if (canEdit) actBtns += `<button class="btn pri" onclick="openOrder('${uid}')">+ New order</button>`;
-  if (canNote) actBtns += `<button class="btn" onclick="openNote('${uid}')">+ Add note</button>`;
+  if (canMessageThisMerchant) actBtns += `<button class="btn" onclick="openSendMessageModal('${uid}')">+ Send Message</button>`;
   actBtns += `<button class="btn ghost" onclick="openPrint('${uid}')">Print</button>`;
   if (canEdit) actBtns += `<button class="btn ghost" onclick="openBulkTNASelect('${uid}')">&#x1F4CB; TNA to Planning</button>`;
   $('act-row').innerHTML = actBtns;
-
-  // Notes banner
-  const merchantNotes = S.notes.filter(n => n.merchant_id === uid);
-  const openNotes = merchantNotes.filter(n => !n.is_closed);
-  const closedNotes = merchantNotes.filter(n => n.is_closed);
-  let notesHtml = '';
-  if (merchantNotes.length) {
-    notesHtml = `<div class="notes-wrap">`;
-    openNotes.forEach(n => {
-      notesHtml += `<div class="note-card">
-        <div class="note-icon">\u{1F4CC}</div>
-        <div class="note-body">
-          <div class="note-meta">${n.created_by} \u00b7 ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
-          <div class="note-text">${n.content}</div>
-          ${n.reply ? `<div class="note-reply-box"><div class="rl">Reply from ${n.replied_by||'Merchant'}</div>${n.reply}</div>` : (S.user.role==='merchant' && !n.is_closed ? `<div class="note-reply-form"><textarea rows="2" placeholder="Reply to this note..." id="rep-${n.id}"></textarea><button class="btn sm pri" onclick="submitNoteReply('${n.id}',$('rep-${n.id}').value)">Send</button></div>` : '')}
-          ${canEdit ? `<div class="note-actions"><button class="btn sm pri" onclick="dismissNote('${n.id}')">\u2713 Mark as done</button>${n.reply&&isMgmt?`<button class="btn sm" onclick="resolveNote('${n.id}')">Resolve</button>`:''}</div>` : ''}
-        </div>
-      </div>`;
-    });
-    if (closedNotes.length && canNote) {
-      notesHtml += `<details style="margin-top:4px"><summary style="font-size:11.5px;color:var(--muted);cursor:pointer;padding:4px 0">${closedNotes.length} completed note${closedNotes.length>1?'s':''}</summary>`;
-      closedNotes.forEach(n => {
-        notesHtml += `<div class="note-card closed"><div class="note-icon">\u2713</div>
-          <div class="note-body">
-            <div class="note-meta">${n.created_by} \u00b7 ${new Date(n.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>
-            <div class="note-text done">${n.content}</div>
-          </div></div>`;
-      });
-      notesHtml += `</details>`;
-    }
-    notesHtml += `</div>`;
-  }
 
   // ── Group by buyer (moved before no-orders check so buyer-status is checked first) ──
   var myBuyers = getBuyersForMerchant(uid);
 
   if (!myBuyers.length && S.user.role === 'merchant') {
-    $('content').innerHTML = notesHtml + '<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin to get buyers assigned to your account.</p></div></div>';
+    $('content').innerHTML = '<div class="card"><div class="empty"><h4>No buyers assigned</h4><p>Contact your Admin to get buyers assigned to your account.</p></div></div>';
     return;
   }
 
   if (!os.length) {
-    $('content').innerHTML = notesHtml + `<div class="card"><div class="empty">
+    $('content').innerHTML = `<div class="card"><div class="empty">
       <h4>No live orders</h4><div>Add the first order to start tracking against the TNA plan.</div>
       ${canEdit ? `<div style="margin-top:14px"><button class="btn pri" onclick="openOrder('${uid}')">+ New order</button></div>` : ''}
     </div></div>`;
@@ -2802,7 +2919,7 @@ async function renderBoard(uid) {
       + '</div></div>';
   }
 
-  $('content').innerHTML = notesHtml + allHtml
+  $('content').innerHTML = allHtml
     + (!canEdit ? '<div class="sub2" style="margin-top:-10px;padding-bottom:4px">View only.</div>' : '');
   requestAnimationFrame(applyStickyHeaderOffsets);
 
@@ -4958,6 +5075,88 @@ async function submitTNARequest() {
 }
 
 // ─── REQUESTS VIEW (HOD/Manager inbox) ───
+// ─── SHARED CARD BUILDERS (used by both the original standalone pages AND the
+// new Inbox tabs — the actual data/permission logic here is untouched from
+// before; only the "insert this into a specific container" part changes) ───
+function buildRequestsCardsHTML(pending) {
+  if (!pending.length) return '<div class="empty"><h4>No pending requests</h4><div>All TNA change requests have been resolved.</div></div>';
+  return pending.map(function(r) {
+    const merch = S.users.find(function(u){ return u.id === r.merchant_id; });
+    const submittedByJM = r.requested_by && r.requested_by !== r.merchant_id;
+    const whoLine = (merch ? merch.name : 'Unknown') + (submittedByJM && r.requested_by_name ? ' &middot; requested by <strong style="color:#DB2777">' + r.requested_by_name + '</strong> (JM)' : '');
+    return '<div class="req-card pending">'
+      + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>'
+      + '<span class="chip warn" style="font-size:10px">Pending</span></div>'
+      + '<div class="req-card-meta">' + whoLine + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</div>'
+      + '<div class="req-card-change"><span class="lbl" style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0">' + r.field_label + '</span><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
+      + '<div class="req-card-reason">"' + r.reason + '"</div>'
+      + '<div class="req-card-actions">'
+      + '<button class="btn pri" style="background:var(--green);border-color:var(--green)" onclick="reviewRequest(\'' + r.id + '\',\'approved\',\'' + r.order_id + '\',\'' + r.field_name + '\',\'' + r.proposed_val + '\')">&#x2713; Approve</button>'
+      + '<button class="btn danger" onclick="reviewRequest(\'' + r.id + '\',\'rejected\',\'' + r.order_id + '\',\'' + r.field_name + '\',\'\')">&#x2717; Reject</button>'
+      + '</div></div>';
+  }).join('');
+}
+function getPendingRequestsForMe() {
+  return S.tnaRequests.filter(function(r) {
+    if (r.status !== 'pending') return false;
+    if (S.user.role === 'manager') return S.myAssignments.includes(r.merchant_id);
+    return true;
+  });
+}
+
+function buildMyRequestsCardsHTML(visible) {
+  if (!visible.length) return '<div class="empty"><h4>No requests</h4><div>When you request a TNA date change, it will appear here.</div></div>';
+  return visible.map(function(r) {
+    const cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
+    const badge = r.status === 'approved'
+      ? '<span class="chip ok" style="font-size:10px">Approved</span>'
+      : r.status === 'rejected'
+      ? '<span class="chip bad" style="font-size:10px">Rejected</span>'
+      : '<span class="chip warn" style="font-size:10px">Pending review</span>';
+    const byLine = r.requested_by_name ? (r.requested_by === S.user.id ? 'You' : r.requested_by_name) : null;
+    return '<div class="req-card ' + cls + '">'
+      + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>' + badge + '</div>'
+      + '<div class="req-card-meta">' + r.field_label + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + (byLine ? ' &middot; requested by <strong>' + byLine + '</strong>' : '') + '</div>'
+      + '<div class="req-card-change"><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
+      + '<div class="req-card-reason">"' + r.reason + '"</div>'
+      + (r.status === 'approved' ? '<div style="font-size:12px;color:var(--green);margin-bottom:8px">&#x2713; TNA date updated automatically on ' + new Date(r.reviewed_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + '</div>' : '')
+      + (r.status === 'rejected' ? '<div style="font-size:12px;color:var(--red);margin-bottom:8px">&#x2717; Rejected by ' + r.reviewed_by + '</div>' : '')
+      + (r.status !== 'pending' ? '<button class="btn sm ghost" onclick="deleteMyRequest(\'' + r.id + '\')">Remove</button>' : ((r.requested_by ? r.requested_by===S.user.id : r.merchant_id===S.user.id) ? '<button class="btn sm danger" onclick="cancelRequest(\'' + r.id + '\')">Cancel request</button>' : ''))
+      + '</div>';
+  }).join('');
+}
+function getMyVisibleRequests() {
+  return S.tnaRequests.filter(function(r){ return !isDismissedByMe(r); });
+}
+
+function buildAlertCardsHTML() {
+  if (!S.alerts || !S.alerts.length) return '';
+  const isMA = S.user.role === 'management';
+  return S.alerts.map(function(a) {
+    var apvLateType = a.alert_type && a.alert_type.slice(-5) === '_late' ? a.alert_type.slice(0,-5) : null;
+    if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
+      const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
+      const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
+      return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+    }
+    const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
+    const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
+    let detail = '';
+    if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
+    if (a.alert_type === 'late' || a.alert_type === 'both') detail += '<strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong>';
+    return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+  }).join('');
+}
+
+// After any action inside the Requests/Alerts tabs (approve/reject/dismiss/etc.),
+// refresh whichever context is actually showing them — the Inbox tab if that's
+// where we are, otherwise the original standalone pages, unchanged.
+function refreshRequestsWherever() {
+  if (S.view === 'inbox') renderInbox();
+  else if (S.view === 'requests') renderRequestsView();
+  else if (S.view === 'my-requests') renderMyRequests();
+}
+
 function renderRequestsView() {
   $('crumb').textContent = 'Requests';
   $('page-title').textContent = 'TNA Change Requests';
@@ -4965,35 +5164,12 @@ function renderRequestsView() {
   $('stamp').innerHTML = '';
   $('act-row').innerHTML = '';
 
-  // For manager, only show their assigned merchants' requests
-  const pending = S.tnaRequests.filter(function(r) {
-    if (r.status !== 'pending') return false;
-    if (S.user.role === 'manager') return S.myAssignments.includes(r.merchant_id);
-    return true;
-  });
-
+  const pending = getPendingRequestsForMe();
   if (!pending.length) {
-    $('content').innerHTML = '<div class="card"><div class="empty"><h4>No pending requests</h4><div>All TNA change requests have been resolved.</div></div></div>';
+    $('content').innerHTML = '<div class="card">' + buildRequestsCardsHTML(pending) + '</div>';
     return;
   }
-
-  $('content').innerHTML = '<div class="card" style="padding:16px 20px">'
-    + pending.map(function(r) {
-        const merch = S.users.find(function(u){ return u.id === r.merchant_id; });
-        const submittedByJM = r.requested_by && r.requested_by !== r.merchant_id;
-        const whoLine = (merch ? merch.name : 'Unknown') + (submittedByJM && r.requested_by_name ? ' &middot; requested by <strong style="color:#DB2777">' + r.requested_by_name + '</strong> (JM)' : '');
-        return '<div class="req-card pending">'
-          + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>'
-          + '<span class="chip warn" style="font-size:10px">Pending</span></div>'
-          + '<div class="req-card-meta">' + whoLine + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</div>'
-          + '<div class="req-card-change"><span class="lbl" style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0">' + r.field_label + '</span><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
-          + '<div class="req-card-reason">"' + r.reason + '"</div>'
-          + '<div class="req-card-actions">'
-          + '<button class="btn pri" style="background:var(--green);border-color:var(--green)" onclick="reviewRequest(\'' + r.id + '\',\'approved\',\'' + r.order_id + '\',\'' + r.field_name + '\',\'' + r.proposed_val + '\')">&#x2713; Approve</button>'
-          + '<button class="btn danger" onclick="reviewRequest(\'' + r.id + '\',\'rejected\',\'' + r.order_id + '\',\'' + r.field_name + '\',\'\')">&#x2717; Reject</button>'
-          + '</div></div>';
-      }).join('')
-    + '</div>';
+  $('content').innerHTML = '<div class="card" style="padding:16px 20px">' + buildRequestsCardsHTML(pending) + '</div>';
 }
 
 async function reviewRequest(reqId, decision, ordId, fieldName, proposedVal) {
@@ -5027,7 +5203,7 @@ async function reviewRequest(reqId, decision, ordId, fieldName, proposedVal) {
   await loadTNARequests();
   await loadDashOrders();
   renderRail();
-  renderRequestsView();
+  refreshRequestsWherever();
 }
 
 // ─── MY REQUESTS VIEW (merchant) ───
@@ -5038,32 +5214,12 @@ function renderMyRequests() {
   $('stamp').innerHTML = '';
   $('act-row').innerHTML = '';
 
-  const visible = S.tnaRequests.filter(function(r){ return !isDismissedByMe(r); });
+  const visible = getMyVisibleRequests();
   if (!visible.length) {
-    $('content').innerHTML = '<div class="card"><div class="empty"><h4>No requests</h4><div>When you request a TNA date change, it will appear here.</div></div></div>';
+    $('content').innerHTML = '<div class="card">' + buildMyRequestsCardsHTML(visible) + '</div>';
     return;
   }
-
-  $('content').innerHTML = '<div class="card" style="padding:16px 20px">'
-    + visible.map(function(r) {
-        const cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
-        const badge = r.status === 'approved'
-          ? '<span class="chip ok" style="font-size:10px">Approved</span>'
-          : r.status === 'rejected'
-          ? '<span class="chip bad" style="font-size:10px">Rejected</span>'
-          : '<span class="chip warn" style="font-size:10px">Pending review</span>';
-        const byLine = r.requested_by_name ? (r.requested_by === S.user.id ? 'You' : r.requested_by_name) : null;
-        return '<div class="req-card ' + cls + '">'
-          + '<div class="req-card-header"><div class="req-card-title">' + r.style + ' &mdash; ' + r.buyer + '</div>' + badge + '</div>'
-          + '<div class="req-card-meta">' + r.field_label + ' &middot; ' + new Date(r.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + (byLine ? ' &middot; requested by <strong>' + byLine + '</strong>' : '') + '</div>'
-          + '<div class="req-card-change"><span class="from">' + short(r.current_val) + '</span><span class="arrow">&rarr;</span><span class="to">' + short(r.proposed_val) + '</span></div>'
-          + '<div class="req-card-reason">"' + r.reason + '"</div>'
-          + (r.status === 'approved' ? '<div style="font-size:12px;color:var(--green);margin-bottom:8px">&#x2713; TNA date updated automatically on ' + new Date(r.reviewed_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + '</div>' : '')
-          + (r.status === 'rejected' ? '<div style="font-size:12px;color:var(--red);margin-bottom:8px">&#x2717; Rejected by ' + r.reviewed_by + '</div>' : '')
-          + (r.status !== 'pending' ? '<button class="btn sm ghost" onclick="deleteMyRequest(\'' + r.id + '\')">Remove</button>' : ((r.requested_by ? r.requested_by===S.user.id : r.merchant_id===S.user.id) ? '<button class="btn sm danger" onclick="cancelRequest(\'' + r.id + '\')">Cancel request</button>' : ''))
-          + '</div>';
-      }).join('')
-    + '</div>';
+  $('content').innerHTML = '<div class="card" style="padding:16px 20px">' + buildMyRequestsCardsHTML(visible) + '</div>';
 }
 
 async function deleteMyRequest(reqId) {
@@ -5077,7 +5233,7 @@ async function deleteMyRequest(reqId) {
   await db.from('tna_requests').update({ dismissed_by: JSON.stringify(dismissed) }).eq('id', reqId);
   await loadTNARequests();
   renderRail();
-  renderMyRequests();
+  refreshRequestsWherever();
 }
 
 function isDismissedByMe(r) {
@@ -5090,7 +5246,7 @@ async function cancelRequest(reqId) {
   await db.from('tna_requests').delete().eq('id', reqId);
   await loadTNARequests();
   renderRail();
-  renderMyRequests();
+  refreshRequestsWherever();
 }
 
 
@@ -5246,33 +5402,10 @@ async function refreshPage() {
   S.archiveLoaded = false;
   S.archive = [];
   await loadMyAssignments();
-  await Promise.all([loadDashOrders(), loadNotes(), loadMemo(), loadTNARequests()]);
+  await Promise.all([loadDashOrders(), loadMemo(), loadTNARequests(), loadMessages()]);
   render();
   toast('Refreshed');
 }
-
-// ─── NOTE REPLIES ───
-async function submitNoteReply(noteId, text) {
-  const t = text.trim();
-  if (!t) return;
-  const { error } = await db.from('notes').update({
-    reply: t,
-    replied_at: new Date().toISOString(),
-    replied_by: S.user.name
-  }).eq('id', noteId);
-  if (!error) {
-    await loadNotes();
-    render();
-    toast('Reply sent');
-  } else toast('Error sending reply', 'err');
-}
-
-async function resolveNote(noteId) {
-  const { error } = await db.from('notes').update({ is_closed: true, closed_at: new Date().toISOString() }).eq('id', noteId);
-  if (!error) { await loadNotes(); render(); toast('Note resolved'); }
-  else toast('Error', 'err');
-}
-
 
 // ─── ADMIN PAGE (full page, not modal) ───
 // ─── ADMIN PAGE — REDESIGNED ───
@@ -5703,6 +5836,7 @@ async function dismissAlert(alertId) {
   await db.from('shipment_alerts').update({dismissed:true,dismissed_by:S.user.name,dismissed_at:new Date().toISOString()}).eq('id',alertId);
   await loadAlerts();
   if (S.view==='dashboard') renderDashboard();
+  else if (S.view==='inbox') renderInbox();
 }
 
 // --- EXCEL EXPORT ---
@@ -6011,44 +6145,6 @@ function applyPrefs() {
   }
 }
 
-// ─── NOTES ───
-let noteTargetId = null;
-
-function openNote(uid) {
-  noteTargetId = uid;
-  const m = S.users.find(u => u.id === uid);
-  $('note-sub').textContent = `For ${m ? m.name : ''}`;
-  $('note-content').value = '';
-  openModal('ov-note');
-}
-
-async function saveNote() {
-  const content = $('note-content').value.trim();
-  if (!content) { toast('Please enter a note', 'err'); return; }
-  $('save-note-btn').disabled = true;
-  const { error } = await db.from('notes').insert({
-    merchant_id: noteTargetId,
-    content,
-    created_by: S.user.name
-  });
-  if (!error) {
-    closeModal('ov-note');
-    toast('Note added', 'ok-t');
-    await loadNotes();
-    render();
-  } else { toast('Error saving note', 'err'); }
-  $('save-note-btn').disabled = false;
-}
-
-async function dismissNote(noteId) {
-  const { error } = await db.from('notes').update({
-    is_closed: true,
-    closed_at: new Date().toISOString()
-  }).eq('id', noteId);
-  if (!error) { await loadNotes(); render(); }
-  else { toast('Error', 'err'); }
-}
-
 // ─── ADMIN HELPERS ───
 function handleProfileType() {
   const t = $('a_type').value;
@@ -6087,8 +6183,7 @@ function renderRail() {
   }
   function mBtn(m){
     var on=S.view===m.id?'on':'';
-    var b=(S.notes||[]).filter(function(n){return !n.is_closed&&n.merchant_id===m.id;}).length;
-    return '<button class="ni '+on+'" onclick="setView(\''+m.id+'\')"><div class="av">'+initials(m.name)+'</div><div class="nm">'+m.name+'</div>'+(b?'<span class="badge">'+b+'</span>':'')+'</button>';
+    return '<button class="ni '+on+'" onclick="setView(\''+m.id+'\')"><div class="av">'+initials(m.name)+'</div><div class="nm">'+m.name+'</div></button>';
   }
   function sec(key,label,list,builder){
     if(!list.length) return '';
@@ -6122,19 +6217,19 @@ function renderRail() {
   var lgc=(S.layingGoods||[]).length;
   html+=ni('laying-goods','&#x1F4E6;','Laying Goods',lgc,lgc>0);
   html+=ni('shipped','&#x2705;','Shipped',S.archive.length);
-  if(can('inbox')){
-    var pr=(S.tnaRequests||[]).filter(function(r2){return r2.status==='pending';}).length;
-    var al=(S.alerts||[]).filter(function(a){return !a.dismissed;}).length;
-    var ib=pr+al;
-    html+=ni('requests','&#x1F4EC;','Inbox',ib,ib>0);
-  }
-  if(isMerchant || isJM){
+  // Unified Inbox — Messages (everyone), plus Requests and Alerts, whichever
+  // this role actually has access to. One nav item, one combined badge.
+  var unreadMsgs = getMyThreads().filter(function(t2){ return t2.unread; }).length;
+  var inboxBadge = unreadMsgs;
+  if (can('requests')) inboxBadge += (S.tnaRequests||[]).filter(function(r2){return r2.status==='pending';}).length;
+  if (can('inbox')) inboxBadge += (S.alerts||[]).filter(function(a){return !a.dismissed;}).length;
+  if (isMerchant || isJM) {
     var visReqs = (S.tnaRequests||[]).filter(function(r2){ return !isDismissedByMe(r2); });
-    var unr = isJM
+    inboxBadge += isJM
       ? visReqs.filter(function(r2){ return r2.status!=='pending' && r2.requested_by===S.user.id && !r2.requester_seen; }).length
       : visReqs.filter(function(r2){return r2.status!=='pending'&&!r2.merchant_seen;}).length;
-    html+=ni('my-requests','&#x1F4CB;','My Requests',unr||visReqs.length,unr>0);
   }
+  html+=ni('inbox','&#x1F4EC;','Inbox',inboxBadge,inboxBadge>0);
   if(isAdmin){
     html+='<div class="rail-sep"></div>';
     html+='<button class="ni'+(S.view==='admin'?' on':'')+'" onclick="setView(\'admin\')"><span class="av" style="font-size:12px">&#x2699;</span><span class="nm">Admin</span></button>';
@@ -6154,6 +6249,205 @@ function toggleSection(key){
 }
 
 // ─── LOAD TNA REQUESTS (6-tier) ───
+// ─── MESSAGES ───
+// Runs a lightweight expiry sweep every time anyone opens their inbox — there's
+// no background server process in this app, so "auto-delete after 30 days" is
+// implemented as "gets cleaned up the next time someone's inbox loads," which
+// produces the same practical result without needing a scheduled job.
+async function loadMessages() {
+  if (!S.user) return;
+  var cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
+  try { await db.from('messages').delete().lt('created_at', cutoff); } catch (e) { console.error('message cleanup failed:', e); }
+  var res = await db.from('messages').select('*')
+    .or('sender_id.eq.' + S.user.id + ',recipient_id.eq.' + S.user.id)
+    .order('created_at', { ascending: true });
+  S.messages = res.data || [];
+}
+
+// One row per thread — the two participants are fixed (whoever the root message
+// was between), so "the other person" is always well-defined even after replies.
+function getMyThreads() {
+  var byThread = {};
+  S.messages.forEach(function(m) {
+    if (!byThread[m.thread_id]) byThread[m.thread_id] = [];
+    byThread[m.thread_id].push(m);
+  });
+  var threads = Object.keys(byThread).map(function(tid) {
+    var msgs = byThread[tid].slice().sort(function(a,b){ return (a.created_at||'') < (b.created_at||'') ? -1 : 1; });
+    var last = msgs[msgs.length - 1];
+    var root = msgs[0];
+    var otherId = last.sender_id === S.user.id ? last.recipient_id : last.sender_id;
+    var otherName = last.sender_id === S.user.id ? last.recipient_name : last.sender_name;
+    var unread = msgs.some(function(m){ return m.recipient_id === S.user.id && !m.read_at; });
+    return {
+      thread_id: tid, messages: msgs, last: last, otherId: otherId, otherName: otherName, unread: unread,
+      actionStatus: root.action_status || null,
+      requesterId: root.sender_id // whoever raised the action item is the one who can later resolve it
+    };
+  });
+  threads.sort(function(a,b){ return (a.last.created_at||'') < (b.last.created_at||'') ? 1 : -1; });
+  return threads;
+}
+
+// ─── INBOX PAGE (Messages / Requests / Alerts, unified) ───
+function getAvailableInboxTabs() {
+  var tabs = [{ id: 'messages', label: 'Messages' }];
+  if (can('requests') || S.user.role === 'merchant' || S.user.role === 'jm') tabs.push({ id: 'requests', label: 'Requests' });
+  if (can('inbox')) tabs.push({ id: 'alerts', label: 'Alerts' });
+  return tabs;
+}
+function inboxTabBadgeCount(tabId) {
+  if (tabId === 'messages') return getMyThreads().filter(function(t){ return t.unread; }).length;
+  if (tabId === 'requests') {
+    if (can('requests')) return getPendingRequestsForMe().length;
+    var visible = getMyVisibleRequests();
+    return S.user.role === 'jm'
+      ? visible.filter(function(r){ return r.status!=='pending' && r.requested_by===S.user.id && !r.requester_seen; }).length
+      : visible.filter(function(r){ return r.status!=='pending' && !r.merchant_seen; }).length;
+  }
+  if (tabId === 'alerts') return (S.alerts||[]).length;
+  return 0;
+}
+function switchInboxTab(tabId) {
+  S.inboxTab = tabId;
+  renderInbox();
+}
+function renderInbox() {
+  $('crumb').textContent = 'Inbox';
+  $('page-title').textContent = 'Inbox';
+  $('page-sub').innerHTML = 'Messages, requests, and alerts in one place';
+  $('stamp').innerHTML = '';
+
+  var tabs = getAvailableInboxTabs();
+  if (!tabs.some(function(t){ return t.id === S.inboxTab; })) S.inboxTab = tabs[0].id;
+  var canCompose = S.user.role !== 'audit';
+  $('act-row').innerHTML = (S.inboxTab === 'messages' && canCompose) ? '<button class="btn pri" onclick="openSendMessageModal()">+ Send Message</button>' : '';
+
+  var tabBarHtml = '<div class="inbox-tabs">' + tabs.map(function(t){
+    var count = inboxTabBadgeCount(t.id);
+    return '<button class="inbox-tab-btn' + (S.inboxTab===t.id?' active':'') + '" onclick="switchInboxTab(\'' + t.id + '\')">' + t.label + (count ? ' <span class="inbox-tab-count">' + count + '</span>' : '') + '</button>';
+  }).join('') + '</div>';
+
+  $('content').innerHTML = tabBarHtml + '<div id="inbox-tab-body" class="card" style="padding:16px 20px"></div>';
+  renderInboxTabBody();
+}
+function renderInboxTabBody() {
+  var body = $('inbox-tab-body');
+  if (!body) return;
+  if (S.inboxTab === 'messages') {
+    body.innerHTML = renderMessagesTabHTML();
+  } else if (S.inboxTab === 'requests') {
+    body.innerHTML = can('requests') ? buildRequestsCardsHTML(getPendingRequestsForMe()) : buildMyRequestsCardsHTML(getMyVisibleRequests());
+  } else if (S.inboxTab === 'alerts') {
+    body.innerHTML = (S.alerts && S.alerts.length) ? buildAlertCardsHTML() : '<div class="empty"><h4>No alerts</h4><div>You\u2019re all caught up.</div></div>';
+  }
+}
+function renderMessagesTabHTML() {
+  var threads = getMyThreads();
+  if (!threads.length) return '<div class="empty"><h4>No messages yet</h4><div>' + (S.user.role==='audit' ? 'Messages sent to you will appear here.' : 'Use "+ Send Message" above to start a conversation.') + '</div></div>';
+  return threads.map(function(t) {
+    var preview = (t.last.body || '').slice(0, 90);
+    var badge = t.actionStatus ? '<span class="action-badge ' + t.actionStatus + '">' + (t.actionStatus==='open'?'Action needed':t.actionStatus==='done'?'Done \u2014 awaiting confirmation':'Resolved') + '</span>' : '';
+    return '<div class="msg-thread-row' + (t.unread?' unread':'') + '" onclick="openMessageThread(\'' + t.thread_id + '\')">'
+      + '<div class="msg-thread-main"><div class="msg-thread-name">' + htmlEsc(t.otherName||'Unknown') + (t.unread ? ' <span class="msg-unread-dot"></span>' : '') + badge + '</div>'
+      + '<div class="msg-thread-preview">' + htmlEsc(preview) + ((t.last.body||'').length > 90 ? '\u2026' : '') + '</div></div>'
+      + '<div class="msg-thread-time">' + relTime(t.last.created_at) + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ─── MESSAGE THREAD MODAL ───
+var _openThreadId = null;
+function openMessageThread(threadId) {
+  var thread = getMyThreads().find(function(t){ return t.thread_id === threadId; });
+  if (!thread) return;
+  _openThreadId = threadId;
+  $('mt-title').textContent = thread.otherName || 'Conversation';
+  renderMessageThreadBody(thread);
+  openModal('ov-message-thread');
+  markThreadRead(threadId);
+}
+function renderMessageThreadBody(thread) {
+  var canReply = S.user.role !== 'audit';
+  var actionBarHtml = '';
+  if (thread.actionStatus) {
+    var isRequester = thread.requesterId === S.user.id;
+    if (thread.actionStatus === 'open') {
+      actionBarHtml = '<div class="mt-action-bar open"><span>&#x1F4CC; <strong>Action needed</strong></span>'
+        + (!isRequester ? '<button class="btn sm pri" onclick="markMessageActionDone(\'' + thread.thread_id + '\')">&#x2713; Mark as Done</button>' : '<span style="color:var(--muted)">Waiting on ' + htmlEsc(thread.otherName||'them') + '</span>')
+        + '</div>';
+    } else if (thread.actionStatus === 'done') {
+      actionBarHtml = '<div class="mt-action-bar done"><span>&#x2713; <strong>Marked done</strong> \u2014 awaiting confirmation</span>'
+        + (isRequester ? '<button class="btn sm pri" onclick="resolveMessageAction(\'' + thread.thread_id + '\')">Resolve</button>' : '')
+        + '</div>';
+    } else if (thread.actionStatus === 'resolved') {
+      actionBarHtml = '<div class="mt-action-bar resolved"><span style="color:var(--muted)">&#x2713; Resolved</span></div>';
+    }
+  }
+  $('mt-body').innerHTML = actionBarHtml + '<div style="padding:14px 16px">' + thread.messages.map(function(m, i) {
+    var mine = m.sender_id === S.user.id;
+    return '<div class="mt-msg' + (mine ? ' mine' : '') + '">'
+      + (m.subject && i === 0 ? '<div class="mt-msg-subject">' + htmlEsc(m.subject) + '</div>' : '')
+      + '<div class="mt-msg-body">' + htmlEsc(m.body).replace(/\n/g,'<br>') + '</div>'
+      + '<div class="mt-msg-time">' + (mine ? '' : (htmlEsc(m.sender_name||'') + ' \u00b7 ')) + short((m.created_at||'').slice(0,10)) + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
+  var replyRow = $('mt-reply-row');
+  if (replyRow) replyRow.style.display = canReply ? 'flex' : 'none';
+  var bodyEl = $('mt-body');
+  if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+}
+async function markMessageActionDone(threadId) {
+  await db.from('messages').update({ action_status: 'done' }).eq('id', threadId);
+  await loadMessages();
+  renderRail();
+  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (t) renderMessageThreadBody(t);
+  if (S.view === 'inbox') renderInboxTabBody();
+  toast('Marked as done', 'ok-t');
+}
+async function resolveMessageAction(threadId) {
+  await db.from('messages').update({ action_status: 'resolved' }).eq('id', threadId);
+  await loadMessages();
+  renderRail();
+  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (t) renderMessageThreadBody(t);
+  if (S.view === 'inbox') renderInboxTabBody();
+  toast('Resolved', 'ok-t');
+}
+async function markThreadRead(threadId) {
+  var unreadIds = S.messages.filter(function(m){ return m.thread_id===threadId && m.recipient_id===S.user.id && !m.read_at; }).map(function(m){ return m.id; });
+  if (!unreadIds.length) return;
+  var now = new Date().toISOString();
+  unreadIds.forEach(function(id){ var m = S.messages.find(function(x){ return x.id===id; }); if (m) m.read_at = now; });
+  await db.from('messages').update({ read_at: now }).in('id', unreadIds);
+  renderRail();
+}
+async function sendThreadReply() {
+  var threadId = _openThreadId;
+  var thread = getMyThreads().find(function(t){ return t.thread_id === threadId; });
+  if (!thread) return;
+  var input = $('mt-reply-input');
+  var body = input.value.trim();
+  if (!body) return;
+  var recipientId = thread.otherId;
+  var recipient = S.users.find(function(u){ return u.id === recipientId; });
+  var newId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+  input.value = '';
+  var res = await db.from('messages').insert({
+    id: newId, thread_id: threadId, parent_id: thread.last.id,
+    sender_id: S.user.id, sender_name: S.user.name,
+    recipient_id: recipientId, recipient_name: recipient ? recipient.name : '',
+    body: body, created_at: new Date().toISOString()
+  });
+  if (res.error) { toast('Could not send \u2014 please try again', 'err'); input.value = body; return; }
+  await loadMessages();
+  var refreshed = getMyThreads().find(function(t){ return t.thread_id === threadId; });
+  if (refreshed) renderMessageThreadBody(refreshed);
+  if (S.view === 'inbox') renderInboxTabBody();
+  renderRail();
+}
+
 async function loadTNARequests() {
   var r = S.user.role;
   if (r === 'merchant') {
@@ -6779,7 +7073,7 @@ async function doSIUpload() {
   if(url){
     closeModal('ov-style-image');
     // Refresh board if currently on a merchant board
-    if(S.view&&!['dashboard','laying-goods','shipped','requests','my-requests','admin'].includes(S.view)){
+    if(S.view&&!['dashboard','laying-goods','shipped','requests','my-requests','admin','inbox'].includes(S.view)){
       delete S.boardCache[S.view];
       await loadStyleImages(_siMerchId);
       await loadBoardOrders(S.view);
@@ -6813,7 +7107,7 @@ async function deleteStyleImage() {
   delete _styleImagesCache[_siMerchId + '_' + _siStyle];
   closeModal('ov-style-image');
   // Refresh board
-  if (S.view && !['dashboard','laying-goods','shipped','requests','my-requests','admin'].includes(S.view)) {
+  if (S.view && !['dashboard','laying-goods','shipped','requests','my-requests','admin','inbox'].includes(S.view)) {
     delete S.boardCache[S.view];
     await loadBoardOrders(S.view);
     await reloadSummaries(S.view);
