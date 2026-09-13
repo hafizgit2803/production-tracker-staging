@@ -677,6 +677,8 @@ button.apv-chip{font-family:inherit}
 .yarn-booking-meta{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px}
 .yarn-booking-nums{font-size:13px;font-weight:700;color:var(--ink);margin-top:6px;text-align:right}
 .yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0}
+.attach-chip{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:9.5px;
+  font-weight:700;padding:2px 7px;border-radius:8px;margin:1px 2px 1px 0}
 .yarn-x:hover{opacity:.7}
 
 /* Inhouse entries — a plain read-only table. Once added, an entry can only be
@@ -1180,7 +1182,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.5</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.7</p>
   </div>
 </div>
 
@@ -1215,7 +1217,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.5</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.7</div>
 </div>
 
 
@@ -1272,6 +1274,22 @@ table.dyn-board thead th.stk-dyn{z-index:35}
         </div>
         <div class="f" id="o_article_wrap"><label>Article Number</label><input id="o_article_no" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="optional"></div>
         <div class="f"><label>Season <span style="font-size:10px;color:var(--muted);font-weight:400">(e.g. SS27)</span></label><input id="o_season" maxlength="5" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink);text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+      </div>
+
+      <div class="f" id="o_attach_box" style="margin-bottom:14px;background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:9px;padding:12px 14px">
+        <label style="margin-bottom:8px">Does this style have an attachment? <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. woven collar, arm patch \u2014 fabric pieces attached to the garment)</span></label>
+        <div style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_has_attach" value="yes" onchange="onAttachToggle(this)"> Yes</label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_has_attach" value="no" onchange="onAttachToggle(this)" checked> No</label>
+        </div>
+        <div id="o_attach_picker" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <label>Attachment type(s)</label>
+          <div style="display:flex;gap:6px">
+            <input id="o_attach_new" list="dl_attachment" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="Choose or type a new attachment type" onkeydown="if(event.key==='Enter'){event.preventDefault();addAttachTag();}">
+            <button type="button" class="btn sm" onclick="addAttachTag()">+ Add</button>
+          </div>
+          <div id="o_attach_list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
       </div>
 
       <div id="o_multi_po_rows_section" style="display:none;margin-bottom:14px">
@@ -1513,6 +1531,21 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h" style="flex-shrink:0"><div><h3 id="mat-title">Yarn Booking</h3><div class="msub" id="mat-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-material')">Close</button></div>
     <div class="m-b" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
+<!-- === ATTACHMENT EDIT MODAL === -->
+<div class="ov" id="ov-attach-edit" onclick="if(event.target===this)closeModal('ov-attach-edit')">
+  <div class="modal slim">
+    <div class="m-h"><div><h3>Attachment</h3><div class="msub" id="attach-edit-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-attach-edit')">Close</button></div>
+    <div class="m-b">
+      <div style="display:flex;gap:6px">
+        <input id="attach-edit-new" list="dl_attachment" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="Choose or type a new attachment type" onkeydown="if(event.key==='Enter'){event.preventDefault();addAttachEditTag();}">
+        <button type="button" class="btn sm" onclick="addAttachEditTag()">+ Add</button>
+      </div>
+      <div id="attach-edit-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -1843,6 +1876,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 <datalist id="dl_gauge"></datalist>
 <datalist id="dl_color"></datalist>
 <datalist id="dl_comp"></datalist>
+<datalist id="dl_attachment"></datalist>
 
 <!-- Toast -->
 <div id="toast"></div>
@@ -2389,12 +2423,13 @@ async function loadBoardOrders(merchantId) {
   const ids = (data || []).map(o => o.id);
   if (ids.length) {
     const yarnByOrder = await loadYarnSummaryByOrder(merchantId, data || []);
+    const attachByOrder = await loadAttachmentsByOrder(merchantId, data || []);
     const [ap, acc] = await Promise.all([
       db.from('approvals').select('*').in('order_id', ids).order('round'),
       db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
     ]);
     const sums = {};
-    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [] }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
     (ap.data || []).forEach(a => {
       if (sums[a.order_id]) {
         if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -2410,6 +2445,26 @@ async function loadBoardOrders(merchantId) {
   return S.boardCache[merchantId];
 }
 
+// Attachment is style-wide too, same reasoning as yarn — one row per style,
+// mirrored to every order that shares it.
+async function loadAttachmentsByOrder(merchantId, orders) {
+  var styles = Array.from(new Set(orders.map(function(o){ return (o.style||'').toUpperCase(); }).filter(Boolean)));
+  var result = {};
+  orders.forEach(function(o){ result[o.id] = []; });
+  if (!styles.length) return result;
+  const res = await db.from('style_attachments').select('style,types').eq('merchant_id', merchantId).in('style', styles);
+  var byStyle = {};
+  (res.data || []).forEach(function(row){
+    var s = (row.style||'').toUpperCase();
+    try { byStyle[s] = row.types ? JSON.parse(row.types) : []; } catch(e) { byStyle[s] = []; }
+  });
+  orders.forEach(function(o){
+    var s = (o.style||'').toUpperCase();
+    if (byStyle[s]) result[o.id] = byStyle[s];
+  });
+  return result;
+}
+
 // Yarn is booked once per STYLE, not per PO — every order sharing a style
 // mirrors the same totals. Given the merchant's current order list, this
 // fetches every style's bookings + their receipts in two queries total
@@ -2419,7 +2474,7 @@ async function loadYarnSummaryByOrder(merchantId, orders) {
   var result = {};
   orders.forEach(function(o){ result[o.id] = { bk: 0, rc: 0 }; });
   if (!styles.length) return result;
-  const bkRes = await db.from('yarn_bookings').select('id,style,qty').eq('merchant_id', merchantId).in('style', styles);
+  const bkRes = await db.from('yarn_bookings').select('id,style,qty').eq('merchant_id', merchantId).eq('material_type', 'yarn').in('style', styles);
   var bookings = bkRes.data || [];
   var bookingIds = bookings.map(function(b){ return b.id; });
   var receivedByBooking = {};
@@ -2447,12 +2502,13 @@ async function reloadSummaries(merchantId) {
   const ids = orders.map(o => o.id);
   if (!ids.length) return;
   const yarnByOrder = await loadYarnSummaryByOrder(merchantId, orders);
+  const attachByOrder = await loadAttachmentsByOrder(merchantId, orders);
   const [ap, acc] = await Promise.all([
     db.from('approvals').select('*').in('order_id', ids).order('round'),
     db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
   ]);
   const sums = {};
-  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [] }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
   (ap.data || []).forEach(a => {
     if (sums[a.order_id]) {
       if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -2485,7 +2541,7 @@ async function loadMemo() {
     if (!S.memo[r.field]) S.memo[r.field] = new Set();
     S.memo[r.field].add(r.value);
   });
-  ['house','buyer','gauge','color','comp'].forEach(k => {
+  ['house','buyer','gauge','color','comp','attachment'].forEach(k => {
     const dl = $('dl_' + k);
     if (dl) dl.innerHTML = [...(S.memo[k] || [])].map(v => `<option value="${v}">`).join('');
   });
@@ -3159,6 +3215,14 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       var yarnHtml = '<div onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')" style="cursor:pointer">' + yarnInner + '</div>';
       cellsByKey['_yarn'] = singleTd('_yarn', 'col-yarn', yarnHtml);
     }
+    if (itemByKey['_attachment']) {
+      var attachList = (sum.attach || []);
+      var attachInner = attachList.length
+        ? attachList.map(function(a){ return '<span class="attach-chip">' + htmlEsc(a) + '</span>'; }).join(' ')
+        : '<span style="color:var(--muted);font-size:10px">No attachment</span>';
+      var attachHtml = '<div onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')" style="cursor:pointer">' + attachInner + '</div>';
+      cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml);
+    }
     if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
 
     if (itemByKey['_approvals']) {
@@ -3522,11 +3586,13 @@ async function saveMultiPOOrders() {
     for (var j = 0; j < extras.length; j++) { if (extras[j][1]) await saveFieldValue(newId, extras[j][0], extras[j][1]); }
   }
 
-  // Photo is shared by style, not by individual order — one upload covers every PO
+  // Photo and attachment are both shared by style, not by individual order —
+  // one save covers every PO in the batch
   var imgFile = $('o_image');
   if (imgFile && imgFile.files && imgFile.files[0] && styleVal) {
     try { await uploadStyleImage(orderForMerchant, styleVal, imgFile.files[0]); } catch(e) { console.error('img:', e); }
   }
+  await saveStyleAttachments(orderForMerchant, styleVal, _orderAttachments);
   if (houseVal) saveMemo('house', houseVal);
   if (buyerName) saveMemo('buyer', buyerName);
   await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
@@ -3571,6 +3637,7 @@ async function openOrder(mid) {
   var fi=$('o_image');if(fi)fi.value='';
   resetOrderFormExtras();
   resetMultiPOState();
+  resetAttachState();
   $('o_multi_po_box').style.display = '';
   populateCountryDropdown('o_country');
   // Populate buyer dropdown
@@ -3771,6 +3838,9 @@ async function saveOrder() {
         if (fv) await saveFieldValue(newOrderId, fk, fv);
       }
     }
+    // Attachment is style-wide — save it once for the whole style regardless of
+    // which PO the order form happened to be opened from.
+    await saveStyleAttachments(orderForMerchant, styleVal, _orderAttachments);
     closeModal('ov-order');
     toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
     if (_editOrderId) logActivity(_editOrderId, 'Order details edited', styleVal ? ('Style ' + styleVal) : null);
@@ -3853,6 +3923,18 @@ async function editOrder(orderId) {
   if ($('o_season')) $('o_season').value = getFieldValue(orderId, 'season') || '';
   if ($('o_department')) $('o_department').value = getFieldValue(orderId, 'department') || '';
   if ($('o_avg_weight')) $('o_avg_weight').value = getFieldValue(orderId, 'avg_weight') || '';
+
+  // Attachment is style-wide — look up whatever's already saved for this style.
+  // Awaited (not fire-and-forget) so _orderAttachments is definitely correct
+  // before the user can possibly click Save — otherwise a fast click could
+  // save stale data left over from whichever order was edited previously.
+  var attachTypesForEdit = await getStyleAttachments(o.merchant_id, o.style);
+  _orderAttachments = attachTypesForEdit;
+  var yesRadio = document.querySelector('input[name="o_has_attach"][value="yes"]');
+  var noRadio = document.querySelector('input[name="o_has_attach"][value="no"]');
+  if (attachTypesForEdit.length) { if (yesRadio) yesRadio.checked = true; $('o_attach_picker').style.display = 'block'; }
+  else { if (noRadio) noRadio.checked = true; $('o_attach_picker').style.display = 'none'; }
+  renderAttachTags();
 
   // Restore colours/compositions as tags
   try { _orderColors = o.colours_json ? JSON.parse(o.colours_json) : (o.color ? o.color.split(',').map(function(s){return s.trim();}).filter(Boolean) : []); } catch(e) { _orderColors = []; }
@@ -4061,6 +4143,7 @@ function openTNA(ordId, division) {
     + infoItem('Buying House', o.house) + infoItem('Country', countryVal) + infoItem('Merchant', merchName)
     + infoItem('Order Confirmed', o.confirm_date ? short(o.confirm_date) : '')
     + infoItem('Quantity', o.qty ? fmt(o.qty)+' pcs' : '') + infoItem('Ship Date', o.ship_date ? short(o.ship_date) : '')
+    + infoItem('Attachment', (boardSums.attach && boardSums.attach.length) ? boardSums.attach.join(', ') : 'No attachment')
     + '</div></div>';
 
   var rows=VMILES.map(function(x){
@@ -4370,6 +4453,7 @@ function downloadPDF() {
 // yarn is purchased once for a style regardless of how many POs it ships
 // under. Every PO sharing that style mirrors the exact same booking data.
 var _yarnMerchantId = null, _yarnStyle = null, _yarnUnit = 'lbs', _yarnCompositions = [];
+var _yarnHasAttachment = false, _yarnMaterialType = 'yarn';
 
 function getStyleCompositions(merchantId, style) {
   var upper = (style||'').toUpperCase();
@@ -4384,16 +4468,33 @@ async function openMaterialModal(ordId, division) {
   const o = (S.boardCache[S.view]||[]).find(function(x){return x.id===ordId;}) || {};
   _yarnMerchantId = o.merchant_id; _yarnStyle = (o.style||'').toUpperCase();
   _yarnUnit = division === 'knit' ? 'kgs' : 'lbs';
+  _yarnMaterialType = 'yarn';
   const label = division === 'knit' ? 'Fabric' : 'Yarn';
   $('mat-title').textContent = label + ' Booking \u2014 ' + _yarnStyle;
   $('mat-sub').textContent = 'Shared across every PO of this style';
   $('mat-body').innerHTML = '<div class="exp-loading">Loading\u2026</div>';
   openModal('ov-material');
+  // Attachment fabric booking only applies to styles actually flagged as
+  // having an attachment — otherwise there's nothing to book fabric for.
+  var attachTypes = await getStyleAttachments(_yarnMerchantId, _yarnStyle);
+  _yarnHasAttachment = attachTypes.length > 0;
   await renderMaterialModalBody();
 }
 
+function switchYarnMaterialType(type) {
+  _yarnMaterialType = type;
+  renderMaterialModalBody();
+}
+
 async function renderMaterialModalBody() {
-  const bkRes = await db.from('yarn_bookings').select('*').eq('merchant_id', _yarnMerchantId).eq('style', _yarnStyle).order('booked_on');
+  var tabsHtml = '';
+  if (_yarnHasAttachment) {
+    tabsHtml = '<div class="inbox-tabs" style="margin-bottom:14px">'
+      + '<button class="inbox-tab-btn' + (_yarnMaterialType==='yarn'?' active':'') + '" onclick="switchYarnMaterialType(\'yarn\')">Yarn</button>'
+      + '<button class="inbox-tab-btn' + (_yarnMaterialType==='attachment_fabric'?' active':'') + '" onclick="switchYarnMaterialType(\'attachment_fabric\')">Attachment Fabric</button>'
+      + '</div>';
+  }
+  const bkRes = await db.from('yarn_bookings').select('*').eq('merchant_id', _yarnMerchantId).eq('style', _yarnStyle).eq('material_type', _yarnMaterialType).order('booked_on');
   const bookings = bkRes.data || [];
   const bookingIds = bookings.map(function(b){ return b.id; });
   var receipts = [];
@@ -4405,9 +4506,10 @@ async function renderMaterialModalBody() {
   const totalRc = receipts.reduce(function(s,r){return s+(r.qty||0);},0);
   const pct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
   const canEdit = ['management','admin','hod'].includes(S.user.role) || S.user.id === _yarnMerchantId || actsAsMerchant(_yarnMerchantId);
+  const materialLabel = _yarnMaterialType === 'attachment_fabric' ? 'Attachment Fabric' : 'Yarn';
 
   var overallHtml = '<div class="yarn-overall-card">'
-    + '<div class="yarn-overall-top"><div class="yarn-overall-lbl">Total Progress</div><div class="yarn-overall-nums">' + fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + _yarnUnit + '</div></div>'
+    + '<div class="yarn-overall-top"><div class="yarn-overall-lbl">' + materialLabel + ' \u2014 Total Progress</div><div class="yarn-overall-nums">' + fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + _yarnUnit + '</div></div>'
     + '<div class="yarn-bar-track"><div class="yarn-bar-fill ' + yarnBarClass(pct) + '" style="width:' + pct + '%"></div></div>'
     + '</div>';
 
@@ -4444,9 +4546,9 @@ async function renderMaterialModalBody() {
       + '</div>';
   }).join('');
 
-  $('mat-body').innerHTML = overallHtml + addBtnHtml
+  $('mat-body').innerHTML = tabsHtml + overallHtml + addBtnHtml
     + '<div id="yarn-add-booking-form"></div>'
-    + (bookingCards || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No bookings yet for this style.</div>');
+    + (bookingCards || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No ' + materialLabel.toLowerCase() + ' bookings yet for this style.</div>');
 }
 
 function yarnBarClass(pct) {
@@ -4461,7 +4563,7 @@ function openAddBookingForm() {
     : '<option value="">No compositions found on this style\u2019s orders</option>';
   var today0 = new Date().toISOString().slice(0,10);
   $('yarn-add-booking-form').innerHTML = '<div class="yarn-form-card">'
-    + '<div class="yarn-form-title">New Booking</div>'
+    + '<div class="yarn-form-title">New ' + (_yarnMaterialType==='attachment_fabric'?'Attachment Fabric':'Yarn') + ' Booking</div>'
     + '<div class="yarn-form-grid">'
     + '<div class="f"><label>Supplier <span style="color:var(--red)">*</span></label><input id="yb-supplier" placeholder="Supplier name"></div>'
     + '<div class="f"><label>Composition <span style="color:var(--red)">*</span></label><select id="yb-composition">'+compOpts+'</select></div>'
@@ -4485,7 +4587,7 @@ async function saveNewBooking() {
   var lc = $('yb-lc').value.trim();
   if (!supplier || !comp || !date || !qty) { toast('Supplier, composition, date, and quantity are required', 'err'); return; }
   await db.from('yarn_bookings').insert({
-    merchant_id: _yarnMerchantId, style: _yarnStyle,
+    merchant_id: _yarnMerchantId, style: _yarnStyle, material_type: _yarnMaterialType,
     supplier: supplier, composition: comp, booked_on: date, qty: qty,
     pi_number: pi || null, lc_number: lc || null,
     created_by: S.user.name
@@ -4636,7 +4738,10 @@ async function backfillTNAApprovalLinks() {
 // again rather than leaving a stale "done" date behind.
 async function recomputeYarnActual(merchantId, style) {
   var upper = (style || '').toUpperCase();
-  const bkRes = await db.from('yarn_bookings').select('id,qty').eq('merchant_id', merchantId).eq('style', upper);
+  // Only the 'yarn' material type drives the TNA Yarn Inhouse milestone —
+  // attachment fabric is tracked the same way but is a separate material
+  // serving a different purpose, so it never contributes to this total.
+  const bkRes = await db.from('yarn_bookings').select('id,qty').eq('merchant_id', merchantId).eq('style', upper).eq('material_type', 'yarn');
   var bookings = bkRes.data || [];
   var totalBooked = bookings.reduce(function(s,b){ return s + (b.qty||0); }, 0);
   var bookingIds = bookings.map(function(b){ return b.id; });
@@ -5062,6 +5167,7 @@ async function generateBulkTNAPrint() {
   var headerCells = VMILES.map(function(x){ return '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817;white-space:nowrap">'+x.n+'</th>'; }).join('');
   var bodyRows = orders.map(function(o) {
     var photoUrl = getStyleImage(o.merchant_id, o.style);
+    var attachList = ((S.boardSummaries[o.merchant_id]||{})[o.id]||{}).attach || [];
     var cells = VMILES.map(function(x){
       var p = o['plan_' + x.k];
       if (buffer && (x.k === 'insp' || x.k === 'ship')) p = shiftDate(p, buffer);
@@ -5072,6 +5178,7 @@ async function generateBulkTNAPrint() {
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-weight:700;white-space:nowrap">'+o.style+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+(o.po_number||'\u2014')+'</td>'
       + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:12px;white-space:nowrap">'+o.buyer+'</td>'
+      + '<td style="padding:9px 10px;border-bottom:1px solid #E5E2D9;font-size:11.5px;max-width:140px">'+(attachList.length?attachList.join(', '):'\u2014')+'</td>'
       + cells + '</tr>';
   }).join('');
 
@@ -5089,6 +5196,7 @@ async function generateBulkTNAPrint() {
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Style</th>'
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">PO</th>'
     + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Buyer</th>'
+    + '<th style="text-align:left;padding:0 10px 8px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Attachment</th>'
     + headerCells + '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>'
     + '<div style="padding:14px 28px;border-top:1px solid #E5E2D9;font-size:10.5px;color:#A0A09A">Generated ' + genDate + ' by ' + S.user.name + ' \u00b7 ' + orders.length + ' orders</div>'
     + '</div>';
@@ -5147,6 +5255,7 @@ function generateTNAPrint() {
   var buffer = _tnaPrintAudience === 'planning' ? (parseInt(document.getElementById('tna-buffer-days').value) || 0) : 0;
   var countryVal = getFieldValue(ordId, 'country') || '';
   var photoUrl = getStyleImage(o.merchant_id, o.style);
+  var attachList = ((S.boardSummaries[o.merchant_id]||{})[o.id]||{}).attach || [];
   var genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   var audienceLabel = _tnaPrintAudience === 'planning' ? 'Planning Team' : 'Management';
 
@@ -5179,6 +5288,7 @@ function generateTNAPrint() {
     + infoItem('PO Number', o.po_number) + infoItem('Buyer', o.buyer) + infoItem('Buying House', o.house)
     + infoItem('Country', countryVal) + infoItem('Merchant', merch?merch.name:'')
     + infoItem('Order Confirmed', o.confirm_date?short(o.confirm_date):'') + infoItem('Quantity', o.qty?fmt(o.qty)+' pcs':'')
+    + infoItem('Attachment', attachList.length ? attachList.join(', ') : 'No attachment')
     + '</div></div>'
     + '<div style="padding:20px 28px"><table style="width:100%;border-collapse:collapse"><thead><tr>'
     + '<th style="text-align:left;padding:0 14px 8px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;border-bottom:2px solid #191817">Milestone</th>'
@@ -7485,6 +7595,7 @@ var FIXED_BLOCKS = [
   { key:'_ship',        name:'Ship Date',    width:78,  wrap:true, mandatory:false },
   { key:'_days',        name:'Days Left',    width:52,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
+  { key:'_attachment',  name:'Attachment',   width:120, wrap:true, mandatory:false },
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
@@ -7556,7 +7667,7 @@ var DEFAULT_COLUMN_ORDER = [
   '_serial','_style','_buyer','_house','_po','article_no','_confirm_date','_photo',
   '_qty','_fob','_value','country','season','department','_ship','_gauge','_colour',
   '_composition','avg_weight','sales_contract','lc_no','lc_status','_approvals',
-  '_attachments','_accessories','_yarn','internal_pp','buyer_pp','khata_sign','_production'
+  '_attachments','_accessories','_attachment','_yarn','internal_pp','buyer_pp','khata_sign','_production'
 ];
 // Append any remaining keys (not explicitly listed above) in their natural definition order
 (function() {
@@ -8207,6 +8318,98 @@ function applyStickyHeaderOffsets() {
 // === COLOUR / COMPOSITION MULTI-TAG SYSTEM ===
 var _orderColors = [];
 var _orderComps = [];
+var _orderAttachments = [];
+
+function onAttachToggle(radio) {
+  var isYes = radio.value === 'yes';
+  $('o_attach_picker').style.display = isYes ? 'block' : 'none';
+  if (!isYes) { _orderAttachments = []; renderAttachTags(); }
+}
+function addAttachTag() {
+  var inp = $('o_attach_new');
+  var val = (inp.value||'').trim();
+  if (!val) return;
+  if (!_orderAttachments.includes(val)) _orderAttachments.push(val);
+  inp.value = '';
+  renderAttachTags();
+  saveMemo('attachment', val);
+}
+function removeAttachTag(idx) {
+  _orderAttachments.splice(idx, 1);
+  renderAttachTags();
+}
+function renderAttachTags() {
+  var el = $('o_attach_list');
+  if (!el) return;
+  el.innerHTML = _orderAttachments.map(function(a, i) {
+    return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600">' + htmlEsc(a)
+      + '<button type="button" data-idx="' + i + '" onclick="removeAttachTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button></span>';
+  }).join('');
+}
+function resetAttachState() {
+  _orderAttachments = [];
+  var noRadio = document.querySelector('input[name="o_has_attach"][value="no"]');
+  if (noRadio) noRadio.checked = true;
+  $('o_attach_picker').style.display = 'none';
+  renderAttachTags();
+}
+// Attachment is a property of the STYLE, same as compositions and colours can
+// be looked up from — every PO of a style should show the identical answer.
+async function getStyleAttachments(merchantId, style) {
+  var upper = (style||'').toUpperCase();
+  const res = await db.from('style_attachments').select('types').eq('merchant_id', merchantId).eq('style', upper).maybeSingle();
+  if (!res.data || !res.data.types) return [];
+  try { return JSON.parse(res.data.types) || []; } catch(e) { return []; }
+}
+async function saveStyleAttachments(merchantId, style, types) {
+  var upper = (style||'').toUpperCase();
+  await db.from('style_attachments').upsert({
+    merchant_id: merchantId, style: upper,
+    types: types.length ? JSON.stringify(types) : null,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'merchant_id,style' });
+}
+
+// ─── ATTACHMENT — TABLE CELL EDIT POPOVER ───
+var _attachEditOrdId = null, _attachEditMerchantId = null, _attachEditStyle = null, _attachEditTypes = [];
+async function openAttachEditPopover(orderId, merchantId, style) {
+  _attachEditOrdId = orderId; _attachEditMerchantId = merchantId; _attachEditStyle = style;
+  $('attach-edit-sub').textContent = style + ' \u2014 shared across every PO of this style';
+  _attachEditTypes = await getStyleAttachments(merchantId, style);
+  renderAttachEditTags();
+  $('attach-edit-new').value = '';
+  openModal('ov-attach-edit');
+}
+function addAttachEditTag() {
+  var inp = $('attach-edit-new');
+  var val = (inp.value||'').trim();
+  if (!val) return;
+  if (!_attachEditTypes.includes(val)) _attachEditTypes.push(val);
+  inp.value = '';
+  renderAttachEditTags();
+  saveMemo('attachment', val);
+  commitAttachEdit();
+}
+function removeAttachEditTag(idx) {
+  _attachEditTypes.splice(idx, 1);
+  renderAttachEditTags();
+  commitAttachEdit();
+}
+function renderAttachEditTags() {
+  var el = $('attach-edit-list');
+  if (!el) return;
+  el.innerHTML = _attachEditTypes.length
+    ? _attachEditTypes.map(function(a, i) {
+        return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600">' + htmlEsc(a)
+          + '<button type="button" data-idx="' + i + '" onclick="removeAttachEditTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button></span>';
+      }).join('')
+    : '<div style="color:var(--muted);font-size:12px">No attachment</div>';
+}
+async function commitAttachEdit() {
+  await saveStyleAttachments(_attachEditMerchantId, _attachEditStyle, _attachEditTypes);
+  await reloadSummaries(_attachEditMerchantId);
+  renderBoard(S.view);
+}
 
 function addColourTag() {
   var inp = $('o_color_new');
