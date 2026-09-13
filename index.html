@@ -646,6 +646,61 @@ button.apv-chip{font-family:inherit}
 .mt-reply-row input{flex:1;padding:9px 12px;border:1.5px solid var(--line);border-radius:20px;
   background:#FCFBF7;font-size:13.5px;color:var(--ink)}
 .mt-reply-row input:focus{outline:none;border-color:var(--accent)}
+
+/* Yarn — table pill */
+.yarn-pill{position:relative;height:22px;border-radius:11px;background:#EFECE3;overflow:hidden;
+  display:flex;align-items:center;min-width:64px}
+.yarn-pill-fill{position:absolute;left:0;top:0;bottom:0;border-radius:11px;transition:width .2s ease}
+.yarn-pill.empty .yarn-pill-fill{background:transparent}
+.yarn-pill.partial .yarn-pill-fill{background:#F0B94D}
+.yarn-pill.complete .yarn-pill-fill{background:var(--green)}
+.yarn-pill-label{position:relative;z-index:1;font-size:9px;font-weight:700;color:var(--ink);
+  padding:0 8px;white-space:nowrap;text-shadow:0 1px 2px rgba(255,255,255,.5)}
+
+/* Yarn modal — liquid glass */
+.yarn-overall-card{background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.65);
+  border-radius:16px;padding:16px 18px;box-shadow:0 6px 20px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.5)}
+[data-theme="dark"] .yarn-overall-card{background:rgba(42,40,40,.55);border-color:rgba(255,255,255,.1)}
+.yarn-overall-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.yarn-overall-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.yarn-overall-nums{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink)}
+.yarn-bar-track{height:14px;border-radius:8px;background:rgba(0,0,0,.06);overflow:hidden}
+.yarn-bar-track.sm{height:8px;margin-top:8px}
+.yarn-bar-fill{height:100%;border-radius:8px;transition:width .25s ease}
+.yarn-bar-fill.empty{background:transparent}
+.yarn-bar-fill.partial{background:linear-gradient(90deg,#F0B94D,#E8A83D)}
+.yarn-bar-fill.complete{background:linear-gradient(90deg,#4ADE80,#22C55E)}
+
+.yarn-booking-card{background:rgba(255,255,255,.55);backdrop-filter:blur(12px) saturate(150%);
+  -webkit-backdrop-filter:blur(12px) saturate(150%);border:1px solid rgba(255,255,255,.6);
+  border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+[data-theme="dark"] .yarn-booking-card{background:rgba(42,40,40,.5);border-color:rgba(255,255,255,.1)}
+.yarn-booking-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.yarn-booking-supplier{font-size:14px;font-weight:700;color:var(--ink)}
+.yarn-booking-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.yarn-booking-nums{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:5px;text-align:right}
+.yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0}
+.yarn-x:hover{opacity:.7}
+.yarn-receipts-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.yarn-receipt-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.5);
+  border-radius:8px;padding:5px 8px}
+[data-theme="dark"] .yarn-receipt-row{background:rgba(30,28,28,.5)}
+.yarn-receipt-row input{border:1px solid rgba(0,0,0,.08);border-radius:6px;padding:4px 7px;
+  font-size:12px;background:rgba(255,255,255,.7);color:var(--ink)}
+.yarn-receipt-row input[type="date"]{width:130px}
+.yarn-receipt-row input[type="number"]{width:80px}
+.yarn-receipt-row input:disabled{opacity:.6;background:transparent;border-color:transparent}
+
+.yarn-form-card{background:rgba(255,255,255,.65);backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.7);
+  border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.07)}
+[data-theme="dark"] .yarn-form-card{background:rgba(48,46,46,.6);border-color:rgba(255,255,255,.12)}
+.yarn-form-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:10px}
+.yarn-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.yarn-form-grid input,.yarn-form-grid select{width:100%;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:#FCFBF7;color:var(--ink);font-size:13px}
 .sm-action-toggle{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);
   margin-top:12px;padding-top:12px;border-top:1px solid var(--line);cursor:pointer;line-height:1.4}
 .sm-action-toggle input{margin-top:2px;width:15px;height:15px;flex-shrink:0;cursor:pointer}
@@ -1122,7 +1177,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.4</p>
   </div>
 </div>
 
@@ -1157,7 +1212,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.2</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.4</div>
 </div>
 
 
@@ -1451,11 +1506,11 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 
 <!-- ═══ MODAL: MATERIAL (Yarn/Fabric) ═══ -->
 <div class="ov" id="ov-material" onclick="if(event.target===this)closeModal('ov-material')">
-  <div class="modal" style="max-width:560px">
-    <div class="m-h"><div><h3 id="mat-title">Material</h3><div class="msub" id="mat-sub"></div></div>
+  <div class="modal" style="max-width:640px;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3 id="mat-title">Yarn Booking</h3><div class="msub" id="mat-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-material')">Close</button></div>
-    <div class="m-b" id="mat-body"></div>
-    <div class="m-f"><button class="btn" onclick="closeModal('ov-material')">Close</button></div>
+    <div class="m-b glass-backdrop" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+    <div class="m-f" style="flex-shrink:0"><button class="btn" onclick="closeModal('ov-material')">Close</button></div>
   </div>
 </div>
 
@@ -2331,16 +2386,13 @@ async function loadBoardOrders(merchantId) {
   // Load summaries in parallel (yarn totals + approval status)
   const ids = (data || []).map(o => o.id);
   if (ids.length) {
-    const [bk, rc, ap, acc] = await Promise.all([
-      db.from('yarn_bookings').select('order_id,qty').in('order_id', ids),
-      db.from('yarn_receipts').select('order_id,qty').in('order_id', ids),
+    const yarnByOrder = await loadYarnSummaryByOrder(merchantId, data || []);
+    const [ap, acc] = await Promise.all([
       db.from('approvals').select('*').in('order_id', ids).order('round'),
       db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
     ]);
     const sums = {};
-    ids.forEach(id => { sums[id] = { bk: 0, rc: 0, ap: {}, acc: {} }; });
-    (bk.data || []).forEach(b => { if (sums[b.order_id]) sums[b.order_id].bk += (b.qty||0); });
-    (rc.data || []).forEach(r => { if (sums[r.order_id]) sums[r.order_id].rc += (r.qty||0); });
+    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
     (ap.data || []).forEach(a => {
       if (sums[a.order_id]) {
         if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -2356,20 +2408,49 @@ async function loadBoardOrders(merchantId) {
   return S.boardCache[merchantId];
 }
 
+// Yarn is booked once per STYLE, not per PO — every order sharing a style
+// mirrors the same totals. Given the merchant's current order list, this
+// fetches every style's bookings + their receipts in two queries total
+// (not one per order), then maps each order to its style's combined totals.
+async function loadYarnSummaryByOrder(merchantId, orders) {
+  var styles = Array.from(new Set(orders.map(function(o){ return (o.style||'').toUpperCase(); }).filter(Boolean)));
+  var result = {};
+  orders.forEach(function(o){ result[o.id] = { bk: 0, rc: 0 }; });
+  if (!styles.length) return result;
+  const bkRes = await db.from('yarn_bookings').select('id,style,qty').eq('merchant_id', merchantId).in('style', styles);
+  var bookings = bkRes.data || [];
+  var bookingIds = bookings.map(function(b){ return b.id; });
+  var receivedByBooking = {};
+  if (bookingIds.length) {
+    const rcRes = await db.from('yarn_receipts').select('booking_id,qty').in('booking_id', bookingIds);
+    (rcRes.data || []).forEach(function(r){ receivedByBooking[r.booking_id] = (receivedByBooking[r.booking_id]||0) + (r.qty||0); });
+  }
+  var totalsByStyle = {};
+  bookings.forEach(function(b){
+    var s = (b.style||'').toUpperCase();
+    if (!totalsByStyle[s]) totalsByStyle[s] = { bk: 0, rc: 0 };
+    totalsByStyle[s].bk += (b.qty||0);
+    totalsByStyle[s].rc += (receivedByBooking[b.id]||0);
+  });
+  orders.forEach(function(o){
+    var s = (o.style||'').toUpperCase();
+    if (totalsByStyle[s]) result[o.id] = totalsByStyle[s];
+  });
+  return result;
+}
+
 // Reload summaries only (after adding booking/approval without full board reload)
 async function reloadSummaries(merchantId) {
-  const ids = (S.boardCache[merchantId] || []).map(o => o.id);
+  const orders = S.boardCache[merchantId] || [];
+  const ids = orders.map(o => o.id);
   if (!ids.length) return;
-  const [bk, rc, ap, acc] = await Promise.all([
-    db.from('yarn_bookings').select('order_id,qty').in('order_id', ids),
-    db.from('yarn_receipts').select('order_id,qty').in('order_id', ids),
+  const yarnByOrder = await loadYarnSummaryByOrder(merchantId, orders);
+  const [ap, acc] = await Promise.all([
     db.from('approvals').select('*').in('order_id', ids).order('round'),
     db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
   ]);
   const sums = {};
-  ids.forEach(id => { sums[id] = { bk: 0, rc: 0, ap: {}, acc: {} }; });
-  (bk.data || []).forEach(b => { if (sums[b.order_id]) sums[b.order_id].bk += (b.qty||0); });
-  (rc.data || []).forEach(r => { if (sums[r.order_id]) sums[r.order_id].rc += (r.qty||0); });
+  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
   (ap.data || []).forEach(a => {
     if (sums[a.order_id]) {
       if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -3034,12 +3115,10 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
 
-    const totalBk = sum.bk, totalRc = sum.rc, bal = totalBk - totalRc;
-    const yarnInner = totalBk > 0
-      ? '<div class="row"><span class="k">Bkd</span><span class="v">' + fmt(totalBk) + '</span></div>'
-        + '<div class="row"><span class="k">Rcvd</span><span class="v ' + (totalRc>=totalBk?'ok':'') + '">' + fmt(totalRc) + '</span></div>'
-        + '<div class="row"><span class="k">Bal</span><span class="v ' + (bal>0?'bad':bal===0&&totalBk>0?'ok':'') + '">' + fmt(bal) + '</span></div>'
-      : '<div style="color:var(--muted);font-size:8.5px;padding:2px 0">No booking</div>';
+    const totalBk = sum.bk, totalRc = sum.rc;
+    const yarnPct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
+    const yarnInner = '<div class="yarn-pill ' + yarnBarClass(yarnPct) + '"><div class="yarn-pill-fill" style="width:' + yarnPct + '%"></div>'
+      + '<span class="yarn-pill-label">' + (totalBk > 0 ? (fmt(totalRc) + ' / ' + fmt(totalBk)) : 'No booking') + '</span></div>';
 
     const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : '<span style="font-weight:700">'+dl+'</span>';
 
@@ -3074,7 +3153,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:9px;font-weight:700;');
     if (itemByKey['_days']) cellsByKey['_days'] = singleTd('_days', 'num', dlSpan);
     if (itemByKey['_yarn']) {
-      var yarnHtml = yarnInner + (canEdit ? '<button class="mat-add-btn" onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')">+ Booking</button>' : '');
+      var yarnHtml = '<div onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')" style="cursor:pointer">' + yarnInner + '</div>';
       cellsByKey['_yarn'] = singleTd('_yarn', 'col-yarn', yarnHtml);
     }
     if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
@@ -4283,99 +4362,191 @@ function downloadPDF() {
 
 
 // ─── MATERIAL MODAL (Yarn / Fabric) ───
-var _matOrdId = null, _matDiv = null;
+// ─── YARN BOOKING — style-wide, not per-PO ───
+// Bookings and receipts belong to a STYLE (merchant + style number), because
+// yarn is purchased once for a style regardless of how many POs it ships
+// under. Every PO sharing that style mirrors the exact same booking data.
+var _yarnMerchantId = null, _yarnStyle = null, _yarnUnit = 'lbs', _yarnCompositions = [];
+
+function getStyleCompositions(merchantId, style) {
+  var upper = (style||'').toUpperCase();
+  var list = [];
+  (S.boardCache[merchantId]||[]).forEach(function(o){ if((o.style||'').toUpperCase()===upper && o.comp) list.push(o.comp); });
+  (S.archive||[]).forEach(function(o){ if(o.merchant_id===merchantId && (o.style||'').toUpperCase()===upper && o.comp) list.push(o.comp); });
+  (S.layingGoods||[]).forEach(function(o){ if(o.merchant_id===merchantId && (o.style||'').toUpperCase()===upper && o.comp) list.push(o.comp); });
+  return Array.from(new Set(list));
+}
 
 async function openMaterialModal(ordId, division) {
-  _matOrdId = ordId; _matDiv = division;
   const o = (S.boardCache[S.view]||[]).find(function(x){return x.id===ordId;}) || {};
-  const unit = division === 'knit' ? 'kgs' : 'lbs';
+  _yarnMerchantId = o.merchant_id; _yarnStyle = (o.style||'').toUpperCase();
+  _yarnUnit = division === 'knit' ? 'kgs' : 'lbs';
   const label = division === 'knit' ? 'Fabric' : 'Yarn';
-  $('mat-title').textContent = label + ' — ' + o.style;
-  $('mat-sub').textContent = o.buyer + ' · ' + fmt(o.qty) + ' pcs';
-  $('mat-body').innerHTML = '<div class="exp-loading">Loading...</div>';
+  $('mat-title').textContent = label + ' Booking \u2014 ' + _yarnStyle;
+  $('mat-sub').textContent = 'Shared across every PO of this style';
+  $('mat-body').innerHTML = '<div class="exp-loading">Loading\u2026</div>';
   openModal('ov-material');
-
-  const [bk, rc] = await Promise.all([
-    db.from('yarn_bookings').select('*').eq('order_id', ordId).order('booked_on'),
-    db.from('yarn_receipts').select('*').eq('order_id', ordId).order('received_on'),
-  ]);
-  const bkData = bk.data || [], rcData = rc.data || [];
-  const totalBk = bkData.reduce(function(s,x){return s+(x.qty||0);},0);
-  const totalRc = rcData.reduce(function(s,x){return s+(x.qty||0);},0);
-  const bal = totalBk - totalRc;
-  const today0 = new Date().toISOString().slice(0,10);
-  const canEdit = S.user.role === 'management' || S.user.id === S.view;
-
-  var bkRows = bkData.map(function(b,i){
-    return '<div class="apv-history-row"><span style="font-family:var(--mono);font-size:11px;width:68px;flex-shrink:0">' + short(b.booked_on) + '</span>'
-      + '<span style="flex:1">' + (b.supplier||'—') + '</span>'
-      + '<span style="font-family:var(--mono);font-size:11px;font-weight:600">' + fmt(b.qty) + ' ' + unit + '</span>'
-      + (canEdit ? '<button class="btn sm danger" style="margin-left:8px;padding:1px 6px" onclick="delMat(\'bk\',\''+b.id+'\')">×</button>' : '')
-      + '</div>';
-  }).join('');
-
-  var rcRows = rcData.map(function(r,i){
-    var run = rcData.slice(0,i+1).reduce(function(s,x){return s+(x.qty||0);},0);
-    return '<div class="apv-history-row"><span style="font-family:var(--mono);font-size:11px;width:68px;flex-shrink:0">' + short(r.received_on) + '</span>'
-      + '<span style="flex:1;color:var(--muted);font-size:11px">Running: ' + fmt(run) + '</span>'
-      + '<span style="font-family:var(--mono);font-size:11px;font-weight:600">' + fmt(r.qty) + ' ' + unit + '</span>'
-      + (canEdit ? '<button class="btn sm danger" style="margin-left:8px;padding:1px 6px" onclick="delMat(\'rc\',\''+r.id+'\')">×</button>' : '')
-      + '</div>';
-  }).join('');
-
-  $('mat-body').innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
-    + '<div><div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Bookings</div>'
-    + (bkRows || '<div style="color:var(--muted);font-size:12px;padding:4px 0">None yet</div>')
-    + (canEdit ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">'
-      + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">'
-      + '<div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Date</div><input type="date" id="mat-bk-date" value="'+today0+'" style="padding:4px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:#FCFBF7;color:var(--ink)"></div>'
-      + '<div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Supplier</div><input type="text" id="mat-bk-sup" placeholder="Name" style="padding:4px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;width:130px;background:#FCFBF7;color:var(--ink)"></div>'
-      + '<div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Qty ('+unit+')</div><input type="number" id="mat-bk-qty" placeholder="0" style="padding:4px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;width:80px;background:#FCFBF7"></div>'
-      + '<button class="btn sm pri" onclick="addMat(\'bk\')">Add</button></div></div>' : '')
-    + '</div>'
-    + '<div><div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Received</div>'
-    + (rcRows || '<div style="color:var(--muted);font-size:12px;padding:4px 0">None yet</div>')
-    + (canEdit ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">'
-      + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">'
-      + '<div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Date</div><input type="date" id="mat-rc-date" value="'+today0+'" style="padding:4px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:#FCFBF7;color:var(--ink)"></div>'
-      + '<div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Qty ('+unit+')</div><input type="number" id="mat-rc-qty" placeholder="0" style="padding:4px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;width:100px;background:#FCFBF7"></div>'
-      + '<button class="btn sm pri" onclick="addMat(\'rc\')">Add</button></div></div>' : '')
-    + '</div>'
-    + '</div>'
-    + (totalBk ? '<div class="mat-summary" style="margin-top:14px">'
-      + '<div class="item"><div class="k">Booked</div><div class="v">'+fmt(totalBk)+' '+unit+'</div></div>'
-      + '<div class="item"><div class="k">Received</div><div class="v '+(totalRc>=totalBk?'ok':'')+'">'+fmt(totalRc)+' '+unit+'</div></div>'
-      + '<div class="item"><div class="k">Balance</div><div class="v '+(bal>0?'bad':bal===0?'ok':'')+'">' +fmt(bal)+' '+unit+'</div></div>'
-      + '</div>' : '');
+  await renderMaterialModalBody();
 }
 
-async function addMat(type) {
-  if (type === 'bk') {
-    var dt=$('mat-bk-date').value, qty=parseFloat($('mat-bk-qty').value)||0, sup=$('mat-bk-sup').value.trim();
-    if (!dt||!qty){toast('Date and quantity required','err');return;}
-    await db.from('yarn_bookings').insert({order_id:_matOrdId,booked_on:dt,qty:qty,supplier:sup});
-  } else {
-    var dt2=$('mat-rc-date').value, qty2=parseFloat($('mat-rc-qty').value)||0;
-    if (!dt2||!qty2){toast('Date and quantity required','err');return;}
-    await db.from('yarn_receipts').insert({order_id:_matOrdId,received_on:dt2,qty:qty2});
+async function renderMaterialModalBody() {
+  const bkRes = await db.from('yarn_bookings').select('*').eq('merchant_id', _yarnMerchantId).eq('style', _yarnStyle).order('booked_on');
+  const bookings = bkRes.data || [];
+  const bookingIds = bookings.map(function(b){ return b.id; });
+  var receipts = [];
+  if (bookingIds.length) {
+    const rcRes = await db.from('yarn_receipts').select('*').in('booking_id', bookingIds).order('received_on');
+    receipts = rcRes.data || [];
   }
-  toast('Saved','ok-t');
-  await recomputeYarnActual(_matOrdId); // keep the TNA actual date in sync automatically
-  await reloadSummaries(S.view);
-  renderBoard(S.view); // refresh table
-  openMaterialModal(_matOrdId, _matDiv); // refresh modal
+  const totalBk = bookings.reduce(function(s,b){return s+(b.qty||0);},0);
+  const totalRc = receipts.reduce(function(s,r){return s+(r.qty||0);},0);
+  const pct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
+  const canEdit = ['management','admin','hod'].includes(S.user.role) || S.user.id === _yarnMerchantId || actsAsMerchant(_yarnMerchantId);
+
+  var overallHtml = '<div class="yarn-overall-card">'
+    + '<div class="yarn-overall-top"><div class="yarn-overall-lbl">Total Progress</div><div class="yarn-overall-nums">' + fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + _yarnUnit + '</div></div>'
+    + '<div class="yarn-bar-track"><div class="yarn-bar-fill ' + yarnBarClass(pct) + '" style="width:' + pct + '%"></div></div>'
+    + '</div>';
+
+  var addBtnHtml = canEdit ? '<button class="btn pri" style="width:100%;margin:14px 0" onclick="openAddBookingForm()">+ Add Booking</button>' : '';
+
+  _yarnCompositions = getStyleCompositions(_yarnMerchantId, _yarnStyle);
+
+  var bookingCards = bookings.map(function(b){
+    var myReceipts = receipts.filter(function(r){ return r.booking_id === b.id; });
+    var bReceived = myReceipts.reduce(function(s,r){return s+(r.qty||0);},0);
+    var bPct = b.qty > 0 ? Math.min(100, Math.round((bReceived/b.qty)*100)) : 0;
+    var receiptRows = myReceipts.map(function(r){
+      return '<div class="yarn-receipt-row">'
+        + '<input type="date" value="'+r.received_on+'" ' + (canEdit?'':'disabled') + ' onchange="editReceipt(\''+r.id+'\',\'received_on\',this.value)">'
+        + '<input type="number" step="0.01" value="'+r.qty+'" ' + (canEdit?'':'disabled') + ' onchange="editReceipt(\''+r.id+'\',\'qty\',this.value)">'
+        + '<span style="font-size:11px;color:var(--muted)">'+_yarnUnit+'</span>'
+        + (canEdit ? '<button class="yarn-x" onclick="deleteReceipt(\''+r.id+'\')">&#x2715;</button>' : '')
+        + '</div>';
+    }).join('');
+    return '<div class="yarn-booking-card">'
+      + '<div class="yarn-booking-hdr">'
+      + '<div><div class="yarn-booking-supplier">'+htmlEsc(b.supplier)+'</div>'
+      + '<div class="yarn-booking-meta">'+htmlEsc(b.composition||'')+' \u00b7 '+short(b.booked_on)+(b.pi_number?' \u00b7 PI '+htmlEsc(b.pi_number):'')+(b.lc_number?' \u00b7 LC '+htmlEsc(b.lc_number):'')+'</div></div>'
+      + (canEdit ? '<button class="yarn-x" onclick="deleteBooking(\''+b.id+'\')">&#x1F5D1;</button>' : '')
+      + '</div>'
+      + '<div class="yarn-bar-track sm"><div class="yarn-bar-fill sm ' + yarnBarClass(bPct) + '" style="width:'+bPct+'%"></div></div>'
+      + '<div class="yarn-booking-nums">'+fmt(bReceived)+' / '+fmt(b.qty)+' '+_yarnUnit+'</div>'
+      + '<div class="yarn-receipts-list" id="yarn-receipts-'+b.id+'">'+receiptRows+'</div>'
+      + (canEdit ? '<button class="btn sm ghost" style="margin-top:6px" onclick="addReceiptRow(\''+b.id+'\')">+ Add Inhouse</button>' : '')
+      + '</div>';
+  }).join('');
+
+  $('mat-body').innerHTML = overallHtml + addBtnHtml
+    + '<div id="yarn-add-booking-form"></div>'
+    + (bookingCards || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No bookings yet for this style.</div>');
 }
 
-async function delMat(type, id) {
-  if (!confirm('Remove?')) return;
-  if (type === 'bk') await db.from('yarn_bookings').delete().eq('id',id);
-  else await db.from('yarn_receipts').delete().eq('id',id);
-  await recomputeYarnActual(_matOrdId); // e.g. deleting a receipt can drop total below booked again
-  await reloadSummaries(S.view);
-  renderBoard(S.view);
-  openMaterialModal(_matOrdId, _matDiv);
+function yarnBarClass(pct) {
+  if (pct >= 100) return 'complete';
+  if (pct > 0) return 'partial';
+  return 'empty';
 }
+
+function openAddBookingForm() {
+  var compOpts = _yarnCompositions.length
+    ? _yarnCompositions.map(function(c){ return '<option value="'+htmlEsc(c)+'">'+htmlEsc(c)+'</option>'; }).join('')
+    : '<option value="">No compositions found on this style\u2019s orders</option>';
+  var today0 = new Date().toISOString().slice(0,10);
+  $('yarn-add-booking-form').innerHTML = '<div class="yarn-form-card">'
+    + '<div class="yarn-form-title">New Booking</div>'
+    + '<div class="yarn-form-grid">'
+    + '<div class="f"><label>Supplier <span style="color:var(--red)">*</span></label><input id="yb-supplier" placeholder="Supplier name"></div>'
+    + '<div class="f"><label>Composition <span style="color:var(--red)">*</span></label><select id="yb-composition">'+compOpts+'</select></div>'
+    + '<div class="f"><label>Booking Date <span style="color:var(--red)">*</span></label><input type="date" id="yb-date" value="'+today0+'"></div>'
+    + '<div class="f"><label>Quantity (lbs) <span style="color:var(--red)">*</span></label><input type="number" step="0.01" id="yb-qty" placeholder="0"></div>'
+    + '<div class="f"><label>PI Number</label><input id="yb-pi" placeholder="optional"></div>'
+    + '<div class="f"><label>LC Number</label><input id="yb-lc" placeholder="optional"></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:10px">'
+    + '<button class="btn" onclick="$(\'yarn-add-booking-form\').innerHTML=\'\'">Cancel</button>'
+    + '<button class="btn pri" onclick="saveNewBooking()">Add Booking</button>'
+    + '</div></div>';
+}
+
+async function saveNewBooking() {
+  var supplier = $('yb-supplier').value.trim();
+  var comp = $('yb-composition').value;
+  var date = $('yb-date').value;
+  var qty = parseFloat($('yb-qty').value) || 0;
+  var pi = $('yb-pi').value.trim();
+  var lc = $('yb-lc').value.trim();
+  if (!supplier || !comp || !date || !qty) { toast('Supplier, composition, date, and quantity are required', 'err'); return; }
+  await db.from('yarn_bookings').insert({
+    merchant_id: _yarnMerchantId, style: _yarnStyle,
+    supplier: supplier, composition: comp, booked_on: date, qty: qty,
+    pi_number: pi || null, lc_number: lc || null,
+    created_by: S.user.name
+  });
+  toast('Booking added', 'ok-t');
+  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
+  await reloadSummaries(_yarnMerchantId);
+  renderBoard(S.view);
+  await renderMaterialModalBody();
+}
+
+async function deleteBooking(id) {
+  var rcRes = await db.from('yarn_receipts').select('id').eq('booking_id', id);
+  var hasReceipts = (rcRes.data||[]).length > 0;
+  var msg = hasReceipts
+    ? 'This booking has inhouse entries recorded against it. Deleting it will also delete those entries. Continue?'
+    : 'Delete this booking?';
+  if (!confirm(msg)) return;
+  await db.from('yarn_receipts').delete().eq('booking_id', id);
+  await db.from('yarn_bookings').delete().eq('id', id);
+  toast('Booking deleted', 'ok-t');
+  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
+  await reloadSummaries(_yarnMerchantId);
+  renderBoard(S.view);
+  await renderMaterialModalBody();
+}
+
+function addReceiptRow(bookingId) {
+  var existing = document.getElementById('yarn-new-receipt-'+bookingId);
+  if (existing) { existing.remove(); return; }
+  var today0 = new Date().toISOString().slice(0,10);
+  var html = '<div class="yarn-receipt-row" id="yarn-new-receipt-'+bookingId+'">'
+    + '<input type="date" id="yb-new-rc-date-'+bookingId+'" value="'+today0+'">'
+    + '<input type="number" step="0.01" id="yb-new-rc-qty-'+bookingId+'" placeholder="0">'
+    + '<button class="btn sm pri" onclick="saveNewReceipt(\''+bookingId+'\')">Add</button>'
+    + '</div>';
+  var list = $('yarn-receipts-'+bookingId);
+  if (list) list.insertAdjacentHTML('beforeend', html);
+}
+async function saveNewReceipt(bookingId) {
+  var date = $('yb-new-rc-date-'+bookingId).value;
+  var qty = parseFloat($('yb-new-rc-qty-'+bookingId).value) || 0;
+  if (!date || !qty) { toast('Date and quantity required', 'err'); return; }
+  await db.from('yarn_receipts').insert({ booking_id: bookingId, received_on: date, qty: qty, created_by: S.user.name });
+  toast('Inhouse recorded', 'ok-t');
+  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
+  await reloadSummaries(_yarnMerchantId);
+  renderBoard(S.view);
+  await renderMaterialModalBody();
+}
+async function editReceipt(id, field, val) {
+  var upd = {}; upd[field] = field==='qty' ? (parseFloat(val)||0) : val;
+  await db.from('yarn_receipts').update(upd).eq('id', id);
+  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
+  await reloadSummaries(_yarnMerchantId);
+  renderBoard(S.view);
+  await renderMaterialModalBody();
+}
+async function deleteReceipt(id) {
+  if (!confirm('Remove this inhouse entry?')) return;
+  await db.from('yarn_receipts').delete().eq('id', id);
+  toast('Removed', 'ok-t');
+  await recomputeYarnActual(_yarnMerchantId, _yarnStyle);
+  await reloadSummaries(_yarnMerchantId);
+  renderBoard(S.view);
+  await renderMaterialModalBody();
+}
+
 
 // ─── TNA ACTUAL-DATE AUTO-LINK ───
 // Shared by both the approval-driven link (PP/Fit/Final Inspection) and the
@@ -4455,28 +4626,41 @@ async function backfillTNAApprovalLinks() {
 }
 
 // ─── YARN INHOUSE ACTUAL-DATE AUTO-LINK ───
-// Recomputes act_yarn from the real booking/receipt totals every time either
-// changes. Walking receipts chronologically (not just "latest entry") means the
-// date shown is when the order genuinely became fully inhoused, even if entries
-// were added out of order — and if a later booking pushes the required total up
-// past what's already been received, this correctly clears act_yarn again rather
-// than leaving a stale "done" date behind.
-async function recomputeYarnActual(orderId) {
-  const [bk, rc] = await Promise.all([
-    db.from('yarn_bookings').select('*').eq('order_id', orderId),
-    db.from('yarn_receipts').select('*').eq('order_id', orderId),
-  ]);
-  var bookings = bk.data || [], receipts = rc.data || [];
-  var totalBooked = bookings.reduce(function(s,x){ return s + (x.qty||0); }, 0);
-  if (totalBooked <= 0) { await setMilestoneActual(orderId, 'yarn', null); return; }
-  var sorted = receipts.slice().sort(function(a,b){ return (a.received_on||'') < (b.received_on||'') ? -1 : (a.received_on||'') > (b.received_on||'') ? 1 : 0; });
-  var running = 0, completedOn = null;
-  for (var i = 0; i < sorted.length; i++) {
-    running += sorted[i].qty || 0;
-    if (running >= totalBooked) { completedOn = sorted[i].received_on; break; }
+// Bookings are style-wide now, so completion is checked against the STYLE's
+// combined totals, not any one order's — and once it hits 100%, every PO that
+// shares this style gets its TNA Yarn Inhouse date set together, since it's
+// genuinely the same yarn purchase behind every one of them. Walking receipts
+// chronologically (not just "latest entry") means the date shown is when the
+// style genuinely became fully inhoused, even if entries were added out of
+// order — and if a later booking pushes the required total back up past
+// what's already been received, this correctly clears every linked PO's date
+// again rather than leaving a stale "done" date behind.
+async function recomputeYarnActual(merchantId, style) {
+  var upper = (style || '').toUpperCase();
+  const bkRes = await db.from('yarn_bookings').select('id,qty').eq('merchant_id', merchantId).eq('style', upper);
+  var bookings = bkRes.data || [];
+  var totalBooked = bookings.reduce(function(s,b){ return s + (b.qty||0); }, 0);
+  var bookingIds = bookings.map(function(b){ return b.id; });
+  var completedOn = null;
+  if (totalBooked > 0 && bookingIds.length) {
+    const rcRes = await db.from('yarn_receipts').select('received_on,qty').in('booking_id', bookingIds);
+    var receipts = rcRes.data || [];
+    var totalReceived = receipts.reduce(function(s,r){ return s + (r.qty||0); }, 0);
+    if (totalReceived >= totalBooked) { // only triggers once the style is genuinely 100% inhoused
+      var sorted = receipts.slice().sort(function(a,b){ return (a.received_on||'') < (b.received_on||'') ? -1 : (a.received_on||'') > (b.received_on||'') ? 1 : 0; });
+      var running = 0;
+      for (var i = 0; i < sorted.length; i++) {
+        running += sorted[i].qty || 0;
+        if (running >= totalBooked) { completedOn = sorted[i].received_on; break; }
+      }
+    }
   }
-  await setMilestoneActual(orderId, 'yarn', completedOn);
+  var orders = (S.boardCache[merchantId] || []).filter(function(o){ return (o.style||'').toUpperCase() === upper; });
+  for (var j = 0; j < orders.length; j++) {
+    await setMilestoneActual(orders[j].id, 'yarn', completedOn);
+  }
 }
+
 
 // ─── PP APPROVAL MODAL ───
 var _ppOrdId = null, _ppDiv = null;
