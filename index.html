@@ -113,6 +113,7 @@ table{border-collapse:collapse;width:100%;font-size:11.5px}
 th{background:#F7F5EF;text-align:left;padding:5px 7px;font-size:9.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap}
 th.grp{text-align:center;border-left:2px solid var(--line);color:#8a3f24;background:#F3EFE6}
+.apv-grp-end{border-right:2px solid var(--line)}
 td{padding:4px 7px;border-bottom:1px solid #F0EDE4;white-space:nowrap;vertical-align:middle}
 tbody tr:hover td{background:rgba(0,0,0,.015)}
 tbody tr:hover td.stk{background-color:var(--panel);position:sticky;z-index:20}
@@ -1199,7 +1200,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.9</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.10</p>
   </div>
 </div>
 
@@ -1234,7 +1235,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.9</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.10</div>
 </div>
 
 
@@ -3249,7 +3250,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
           '<td class="apv-col' + apFrozenCls + '" style="width:108px;min-width:108px;max-width:108px;' + apFrozenStyle + '">' + ldChip + '</td>'
         + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ftChip + '</td>'
         + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ssChip + '</td>'
-        + '<td class="apv-col" style="width:108px;min-width:108px;max-width:108px">' + ppChip + '</td>';
+        + '<td class="apv-col apv-grp-end" style="width:108px;min-width:108px;max-width:108px">' + ppChip + '</td>';
     }
 
     if (itemByKey['_production']) {
@@ -3260,7 +3261,8 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
         const v = o[s.k] || 0;
         const orderQty = o.qty || 0;
         const balance = v - orderQty;
-        var cls = idx === 0 ? prFrozenCls : '';
+        var isLastStep = idx === VSTEPS.length - 1;
+        var cls = (idx === 0 ? prFrozenCls : '') + (isLastStep ? ' apv-grp-end' : '');
         var stl = 'width:92px;min-width:92px;max-width:92px;' + (idx === 0 ? prFrozenStyle : '');
         var balHtml = balance < 0
           ? '<div class="prod-bal-chip short">Bal -' + fmt(Math.abs(balance)) + '</div>'
@@ -3325,11 +3327,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_attachment') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Garment Attachment') + '</th>';
     else if (key === '_approvals') {
       topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">' + (lbl||'Approvals') + '</th>';
-      bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th>';
+      bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th><th class="grp apv-grp-end" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th>';
     }
     else if (key === '_production') {
       topRow += '<th class="grp' + fClass + '" style="width:' + (VSTEPS.length*92) + 'px;min-width:' + (VSTEPS.length*92) + 'px;max-width:' + (VSTEPS.length*92) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
-      bottomRow += VSTEPS.map(function(s){return '<th class="grp" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
+      bottomRow += VSTEPS.map(function(s, sidx){return '<th class="grp' + (sidx===VSTEPS.length-1?' apv-grp-end':'') + '" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
     }
     else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2"><span class="th-tip" data-tip="Free-form notes for this order \u2014 click any cell in this column to open and type, like a small text document. Saves automatically." onmouseenter="showFloatingTip(this)" onmouseleave="hideFloatingTip()">' + (lbl||'Notes') + '</span></th>';
     else {
