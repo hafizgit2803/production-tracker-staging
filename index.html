@@ -250,6 +250,9 @@ table.tna-t td.sty{font-weight:600}
 .tna-info-item{min-width:0}
 .tna-info-lbl{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .tna-info-val{font-size:13px;font-weight:600;color:var(--ink);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tna-attach-banner{background:var(--accent-soft);border:1.5px solid #E8CFC2;border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;font-size:15px;font-weight:700;color:var(--ink)}
+.tna-attach-banner strong{color:var(--accent);text-transform:uppercase;font-size:11px;letter-spacing:.04em;margin-right:4px}
 .tna-audience-btn{padding:16px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel);
   cursor:pointer;text-align:center;transition:all .15s}
 .tna-audience-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
@@ -679,6 +682,20 @@ button.apv-chip{font-family:inherit}
 .yarn-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0}
 .attach-chip{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:9.5px;
   font-weight:700;padding:2px 7px;border-radius:8px;margin:1px 2px 1px 0}
+.acc-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  width:100%;padding:7px 8px;border-radius:10px;font-size:12px;font-weight:800;line-height:1.25;
+  border:1.5px solid transparent;cursor:pointer;font-family:inherit}
+.acc-pill .sub{font-size:9.5px;font-weight:700;opacity:.85}
+.acc-pill.not-booked{background:#F5D5D5;color:#8A3232;border-color:#E8AFAF}
+.acc-pill.partial{background:#FBE4B0;color:#7A5A10;border-color:#F0CA6E}
+.acc-pill.all-booked{background:#C9EBD6;color:#155C33;border-color:#8FDBAB}
+.acc-pill.submitted{background:#C7E3F5;color:#154E7A;border-color:#8FC7E8}
+.acc-pill.approved{background:#B8ECC9;color:#0D5A2A;border-color:#75DB98}
+[data-theme="dark"] .acc-pill.not-booked{background:#4A2828;color:#E8B8B8}
+[data-theme="dark"] .acc-pill.partial{background:#4A3A10;color:#F0D090}
+[data-theme="dark"] .acc-pill.all-booked{background:#1A4A2A;color:#A8E0BC}
+[data-theme="dark"] .acc-pill.submitted{background:#1A3A4A;color:#A8CDE8}
+[data-theme="dark"] .acc-pill.approved{background:#134A28;color:#8AE0AA}
 .yarn-x:hover{opacity:.7}
 
 /* Inhouse entries — a plain read-only table. Once added, an entry can only be
@@ -1182,7 +1199,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.7</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.9</p>
   </div>
 </div>
 
@@ -1217,7 +1234,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.7</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.9</div>
 </div>
 
 
@@ -3102,11 +3119,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const inhoused = ACC_ITEMS.filter(function(it){ return acc[it.k] && acc[it.k].inhouse_on; });
     const total = ACC_ITEMS.length;
     const oc = "event.stopPropagation();openAccessoriesModal('" + ordId + "')";
-    if (inhoused.length === total && booked.length === total) return '<button class="apv-chip approved" onclick="' + oc + '">All inhoused</button>';
-    if (booked.length === total && inhoused.length > 0) return '<button class="apv-chip submitted" onclick="' + oc + '">Booked<br><span style="font-weight:400;font-size:9.5px">' + inhoused.length + '/' + total + ' inhoused</span></button>';
-    if (booked.length === total) return '<button class="apv-chip approved" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7" onclick="' + oc + '">All booked</button>';
-    if (booked.length > 0) return '<button class="apv-chip submitted" onclick="' + oc + '">Partial<br><span style="font-weight:400;font-size:9.5px">' + booked.length + '/' + total + ' booked</span></button>';
-    return '<button class="apv-chip not-sent" onclick="' + oc + '">Not booked</button>';
+    if (inhoused.length === total && booked.length === total) return '<button class="acc-pill approved" onclick="' + oc + '">All inhoused</button>';
+    if (booked.length === total && inhoused.length > 0) return '<button class="acc-pill submitted" onclick="' + oc + '">Booked<span class="sub">' + inhoused.length + '/' + total + ' inhoused</span></button>';
+    if (booked.length === total) return '<button class="acc-pill all-booked" onclick="' + oc + '">All booked</button>';
+    if (booked.length > 0) return '<button class="acc-pill partial" onclick="' + oc + '">Partial<span class="sub">' + booked.length + '/' + total + ' booked</span></button>';
+    return '<button class="acc-pill not-booked" onclick="' + oc + '">Not booked</button>';
   }
 
   // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
@@ -3179,7 +3196,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const yarnInner = '<div class="yarn-pill ' + yarnBarClass(yarnPct) + '"><div class="yarn-pill-fill" style="width:' + yarnPct + '%"></div>'
       + '<span class="yarn-pill-label">' + (totalBk > 0 ? (fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + yarnUnitLabel) : 'No booking') + '</span></div>';
 
-    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+'</span>' : '<span style="font-weight:700">'+dl+'</span>';
+    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : '<span style="font-weight:700">'+dl+' days</span>';
 
     const notesText = (o.remarks||'').trim();
     const notesPreviewRaw = notesText ? notesText.replace(/\u2022\s*/g,'').split('\n')[0].slice(0,28) : '';
@@ -3198,7 +3215,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;');
-    if (itemByKey['_attachments']) cellsByKey['_attachments'] = singleTd('_attachments', '', '<button class="btn sm ghost" style="font-size:8.5px;padding:2px 8px" onclick="event.stopPropagation();toast(\'Attachments coming soon\')">&#x1F4CE; 0</button>');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11.5px;font-weight:700;font-family:var(--mono);color:var(--ink);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
@@ -3294,7 +3310,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_po') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'PO') + '</th>';
     else if (key === '_serial') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'#') + '</th>';
     else if (key === '_confirm_date') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Order Confirmed Date') + '</th>';
-    else if (key === '_attachments') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Files') + '</th>';
     else if (key === '_buyer') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Buyer') + '</th>';
     else if (key === '_house') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'House') + '</th>';
     else if (key === '_gauge') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Gauge') + '</th>';
@@ -3307,6 +3322,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     else if (key === '_days') topRow += '<th class="num ' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Days Left') + '</th>';
     else if (key === '_yarn') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||(matLabel + '<br>(' + unit + ')')) + '</th>';
     else if (key === '_accessories') topRow += '<th class="grp' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Accessories') + '</th>';
+    else if (key === '_attachment') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Garment Attachment') + '</th>';
     else if (key === '_approvals') {
       topRow += '<th class="grp' + fClass + '" style="width:432px;min-width:432px;max-width:432px;' + fStyle + '" colspan="4">' + (lbl||'Approvals') + '</th>';
       bottomRow += '<th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Lab Dip</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Fit</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">Size Set</th><th class="grp" style="width:108px;min-width:108px;max-width:108px;font-size:9px">PP</th>';
@@ -4143,8 +4159,8 @@ function openTNA(ordId, division) {
     + infoItem('Buying House', o.house) + infoItem('Country', countryVal) + infoItem('Merchant', merchName)
     + infoItem('Order Confirmed', o.confirm_date ? short(o.confirm_date) : '')
     + infoItem('Quantity', o.qty ? fmt(o.qty)+' pcs' : '') + infoItem('Ship Date', o.ship_date ? short(o.ship_date) : '')
-    + infoItem('Attachment', (boardSums.attach && boardSums.attach.length) ? boardSums.attach.join(', ') : 'No attachment')
-    + '</div></div>';
+    + '</div></div>'
+    + '<div class="tna-attach-banner">&#x1F9F5; <strong>Attachment:</strong> ' + ((boardSums.attach && boardSums.attach.length) ? boardSums.attach.join(', ') : 'No attachment') + '</div>';
 
   var rows=VMILES.map(function(x){
     var p=o['plan_'+x.k],a=o['act_'+x.k];
@@ -7583,7 +7599,6 @@ var FIXED_BLOCKS = [
   { key:'_photo',       name:'Photo',        width:66,  mandatory:false },
   { key:'_po',          name:'PO',           width:90,  mandatory:false },
   { key:'_confirm_date',name:'Order Confirmed Date', width:85,  wrap:true, mandatory:false },
-  { key:'_attachments', name:'Attachments',  width:100, mandatory:false },
   { key:'_buyer',       name:'Buyer',        width:95,  mandatory:false },
   { key:'_house',       name:'House',        width:80,  wrap:true, mandatory:false },
   { key:'_gauge',       name:'Gauge',        width:58,  mandatory:false },
@@ -7593,9 +7608,9 @@ var FIXED_BLOCKS = [
   { key:'_fob',         name:'FOB',          width:66,  mandatory:false },
   { key:'_value',       name:'Total Value',  width:96,  wrap:true, mandatory:false },
   { key:'_ship',        name:'Ship Date',    width:78,  wrap:true, mandatory:false },
-  { key:'_days',        name:'Days Left',    width:52,  mandatory:false },
+  { key:'_days',        name:'Days Left',    width:70,  mandatory:false },
   { key:'_yarn',        name:'Yarn / Fabric',width:130, mandatory:false },
-  { key:'_attachment',  name:'Attachment',   width:120, wrap:true, mandatory:false },
+  { key:'_attachment',  name:'Garment Attachment', width:120, wrap:true, mandatory:false },
   { key:'_accessories', name:'Accessories',  width:110, mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
@@ -7667,8 +7682,9 @@ var DEFAULT_COLUMN_ORDER = [
   '_serial','_style','_buyer','_house','_po','article_no','_confirm_date','_photo',
   '_qty','_fob','_value','country','season','department','_ship','_gauge','_colour',
   '_composition','avg_weight','sales_contract','lc_no','lc_status','_approvals',
-  '_attachments','_accessories','_attachment','_yarn','internal_pp','buyer_pp','khata_sign','_production'
+  '_accessories','_yarn','internal_pp','buyer_pp','khata_sign','_production'
 ];
+DEFAULT_COLUMN_ORDER.splice(DEFAULT_COLUMN_ORDER.indexOf('_accessories'), 0, '_attachment');
 // Append any remaining keys (not explicitly listed above) in their natural definition order
 (function() {
   var seen = {}; DEFAULT_COLUMN_ORDER.forEach(function(k){ seen[k]=true; });
