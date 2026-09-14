@@ -1210,7 +1210,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.15</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.16</p>
   </div>
 </div>
 
@@ -1245,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.15</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.16</div>
 </div>
 
 
@@ -2714,7 +2714,7 @@ function setView(v) {
     return;
   }
   if (!isJMOverview && S.user.role === 'manager' &&
-      !['dashboard','shipped','requests','my-requests','admin','inbox'].includes(v) &&
+      !['dashboard','shipped','requests','my-requests','admin','inbox','laying-goods'].includes(v) &&
       v !== S.user.id) {
     if (!S.myAssignments.includes(v)) {
       toast('You are not assigned to this merchant');
@@ -3504,6 +3504,7 @@ function updateSaveButtonLabel() {
 }
 
 async function saveMultiPOOrders() {
+  if (!can('edit', orderForMerchant)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var buyerVal = ($('o_buyer')&&$('o_buyer').value)||'';
   const style = $('o_style').value.trim().toUpperCase();
 
@@ -3732,6 +3733,7 @@ async function buildRepeatChain(prevStyle, season, price, qty) {
 }
 
 async function saveOrder() {
+  if (!can('edit', orderForMerchant)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var isMultiPO = (document.querySelector('input[name="o_multi_po"]:checked')||{}).value === 'yes';
   if (isMultiPO && !_editOrderId) return saveMultiPOOrders();
 
@@ -4222,6 +4224,7 @@ function openTNA(ordId, division) {
 
 async function setPlanDate(ordId, field, val, division, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  if (!can('edit', o ? o.merchant_id : null)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   const oldVal = o ? (o[field] || null) : null;
   const patch = { id: ordId, [field]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
 
@@ -4248,6 +4251,7 @@ async function setPlanDate(ordId, field, val, division, isUndo) {
 
 async function setAct(ordId, mKey, val, division, skipModalRefresh, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
+  if (!can('edit', o ? o.merchant_id : null)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   const oldVal = o ? (o['act_' + mKey] || null) : null;
   const patch = { id: ordId, ['act_' + mKey]: val || null, updated_at: new Date().toISOString(), updated_by: S.user.name };
 
@@ -4535,7 +4539,7 @@ async function renderMaterialModalBody() {
   const totalBk = bookings.reduce(function(s,b){return s+(b.qty||0);},0);
   const totalRc = receipts.reduce(function(s,r){return s+(r.qty||0);},0);
   const pct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
-  const canEdit = ['management','admin','hod'].includes(S.user.role) || S.user.id === _yarnMerchantId || actsAsMerchant(_yarnMerchantId);
+  const canEdit = can('edit', _yarnMerchantId);
   const materialLabel = _yarnMaterialType === 'attachment_fabric' ? 'Attachment Fabric' : 'Yarn';
 
   var overallHtml = '<div class="yarn-overall-card">'
@@ -4609,6 +4613,7 @@ function openAddBookingForm() {
 }
 
 async function saveNewBooking() {
+  if (!can('edit', _yarnMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var supplier = $('yb-supplier').value.trim();
   var comp = $('yb-composition').value;
   var date = $('yb-date').value;
@@ -4630,6 +4635,7 @@ async function saveNewBooking() {
 }
 
 async function deleteBooking(id) {
+  if (!can('edit', _yarnMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var rcRes = await db.from('yarn_receipts').select('id').eq('booking_id', id);
   var hasReceipts = (rcRes.data||[]).length > 0;
   var msg = hasReceipts
@@ -4658,6 +4664,7 @@ function addReceiptRow(bookingId) {
   if (target) target.outerHTML = '<div id="yarn-add-row-'+bookingId+'">' + html + '</div>';
 }
 async function saveNewReceipt(bookingId) {
+  if (!can('edit', _yarnMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var date = $('yb-new-rc-date-'+bookingId).value;
   var qty = parseFloat($('yb-new-rc-qty-'+bookingId).value) || 0;
   if (!date || !qty) { toast('Date and quantity required', 'err'); return; }
@@ -4669,6 +4676,7 @@ async function saveNewReceipt(bookingId) {
   await renderMaterialModalBody();
 }
 async function deleteReceipt(id) {
+  if (!can('edit', _yarnMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   if (!confirm('Remove this inhouse entry?')) return;
   await db.from('yarn_receipts').delete().eq('id', id);
   toast('Removed', 'ok-t');
@@ -4856,13 +4864,14 @@ async function openApvFlow(ordId, type, division) {
       if (!o) o = (S.boardCache[mid]||[]).find(function(x){return x.id===ordId;});
     });
     o = o || {};
+    S_apv.merchantId = o.merchant_id || null;
     if (!$('apvf-title')) { console.error('apvf-title missing'); toast('Modal not found — refresh page', 'err'); return; }
     $('apvf-title').textContent = label;
     $('apvf-sub').textContent = (o.style||'') + (o.buyer ? ' — ' + o.buyer : '') + (o.qty ? ' · ' + fmt(o.qty) + ' pcs' : '');
     var res = await db.from('approvals').select('*').eq('order_id', ordId).eq('type', type).order('round');
     S_apv.rounds = res.data || [];
     var latest = S_apv.rounds.length ? S_apv.rounds[S_apv.rounds.length - 1] : null;
-    var canAct = ['admin','merchant','manager'].includes(S.user.role) || S.user.id === S.view;
+    var canAct = can('edit', S_apv.merchantId);
     if (!latest || latest.rejected_on) {
       S_apv.step = canAct ? 'submit' : 'history';
     } else if (latest.approved_on) {
@@ -4930,7 +4939,7 @@ function renderApvModal() {
   var latest=S_apv.rounds.length?S_apv.rounds[S_apv.rounds.length-1]:null;
   var nextRound=latest?latest.round+1:1;
   var today0=new Date().toISOString().slice(0,10);
-  var canAct=['admin','merchant','manager'].includes(S.user.role)||S.user.id===S.view;
+  var canAct=can('edit', S_apv.merchantId);
 
   if (S_apv.step==='submit') {
     var rLabel=S_apv.rounds.length?'Resubmit — Round '+nextRound:'Submit — Round 1';
@@ -4989,6 +4998,7 @@ function apvBackToOutcome() {
 }
 
 async function apvDoSubmit() {
+  if (!can('edit', S_apv.merchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var dt = document.getElementById('apv-submit-date');
   var date = dt ? dt.value : '';
   if (!date) { toast('Please pick a date', 'err'); return; }
@@ -5007,6 +5017,7 @@ async function apvDoSubmit() {
 }
 
 async function apvDoResult(outcome) {
+  if (!can('edit', S_apv.merchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var dt = document.getElementById('apv-result-date');
   var date = dt ? dt.value : '';
   if (!date) { toast('Please pick a date', 'err'); return; }
@@ -5063,6 +5074,7 @@ async function apvDoResult(outcome) {
 // Scoped to the latest round deliberately: undoing an older round while newer
 // ones already exist on top of it isn't a coherent single action.
 async function apvUndoLatest() {
+  if (!can('edit', S_apv.merchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   if (!confirm('Undo this outcome? It will go back to awaiting a decision.')) return;
   var latest = S_apv.rounds[S_apv.rounds.length - 1];
   if (!latest) return;
@@ -5586,13 +5598,14 @@ const ACC_ITEMS_DEF = [
   {k:'other',        n:'Other'},
 ];
 
-var _accOrdId = null;
+var _accOrdId = null, _accMerchantId = null;
 
 async function openAccessoriesModal(ordId) {
   _accOrdId = ordId;
   var o = null;
   Object.keys(S.boardCache).forEach(function(m){ if(!o) o=(S.boardCache[m]||[]).find(function(x){return x.id===ordId;}); });
   o = o || S.orders.find(function(x){return x.id===ordId;}) || {};
+  _accMerchantId = o.merchant_id || null;
   $('acc-title').textContent = 'Accessories \u2014 ' + (o.style||'');
   $('acc-sub').textContent = (o.buyer||'') + (o.qty ? ' \u00b7 ' + fmt(o.qty) + ' pcs' : '');
   $('acc-body').innerHTML = '<div class="loading"><span class="spin"></span></div>';
@@ -5602,7 +5615,7 @@ async function openAccessoriesModal(ordId) {
   const existing = {};
   (data || []).forEach(function(a){ existing[a.item_type] = a; });
 
-  const canEdit = S.user.role === 'management' || S.user.id === (o.merchant_id || S.view);
+  const canEdit = can('edit', _accMerchantId);
 
   var html = '<table style="width:100%;border-collapse:collapse;font-size:13px">'
     + '<thead><tr>'
@@ -5662,6 +5675,8 @@ async function openAccessoriesModal(ordId) {
 }
 
 async function saveAccField(ordId, itemType, field, value) {
+  var accO = findOrderAnywhere(ordId);
+  if (!can('edit', accO ? accO.merchant_id : null)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   var update = {order_id: ordId, item_type: itemType};
   update[field] = value || null;
   const { error } = await db.from('accessories').upsert(update, { onConflict: 'order_id,item_type' });
