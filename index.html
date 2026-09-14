@@ -1210,7 +1210,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.19</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.20</p>
   </div>
 </div>
 
@@ -1245,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.19</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.20</div>
 </div>
 
 
@@ -1559,6 +1559,15 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h" style="flex-shrink:0"><div><h3 id="mat-title">Yarn Booking</h3><div class="msub" id="mat-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-material')">Close</button></div>
     <div class="m-b" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
+<!-- === PP COLOUR APPROVAL MODAL === -->
+<div class="ov" id="ov-pp-colour" onclick="if(event.target===this)closeModal('ov-pp-colour')">
+  <div class="modal" style="max-width:640px;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3 id="ppc-title">PP Approval</h3><div class="msub" id="ppc-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-pp-colour')">Close</button></div>
+    <div class="m-b" id="ppc-body" style="flex:1;overflow-y:auto;min-height:0"></div>
   </div>
 </div>
 
@@ -2452,12 +2461,13 @@ async function loadBoardOrders(merchantId) {
   if (ids.length) {
     const yarnByOrder = await loadYarnSummaryByOrder(merchantId, data || []);
     const attachByOrder = await loadAttachmentsByOrder(merchantId, data || []);
+    const ppByOrder = await loadPPSummaryByOrder(merchantId, data || []);
     const [ap, acc] = await Promise.all([
       db.from('approvals').select('*').in('order_id', ids).order('round'),
       db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
     ]);
     const sums = {};
-    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [] }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
     (ap.data || []).forEach(a => {
       if (sums[a.order_id]) {
         if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -2531,12 +2541,13 @@ async function reloadSummaries(merchantId) {
   if (!ids.length) return;
   const yarnByOrder = await loadYarnSummaryByOrder(merchantId, orders);
   const attachByOrder = await loadAttachmentsByOrder(merchantId, orders);
+  const ppByOrder = await loadPPSummaryByOrder(merchantId, orders);
   const [ap, acc] = await Promise.all([
     db.from('approvals').select('*').in('order_id', ids).order('round'),
     db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
   ]);
   const sums = {};
-  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [] }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
   (ap.data || []).forEach(a => {
     if (sums[a.order_id]) {
       if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -3198,7 +3209,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     const ldChip = apvChip(sum, 'labdip',  o.id, division, isMerchant, null);
     const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, null);
-    const ppChip = apvChip(sum, 'pp',      o.id, division, isMerchant, o.plan_pp) + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
+    const ppChip = ppColourPill(sum.pp, o.id, o.merchant_id, o.style) + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
     const acChip = accChip(sum, o.id, isMerchant);
 
@@ -4490,6 +4501,302 @@ function downloadPDF() {
 var _yarnMerchantId = null, _yarnStyle = null, _yarnUnit = 'lbs', _yarnCompositions = [];
 var _yarnHasAttachment = false, _yarnMaterialType = 'yarn';
 
+// ─── PP APPROVAL — style-wide, tracked per colour ───
+// Every colour entered on any PO of a style gets its own independent approval
+// track (submit/approve/reject/undo), mirrored the same way as Yarn across
+// every PO. The TNA Yarn-style link fires only when every colour is approved.
+function getStyleColours(merchantId, style) {
+  var upper = (style||'').toUpperCase();
+  var list = [];
+  function collect(o){ if((o.style||'').toUpperCase()===upper && o.merchant_id===merchantId){ var cs=[]; try{cs=o.colours_json?JSON.parse(o.colours_json):[];}catch(e){cs=[];} if(!cs.length && o.color) cs=o.color.split(',').map(function(s){return s.trim();}).filter(Boolean); cs.forEach(function(c){list.push(c);}); } }
+  (S.boardCache[merchantId]||[]).forEach(collect);
+  (S.archive||[]).forEach(collect);
+  (S.layingGoods||[]).forEach(collect);
+  return Array.from(new Set(list));
+}
+
+// One row per colour per round. This fetches every round for every colour of
+// this style in one query, then reduces to "latest round per colour" to get
+// current status — same latest-round-wins pattern as the generic approvals table.
+async function getPPColourData(merchantId, style) {
+  var upper = (style||'').toUpperCase();
+  var colours = getStyleColours(merchantId, upper);
+  const res = await db.from('pp_colour_approvals').select('*').eq('merchant_id', merchantId).eq('style', upper).order('round');
+  var rows = res.data || [];
+  var byColour = {};
+  colours.forEach(function(c){ byColour[c] = { colour: c, rounds: [] }; });
+  rows.forEach(function(r){
+    if (!byColour[r.colour]) byColour[r.colour] = { colour: r.colour, rounds: [] }; // colour removed from orders but has history — keep visible
+    byColour[r.colour].rounds.push(r);
+  });
+  return Object.keys(byColour).map(function(c){
+    var entry = byColour[c];
+    var latest = entry.rounds.length ? entry.rounds[entry.rounds.length-1] : null;
+    var status = 'not_submitted';
+    if (latest) {
+      if (latest.approved_on) status = 'approved';
+      else if (latest.rejected_on) status = 'rejected';
+      else if (latest.submitted_on) status = 'awaiting';
+    }
+    return { colour: c, rounds: entry.rounds, latest: latest, status: status };
+  });
+}
+
+function ppSummaryFromColourData(colourData) {
+  var total = colourData.length;
+  var approved = colourData.filter(function(c){ return c.status==='approved'; }).length;
+  var submittedOrPast = colourData.filter(function(c){ return c.status==='awaiting' || c.status==='approved'; }).length;
+  return { total: total, approved: approved, submitted: submittedOrPast };
+}
+
+// Style-wide summary for every order on the board in ONE pass (not one query
+// per row) — mirrors loadYarnSummaryByOrder's approach exactly.
+async function loadPPSummaryByOrder(merchantId, orders) {
+  var styles = Array.from(new Set(orders.map(function(o){ return (o.style||'').toUpperCase(); }).filter(Boolean)));
+  var result = {};
+  orders.forEach(function(o){ result[o.id] = { total: 0, approved: 0, submitted: 0 }; });
+  if (!styles.length) return result;
+  const res = await db.from('pp_colour_approvals').select('*').eq('merchant_id', merchantId).in('style', styles);
+  var rows = res.data || [];
+  var byStyleColour = {}; // style -> colour -> rounds[]
+  rows.forEach(function(r){
+    var s = (r.style||'').toUpperCase();
+    if (!byStyleColour[s]) byStyleColour[s] = {};
+    if (!byStyleColour[s][r.colour]) byStyleColour[s][r.colour] = [];
+    byStyleColour[s][r.colour].push(r);
+  });
+  var summaryByStyle = {};
+  styles.forEach(function(s){
+    var colours = getStyleColours(merchantId, s);
+    var approved = 0, submitted = 0;
+    colours.forEach(function(c){
+      var roundsForC = ((byStyleColour[s]||{})[c]||[]).slice().sort(function(a,b){ return (a.round||0)-(b.round||0); });
+      var latest = roundsForC.length ? roundsForC[roundsForC.length-1] : null;
+      if (latest && latest.approved_on) { approved++; submitted++; }
+      else if (latest && latest.submitted_on && !latest.rejected_on) { submitted++; }
+    });
+    summaryByStyle[s] = { total: colours.length, approved: approved, submitted: submitted };
+  });
+  orders.forEach(function(o){
+    var s = (o.style||'').toUpperCase();
+    if (summaryByStyle[s]) result[o.id] = summaryByStyle[s];
+  });
+  return result;
+}
+
+// Fires only when EVERY colour is approved — the date used is the LATEST
+// approval among all colours (i.e. the day the style genuinely finished, not
+// the day any single colour finished). Mirrors to every PO of the style.
+async function recomputePPActual(merchantId, style) {
+  var upper = (style||'').toUpperCase();
+  var colourData = await getPPColourData(merchantId, upper);
+  var completedOn = null;
+  if (colourData.length && colourData.every(function(c){ return c.status==='approved'; })) {
+    var dates = colourData.map(function(c){ return c.latest.approved_on; }).filter(Boolean);
+    completedOn = dates.sort().slice(-1)[0]; // latest date = the last colour to finish
+  }
+  var orders = (S.boardCache[merchantId] || []).filter(function(o){ return (o.style||'').toUpperCase() === upper; });
+  for (var j = 0; j < orders.length; j++) {
+    await setMilestoneActual(orders[j].id, 'pp', completedOn);
+  }
+}
+
+function ppColourPill(ppSum, ordId, merchantId, style) {
+  var total = ppSum ? ppSum.total : 0;
+  var approved = ppSum ? ppSum.approved : 0;
+  var submitted = ppSum ? ppSum.submitted : 0;
+  var oc = "event.stopPropagation();openPPColourModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "')";
+  if (!total) return '<button class="acc-pill not-booked" onclick="' + oc + '">No colours</button>';
+  if (approved === total) return '<button class="acc-pill approved" onclick="' + oc + '">All approved</button>';
+  if (approved > 0) return '<button class="acc-pill partial" onclick="' + oc + '">' + approved + '/' + total + ' approved</button>';
+  if (submitted === total) return '<button class="acc-pill submitted" onclick="' + oc + '">' + submitted + '/' + total + ' submitted</button>';
+  if (submitted > 0) return '<button class="acc-pill partial" onclick="' + oc + '">' + submitted + '/' + total + ' submitted</button>';
+  return '<button class="acc-pill not-booked" onclick="' + oc + '">Not submitted</button>';
+}
+
+// ─── PP APPROVAL MODAL (colour-wise) ───
+var _ppcMerchantId=null, _ppcStyle=null, _ppcOrdId=null, _ppcCanEdit=false, _ppcColourData=[], _ppcMode='list';
+var _ppcSubmitSelected = {}, _ppcBulkSelected = {};
+
+async function openPPColourModal(ordId, merchantId, style) {
+  _ppcOrdId = ordId; _ppcMerchantId = merchantId; _ppcStyle = style;
+  _ppcCanEdit = can('edit', merchantId);
+  _ppcMode = 'list';
+  _ppcSubmitSelected = {}; _ppcBulkSelected = {};
+  $('ppc-title').textContent = 'PP Approval \u2014 ' + style;
+  $('ppc-sub').textContent = 'Shared across every PO of this style \u2014 tracked per colour';
+  $('ppc-body').innerHTML = '<div class="exp-loading">Loading\u2026</div>';
+  openModal('ov-pp-colour');
+  await renderPPColourModal();
+}
+
+async function renderPPColourModal() {
+  _ppcColourData = await getPPColourData(_ppcMerchantId, _ppcStyle);
+  var summary = ppSummaryFromColourData(_ppcColourData);
+  var pct = summary.total ? Math.round(summary.approved/summary.total*100) : 0;
+
+  var overallHtml = '<div class="yarn-overall-card">'
+    + '<div class="yarn-overall-top"><div class="yarn-overall-lbl">Colours Approved</div><div class="yarn-overall-nums">' + summary.approved + ' / ' + summary.total + '</div></div>'
+    + '<div class="yarn-bar-track"><div class="yarn-bar-fill ' + (summary.total&&summary.approved===summary.total?'complete':summary.approved>0?'partial':'empty') + '" style="width:' + pct + '%"></div></div>'
+    + '</div>';
+
+  var bodyHtml = _ppcMode === 'submit-pick' ? renderPPSubmitPicker() : renderPPColourList();
+  $('ppc-body').innerHTML = overallHtml + bodyHtml;
+}
+
+function renderPPColourList() {
+  var eligibleColours = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+  var actionBar = '';
+  if (_ppcCanEdit) {
+    var btns = [];
+    if (eligibleColours.length) btns.push('<button class="btn pri" onclick="ppcStartSubmit()">Submit Sample(s)</button>');
+    var bulkCount = Object.keys(_ppcBulkSelected).filter(function(c){return _ppcBulkSelected[c];}).length;
+    if (bulkCount > 0) {
+      btns.push('<button class="btn sm" style="background:var(--green);border-color:var(--green);color:#fff" onclick="ppcBulkResult(\'approve\')">&#x2713; Approve ' + bulkCount + ' selected</button>');
+      btns.push('<button class="btn sm danger" onclick="ppcBulkResult(\'reject\')">&#x2717; Reject ' + bulkCount + ' selected</button>');
+    }
+    if (btns.length) actionBar = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">' + btns.join('') + '</div>';
+  }
+  if (!_ppcColourData.length) return actionBar + '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No colours found on this style\u2019s orders yet.</div>';
+  return actionBar + _ppcColourData.map(renderPPColourCard).join('');
+}
+
+function renderPPColourCard(c) {
+  var statusBadge = c.status==='approved' ? '<span class="chip ok">Approved</span>'
+    : c.status==='rejected' ? '<span class="chip bad">Rejected</span>'
+    : c.status==='awaiting' ? '<span class="chip warn">Awaiting outcome</span>'
+    : '<span class="chip run">Not submitted</span>';
+
+  var checkbox = (_ppcCanEdit && c.status==='awaiting')
+    ? '<input type="checkbox" ' + (_ppcBulkSelected[c.colour]?'checked':'') + ' onchange="ppcToggleBulk(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px;margin-right:8px;flex-shrink:0">'
+    : '';
+
+  var detailLine = '<div style="color:var(--muted);font-size:12px">Never submitted</div>';
+  if (c.status==='awaiting' && c.latest) {
+    detailLine = '<div style="font-size:12px;color:var(--muted)">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
+      + (_ppcCanEdit ? '<div style="display:flex;gap:6px;margin-top:8px">'
+        + '<button class="btn sm" style="background:var(--green);border-color:var(--green);color:#fff" onclick="ppcSingleResult(\''+jsAttrEsc(c.colour)+'\',\'approve\')">&#x2713; Approve</button>'
+        + '<button class="btn sm danger" onclick="ppcSingleResult(\''+jsAttrEsc(c.colour)+'\',\'reject\')">&#x2717; Reject</button>'
+        + '</div>' : '');
+  } else if (c.status==='approved' && c.latest) {
+    detailLine = '<div style="font-size:12px;color:var(--green);font-weight:600">&#x2713; Approved ' + short(c.latest.approved_on) + '</div>'
+      + (_ppcCanEdit ? '<button class="btn sm ghost" style="margin-top:6px" onclick="ppcUndo(\''+jsAttrEsc(c.colour)+'\')">&#x21A9; Undo</button>' : '');
+  } else if (c.status==='rejected' && c.latest) {
+    detailLine = '<div style="font-size:12px;color:var(--red)">&#x2717; Rejected ' + short(c.latest.rejected_on) + ' \u00b7 round ' + c.latest.round + ' \u2014 eligible to resubmit</div>';
+  }
+
+  var historyHtml = '';
+  if (c.rounds.length > 1) {
+    historyHtml = '<details style="margin-top:8px"><summary style="font-size:11px;color:var(--muted);cursor:pointer">' + (c.rounds.length-1) + ' earlier round' + (c.rounds.length-1>1?'s':'') + '</summary>'
+      + c.rounds.slice(0,-1).map(function(r){
+          var line = r.approved_on ? 'Approved ' + short(r.approved_on) : r.rejected_on ? 'Rejected ' + short(r.rejected_on) : 'Submitted ' + short(r.submitted_on) + ' (no outcome recorded)';
+          return '<div style="font-size:11px;color:var(--muted);padding:3px 0">Round ' + r.round + ': ' + line + '</div>';
+        }).join('') + '</details>';
+  }
+
+  return '<div class="yarn-booking-card">'
+    + '<div class="yarn-booking-hdr"><div style="display:flex;align-items:center">' + checkbox + '<span class="yarn-booking-supplier">' + htmlEsc(c.colour) + '</span></div>' + statusBadge + '</div>'
+    + detailLine + historyHtml + '</div>';
+}
+
+function ppcStartSubmit() { _ppcMode = 'submit-pick'; _ppcSubmitSelected = {}; renderPPColourModal(); }
+function ppcCancelSubmit() { _ppcMode = 'list'; renderPPColourModal(); }
+
+function renderPPSubmitPicker() {
+  var eligible = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+  var today0 = new Date().toISOString().slice(0,10);
+  var rows = eligible.map(function(c){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer">'
+      + '<input type="checkbox" ' + (_ppcSubmitSelected[c.colour]?'checked':'') + ' onchange="ppcToggleSubmitSel(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px">'
+      + '<span style="font-weight:600;flex:1">' + htmlEsc(c.colour) + '</span>'
+      + (c.status==='rejected' ? '<span class="chip bad" style="font-size:9px">Resubmitting</span>' : '')
+      + '</label>';
+  }).join('');
+  return '<div class="yarn-form-card">'
+    + '<div class="yarn-form-title">Select colours to submit</div>'
+    + '<div style="margin-bottom:10px"><button type="button" class="btn sm" onclick="ppcSelectAllSubmit()">Select all</button> <button type="button" class="btn sm" onclick="ppcClearSubmit()">Clear</button></div>'
+    + rows
+    + '<div class="f" style="margin-top:10px"><label>Submission Date</label><input type="date" id="ppc-submit-date" value="'+today0+'" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>'
+    + '<div style="display:flex;gap:8px;margin-top:12px">'
+    + '<button class="btn" onclick="ppcCancelSubmit()">Cancel</button>'
+    + '<button class="btn pri" onclick="ppcConfirmSubmit()">Submit Selected</button>'
+    + '</div></div>';
+}
+function ppcToggleSubmitSel(colour, checked) { if(checked) _ppcSubmitSelected[colour]=true; else delete _ppcSubmitSelected[colour]; }
+function ppcSelectAllSubmit() {
+  _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; }).forEach(function(c){ _ppcSubmitSelected[c.colour]=true; });
+  renderPPColourModal();
+}
+function ppcClearSubmit() { _ppcSubmitSelected={}; renderPPColourModal(); }
+
+async function ppcConfirmSubmit() {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var date = $('ppc-submit-date').value;
+  var selected = Object.keys(_ppcSubmitSelected).filter(function(c){return _ppcSubmitSelected[c];});
+  if (!date || !selected.length) { toast('Pick a date and at least one colour', 'err'); return; }
+  for (var i=0;i<selected.length;i++) {
+    var c = selected[i];
+    var cEntry = _ppcColourData.find(function(x){return x.colour===c;});
+    var nextRound = cEntry && cEntry.latest ? (cEntry.latest.round||0)+1 : 1;
+    await db.from('pp_colour_approvals').insert({ merchant_id:_ppcMerchantId, style:_ppcStyle, colour:c, round:nextRound, submitted_on:date, created_by:S.user.name });
+  }
+  toast(selected.length + ' colour(s) submitted', 'ok-t');
+  _ppcMode='list';
+  await recomputePPActual(_ppcMerchantId, _ppcStyle);
+  await reloadSummaries(_ppcMerchantId);
+  renderBoard(S.view);
+  await renderPPColourModal();
+}
+
+function ppcToggleBulk(colour, checked) { if(checked) _ppcBulkSelected[colour]=true; else delete _ppcBulkSelected[colour]; renderPPColourModal(); }
+
+async function ppcSingleResult(colour, outcome) {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
+  if (!cEntry || !cEntry.latest) return;
+  var today0 = new Date().toISOString().slice(0,10);
+  var upd = outcome==='approve' ? {approved_on:today0} : {rejected_on:today0};
+  await db.from('pp_colour_approvals').update(upd).eq('id', cEntry.latest.id);
+  toast(outcome==='approve'?'Approved':'Rejected', outcome==='approve'?'ok-t':'');
+  await recomputePPActual(_ppcMerchantId, _ppcStyle);
+  await reloadSummaries(_ppcMerchantId);
+  renderBoard(S.view);
+  await renderPPColourModal();
+}
+
+async function ppcBulkResult(outcome) {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var selected = Object.keys(_ppcBulkSelected).filter(function(c){return _ppcBulkSelected[c];});
+  if (!selected.length) return;
+  if (!confirm((outcome==='approve'?'Approve':'Reject') + ' ' + selected.length + ' colour(s)?')) return;
+  var today0 = new Date().toISOString().slice(0,10);
+  for (var i=0;i<selected.length;i++) {
+    var cEntry = _ppcColourData.find(function(x){return x.colour===selected[i];});
+    if (!cEntry || !cEntry.latest) continue;
+    var upd = outcome==='approve' ? {approved_on:today0} : {rejected_on:today0};
+    await db.from('pp_colour_approvals').update(upd).eq('id', cEntry.latest.id);
+  }
+  toast(selected.length + ' colour(s) ' + (outcome==='approve'?'approved':'rejected'), 'ok-t');
+  _ppcBulkSelected = {};
+  await recomputePPActual(_ppcMerchantId, _ppcStyle);
+  await reloadSummaries(_ppcMerchantId);
+  renderBoard(S.view);
+  await renderPPColourModal();
+}
+
+async function ppcUndo(colour) {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (!confirm('Undo this colour\u2019s approval? It will go back to awaiting a decision.')) return;
+  var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
+  if (!cEntry || !cEntry.latest) return;
+  await db.from('pp_colour_approvals').update({approved_on:null}).eq('id', cEntry.latest.id);
+  toast('Undone', 'ok-t');
+  await recomputePPActual(_ppcMerchantId, _ppcStyle);
+  await reloadSummaries(_ppcMerchantId);
+  renderBoard(S.view);
+  await renderPPColourModal();
+}
+
 function getStyleCompositions(merchantId, style) {
   var upper = (style||'').toUpperCase();
   var list = [];
@@ -4731,7 +5038,7 @@ async function setMilestoneActual(orderId, milesKey, dateVal) {
 // milestones (see MILES above). Fit and Lab Dip are separate garment-development
 // approvals — not TNA milestones — so they must NEVER auto-set a milestone's
 // actual date, no matter how loosely related they might seem.
-var APV_TO_MILES = { pp: 'pp', final_insp: 'insp' };
+var APV_TO_MILES = { final_insp: 'insp' }; // PP now runs through the style-wide colour system (recomputePPActual), not the generic flow
 
 // One-time maintenance: fills in act_pp/act_insp for orders where PP or Final
 // Inspection was approved BEFORE the auto-link feature existed (so that approve
