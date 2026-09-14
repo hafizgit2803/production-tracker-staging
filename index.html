@@ -1210,7 +1210,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.16</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.19</p>
   </div>
 </div>
 
@@ -1245,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.16</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.19</div>
 </div>
 
 
@@ -1568,7 +1568,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h"><div><h3>Attachment</h3><div class="msub" id="attach-edit-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-attach-edit')">Close</button></div>
     <div class="m-b">
-      <div style="display:flex;gap:6px">
+      <div id="attach-edit-add-row" style="display:flex;gap:6px">
         <input id="attach-edit-new" list="dl_attachment" style="flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" placeholder="Choose or type a new attachment type" onkeydown="if(event.key==='Enter'){event.preventDefault();addAttachEditTag();}">
         <button type="button" class="btn sm" onclick="addAttachEditTag()">+ Add</button>
       </div>
@@ -4040,6 +4040,7 @@ async function editOrder(orderId) {
 async function setProd(ordId, key, val, isUndo) {
   const o = S.orders.find(x => x.id === ordId) || findOrderAnywhere(ordId);
   if (!o) return;
+  if (!can('edit', o.merchant_id)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   const oldVal = o[key] || 0;
   // No longer capped at order quantity — overproduction is a real, valid state now
   // (shown in the balance row), just guarded against an obvious fat-finger typo.
@@ -4737,6 +4738,7 @@ var APV_TO_MILES = { pp: 'pp', final_insp: 'insp' };
 // action never had a chance to set it). Only ever fills a BLANK field — never
 // overwrites a value that's already there, so it's safe to run more than once.
 async function backfillTNAApprovalLinks() {
+  if (S.user.role !== 'admin') { toast('You don\u2019t have permission to do this', 'err'); return; }
   if (!confirm('Sync TNA actual dates from approval history?\n\nThis only fills in BLANK PP/Final Inspection actual dates from already-approved rounds. It will never overwrite a date that\'s already set.')) return;
   toast('Scanning approvals\u2026');
   var res = await db.from('approvals').select('*').in('type', ['pp','final_insp']).not('approved_on', 'is', null);
@@ -6739,20 +6741,26 @@ function renderMessageThreadBody(thread) {
   if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
 }
 async function markMessageActionDone(threadId) {
+  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (!t) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (t.requesterId === S.user.id) { toast('Only the recipient can mark this done', 'err'); return; }
   await db.from('messages').update({ action_status: 'done' }).eq('id', threadId);
   await loadMessages();
   renderRail();
-  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (t) renderMessageThreadBody(t);
+  var t2 = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (t2) renderMessageThreadBody(t2);
   if (S.view === 'inbox') renderInboxTabBody();
   toast('Marked as done', 'ok-t');
 }
 async function resolveMessageAction(threadId) {
+  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (!t) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (t.requesterId !== S.user.id) { toast('Only the person who raised this can resolve it', 'err'); return; }
   await db.from('messages').update({ action_status: 'resolved' }).eq('id', threadId);
   await loadMessages();
   renderRail();
-  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (t) renderMessageThreadBody(t);
+  var t2 = getMyThreads().find(function(x){ return x.thread_id === threadId; });
+  if (t2) renderMessageThreadBody(t2);
   if (S.view === 'inbox') renderInboxTabBody();
   toast('Resolved', 'ok-t');
 }
@@ -8143,7 +8151,7 @@ function renderApprovalFieldCell(field, orderId) {
   var sum = (S.boardSummaries[o.merchant_id]||{})[orderId] || {ap:{}};
   var merch = S.users.find(function(u){return u.id===o.merchant_id;});
   var division = merch ? (merch.division||'sweater') : 'sweater';
-  var canUpd = actsAsMerchant(o.merchant_id) || S.user.role==='admin' || S.user.role==='manager';
+  var canUpd = can('edit', o.merchant_id);
   var planDate = cfg.planKey ? o[cfg.planKey] : (cfg.planFieldKey ? getFieldValue(orderId, cfg.planFieldKey) : null);
   var chip = apvChip(sum, apvType, orderId, division, canUpd, planDate);
   var dateHtml = '';
@@ -8219,6 +8227,8 @@ function findOrderAnywhere(orderId) {
 
 async function onFieldInputChange(el) {
   var orderId = el.dataset.oid, key = el.dataset.key, val = el.value;
+  var fcOrd = findOrderAnywhere(orderId);
+  if (!can('edit', fcOrd ? fcOrd.merchant_id : null)) { toast('You don\u2019t have permission to do this', 'err'); return; }
   if (key === 'season' && val) {
     val = val.toUpperCase();
     el.value = val;
@@ -8243,68 +8253,79 @@ function buildFieldDataCells(fields, orderId, canEdit) {
 
 // === AVERAGE WEIGHT MODAL ===
 var _awOrderId = null;
+var _awCanEdit = false;
 var _awSizes = []; // [{size:'XS', weight:2.5}, ...] — reference breakdown only, doesn't drive the average
 var _awAvg = '';   // the actual contract weight, agreed with the buyer, typed in directly
 
 function openAvgWeightModal(orderId) {
   _awOrderId = orderId;
+  var awOrd = findOrderAnywhere(orderId);
+  _awCanEdit = can('edit', awOrd ? awOrd.merchant_id : null);
   var raw = getFieldValue(orderId, 'avg_weight_detail');
   try { _awSizes = raw ? JSON.parse(raw) : []; } catch(e) { _awSizes = []; }
   _awAvg = getFieldValue(orderId, 'avg_weight') || '';
   renderAvgWeightModal();
   openModal('ov-avg-weight');
-  setTimeout(function(){ var el = $('aw-avg-input'); if (el) el.focus(); }, 60);
+  if (_awCanEdit) setTimeout(function(){ var el = $('aw-avg-input'); if (el) el.focus(); }, 60);
 }
 
 function renderAvgWeightModal() {
+  var dis = _awCanEdit ? '' : ' disabled';
   var rows = _awSizes.map(function(s, i) {
     return '<div class="aw-size-row">'
-      + '<input type="text" placeholder="Size (e.g. XS, 8-9Y)" value="' + (s.size||'').replace(/"/g,'&quot;') + '" data-idx="' + i + '" data-field="size" onchange="updAwSize(this)" style="flex:1">'
-      + '<input type="number" step="0.01" placeholder="Weight (lbs)" value="' + (s.weight||'') + '" data-idx="' + i + '" data-field="weight" onchange="updAwSize(this)" style="width:100px">'
-      + '<button class="btn sm danger" data-idx="' + i + '" onclick="removeAwSize(this)" style="padding:3px 8px">&#x2715;</button>'
+      + '<input type="text" placeholder="Size (e.g. XS, 8-9Y)" value="' + (s.size||'').replace(/"/g,'&quot;') + '" data-idx="' + i + '" data-field="size" onchange="updAwSize(this)" style="flex:1"' + dis + '>'
+      + '<input type="number" step="0.01" placeholder="Weight (lbs)" value="' + (s.weight||'') + '" data-idx="' + i + '" data-field="weight" onchange="updAwSize(this)" style="width:100px"' + dis + '>'
+      + (_awCanEdit ? '<button class="btn sm danger" data-idx="' + i + '" onclick="removeAwSize(this)" style="padding:3px 8px">&#x2715;</button>' : '')
       + '</div>';
   }).join('');
 
   $('aw-body').innerHTML = '<div class="aw-glass-card">'
     + '<div class="aw-glass-lbl">Average Contract Weight</div>'
-    + '<div class="aw-glass-input-wrap"><input type="number" step="0.01" id="aw-avg-input" class="aw-glass-input" value="' + (_awAvg||'') + '" placeholder="0.00" onchange="setAwAvg(this.value)"><span class="aw-glass-unit">lbs</span></div>'
+    + '<div class="aw-glass-input-wrap"><input type="number" step="0.01" id="aw-avg-input" class="aw-glass-input" value="' + (_awAvg||'') + '" placeholder="0.00" onchange="setAwAvg(this.value)"' + dis + '><span class="aw-glass-unit">lbs</span></div>'
     + '<div class="aw-glass-hint">Agreed directly with the buyer \u2014 not necessarily the mathematical average of the sizes below</div>'
     + '</div>'
     + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">Size-wise breakdown <span style="font-weight:400">(reference only \u2014 doesn\u2019t affect the number above)</span></div>'
     + '<div id="aw-size-list">' + (rows || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No sizes added yet</div>') + '</div>'
-    + '<button class="btn sm" onclick="addAwSize()" style="margin-top:10px;width:100%">+ Add size</button>';
+    + (_awCanEdit ? '<button class="btn sm" onclick="addAwSize()" style="margin-top:10px;width:100%">+ Add size</button>' : '');
 }
 
 function setAwAvg(val) {
+  if (!_awCanEdit) return;
   _awAvg = val;
   saveAwAvg();
 }
 async function saveAwAvg() {
+  if (!_awCanEdit) return;
   await saveFieldValue(_awOrderId, 'avg_weight', _awAvg);
   if (S.view && S.boardCache[S.view]) renderBoard(S.view);
 }
 
 function addAwSize() {
+  if (!_awCanEdit) return;
   _awSizes.push({ size:'', weight:'' });
   renderAvgWeightModal();
 }
 function removeAwSize(btn) {
+  if (!_awCanEdit) return;
   var idx = parseInt(btn.dataset.idx);
   _awSizes.splice(idx, 1);
   saveAwSizesDetail();
   renderAvgWeightModal();
 }
 function updAwSize(input) {
+  if (!_awCanEdit) return;
   var idx = parseInt(input.dataset.idx), field = input.dataset.field;
   _awSizes[idx][field] = input.value;
   saveAwSizesDetail();
 }
 async function saveAwSizesDetail() {
+  if (!_awCanEdit) return;
   await saveFieldValue(_awOrderId, 'avg_weight_detail', JSON.stringify(_awSizes));
 }
 
 // === PRODUCTION FLOOR MODAL ===
 var _pfOrderId = null;
+var _pfCanEdit = false;
 var PF_STEPS = [
   {key:'knitting', label:'Knitting'},
   {key:'linking',  label:'Linking'},
@@ -8316,6 +8337,8 @@ var PF_STEPS = [
 
 function openProdFloorModal(orderId) {
   _pfOrderId = orderId;
+  var pfOrd = findOrderAnywhere(orderId);
+  _pfCanEdit = can('edit', pfOrd ? pfOrd.merchant_id : null);
   var raw = getFieldValue(orderId, 'prod_floor_detail');
   var data = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch(e) { data = {}; }
@@ -8326,7 +8349,7 @@ function openProdFloorModal(orderId) {
       return '<option value="' + o + '"' + (o===val?' selected':'') + '>' + o + '</option>';
     }).join('');
     return '<div class="pf-row"><span class="pf-step-name">' + step.label + '</span>'
-      + '<select class="pf-select" data-step="' + step.key + '" onchange="updPfFloor(this)">' + opts + '</select></div>';
+      + '<select class="pf-select" data-step="' + step.key + '" onchange="updPfFloor(this)"' + (_pfCanEdit?'':' disabled') + '>' + opts + '</select></div>';
   }).join('');
 
   $('pf-body').innerHTML = rows;
@@ -8334,6 +8357,7 @@ function openProdFloorModal(orderId) {
 }
 
 async function updPfFloor(sel) {
+  if (!_pfCanEdit) return;
   var raw = getFieldValue(_pfOrderId, 'prod_floor_detail');
   var data = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch(e) { data = {}; }
@@ -8420,15 +8444,19 @@ async function saveStyleAttachments(merchantId, style, types) {
 
 // ─── ATTACHMENT — TABLE CELL EDIT POPOVER ───
 var _attachEditOrdId = null, _attachEditMerchantId = null, _attachEditStyle = null, _attachEditTypes = [];
+var _attachEditCanEdit = false;
 async function openAttachEditPopover(orderId, merchantId, style) {
   _attachEditOrdId = orderId; _attachEditMerchantId = merchantId; _attachEditStyle = style;
+  _attachEditCanEdit = can('edit', merchantId);
   $('attach-edit-sub').textContent = style + ' \u2014 shared across every PO of this style';
   _attachEditTypes = await getStyleAttachments(merchantId, style);
   renderAttachEditTags();
   $('attach-edit-new').value = '';
+  $('attach-edit-add-row').style.display = _attachEditCanEdit ? 'flex' : 'none';
   openModal('ov-attach-edit');
 }
 function addAttachEditTag() {
+  if (!_attachEditCanEdit) return;
   var inp = $('attach-edit-new');
   var val = (inp.value||'').trim();
   if (!val) return;
@@ -8439,6 +8467,7 @@ function addAttachEditTag() {
   commitAttachEdit();
 }
 function removeAttachEditTag(idx) {
+  if (!_attachEditCanEdit) return;
   _attachEditTypes.splice(idx, 1);
   renderAttachEditTags();
   commitAttachEdit();
@@ -8449,11 +8478,13 @@ function renderAttachEditTags() {
   el.innerHTML = _attachEditTypes.length
     ? _attachEditTypes.map(function(a, i) {
         return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);font-weight:600">' + htmlEsc(a)
-          + '<button type="button" data-idx="' + i + '" onclick="removeAttachEditTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button></span>';
+          + (_attachEditCanEdit ? '<button type="button" data-idx="' + i + '" onclick="removeAttachEditTag(this.dataset.idx)" style="background:none;border:none;cursor:pointer;color:inherit;font-size:12px;padding:0">&#x2715;</button>' : '')
+          + '</span>';
       }).join('')
     : '<div style="color:var(--muted);font-size:12px">No attachment</div>';
 }
 async function commitAttachEdit() {
+  if (!_attachEditCanEdit) return;
   await saveStyleAttachments(_attachEditMerchantId, _attachEditStyle, _attachEditTypes);
   await reloadSummaries(_attachEditMerchantId);
   renderBoard(S.view);
