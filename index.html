@@ -1217,7 +1217,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.25</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.26</p>
   </div>
 </div>
 
@@ -1252,7 +1252,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.25</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.26</div>
 </div>
 
 
@@ -4625,13 +4625,15 @@ function colourApprovalPill(sum, ordId, merchantId, style, type) {
   var oc = "event.stopPropagation();openColourApprovalModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "','" + type + "')";
   var cls, label;
   if (!total) { cls='not-sent'; label='No colours'; }
-  else if (approved === total) { cls='approved'; label='&#x2713; All approved'; }
+  else if (approved === total) {
+    cls='approved';
+    label = '&#x2713; All approved' + (completedOn ? '<br><span style="font-weight:600;font-size:9.5px;opacity:.9">'+short(completedOn)+'</span>' : '');
+  }
   else if (approved > 0) { cls='submitted'; label=approved+'/'+total+' approved'; }
   else if (submitted === total) { cls='submitted'; label=submitted+'/'+total+' submitted'; }
   else if (submitted > 0) { cls='submitted'; label=submitted+'/'+total+' submitted'; }
   else { cls='not-sent'; label='Not submitted'; }
-  var dateLine = (total > 0 && approved === total && completedOn) ? '<div class="apv-date-line">'+short(completedOn)+'</div>' : '';
-  return '<button class="apv-chip ' + cls + '" onclick="' + oc + '">' + label + '</button>' + dateLine;
+  return '<button class="apv-chip ' + cls + '" onclick="' + oc + '">' + label + '</button>';
 }
 
 // ─── COLOUR-WISE APPROVAL MODAL (shared by PP and Lab Dip) ───
