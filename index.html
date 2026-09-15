@@ -43,10 +43,7 @@ a{color:var(--accent);text-decoration:none}
 .rail-body::-webkit-scrollbar-track{background:transparent}
 /* Global search */
 #global-search-input:focus{outline:none;border-color:var(--accent)}
-.gsearch-dropdown{position:absolute;top:100%;left:12px;right:12px;z-index:200;background:var(--panel);
-  border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);
-  margin-top:4px;max-height:320px;overflow-y:auto}
-.gsearch-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0EDE4}
+.gsearch-item{padding:12px 20px;cursor:pointer;border-bottom:1px solid #F0EDE4}
 .gsearch-item:last-child{border-bottom:none}
 .gsearch-item:hover{background:var(--accent-soft)}
 .gsearch-style{font-size:13px;font-weight:700;color:var(--ink)}
@@ -54,7 +51,7 @@ a{color:var(--accent);text-decoration:none}
   letter-spacing:.03em;background:#F0EDE4;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle}
 [data-theme="dark"] .gsearch-stage{background:#2A2828}
 .gsearch-meta{font-size:10.5px;color:var(--muted);margin-top:2px}
-.gsearch-empty{padding:12px;font-size:12px;color:var(--muted);text-align:center}
+.gsearch-empty{padding:20px;font-size:12px;color:var(--muted);text-align:center}
 @keyframes rowHighlightFlash{
   0%{background:var(--accent-soft)}
   70%{background:var(--accent-soft)}
@@ -98,13 +95,6 @@ tr.row-highlight td{animation:rowHighlightFlash 2.2s ease-out}
 .stamp .val.stale{color:var(--red)}
 .stamp .sub{font-size:10px;color:var(--muted);text-align:right}
 .act-row{display:flex;gap:8px;margin:8px 0 0;flex-wrap:wrap;align-items:center}
-.board-style-filter{position:relative;margin-left:auto;display:flex;align-items:center}
-.board-style-filter input{padding:7px 30px 7px 10px;border:1.5px solid var(--line);border-radius:8px;
-  background:var(--panel);color:var(--ink);font-size:12.5px;width:180px}
-.board-style-filter input:focus{outline:none;border-color:var(--accent)}
-.board-style-filter-clear{position:absolute;right:6px;background:none;border:none;color:var(--muted);
-  cursor:pointer;font-size:12px;padding:3px}
-.board-style-filter-clear:hover{color:var(--red)}
 .content{flex:1;overflow-y:auto;padding:12px 24px 60px}
 
 /* ── BUTTONS ── */
@@ -114,8 +104,8 @@ tr.row-highlight td{animation:rowHighlightFlash 2.2s ease-out}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.pri:hover{background:#b4573a}
 .btn.sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
-.row-action-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:7px;
-  font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;
+.row-action-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:7px;
+  font-size:11.5px;font-weight:700;cursor:pointer;border:1.5px solid transparent;
   transition:transform .1s ease,box-shadow .1s ease;font-family:inherit}
 .row-action-btn:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.12)}
 .row-action-tna{background:var(--accent-soft);color:var(--accent);border-color:#E8CFC2}
@@ -1255,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.33</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.36</p>
   </div>
 </div>
 
@@ -1272,9 +1262,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div style="position:relative;padding:0 12px 10px">
       <input type="text" id="global-search-input" placeholder="Search style or PO…"
         style="width:100%;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px"
-        oninput="onGlobalSearchInput(this.value)" onkeydown="if(event.key==='Escape'){this.value='';closeGlobalSearchResults();}"
-        onblur="setTimeout(closeGlobalSearchResults, 200)">
-      <div id="global-search-results"></div>
+        oninput="onGlobalSearchInput(this.value)" onkeydown="if(event.key==='Escape'){this.value='';}">
     </div>
     <div class="rail-body" id="rail-body"></div>
     <div class="rail-foot">
@@ -1297,7 +1285,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.33</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.36</div>
 </div>
 
 
@@ -1620,6 +1608,15 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h" style="flex-shrink:0"><div><h3 id="ppc-title">PP Approval</h3><div class="msub" id="ppc-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-pp-colour')">Close</button></div>
     <div class="m-b" id="ppc-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
+<!-- === GLOBAL SEARCH RESULTS MODAL === -->
+<div class="ov" id="ov-global-search" onclick="if(event.target===this)closeGlobalSearchModal()">
+  <div class="modal" style="max-width:560px;max-height:80vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3>Search Results</h3><div class="msub" id="gsearch-modal-sub"></div></div>
+      <button class="btn" onclick="closeGlobalSearchModal()">Close</button></div>
+    <div class="m-b" id="gsearch-modal-body" style="flex:1;overflow-y:auto;min-height:0;padding:0"></div>
   </div>
 </div>
 
@@ -3052,32 +3049,6 @@ function renderDashboard() {
 }
 
 // ─── BOARD ───
-// Filters the current board down to orders whose style OR PO number contains
-// the typed text — resets automatically on navigating to a different merchant
-// (see isBoardRefresh check inside renderBoard) so it never silently carries
-// over and hides orders on a board the person didn't mean to filter.
-// skipDataReload=true is passed to renderBoard here specifically because this
-// is a pure re-filter of already-loaded data — nothing about the underlying
-// orders or their custom fields has changed, so there's no reason to hit the
-// database again just to show/hide rows. That network round-trip was the
-// actual cause of the sluggish feel, not the debounce delay.
-var _styleFilterQuery = '';
-var _styleFilterDebounce = null;
-function onBoardStyleFilterInput(val) {
-  clearTimeout(_styleFilterDebounce);
-  _styleFilterDebounce = setTimeout(function(){
-    _styleFilterQuery = val.trim();
-    renderBoard(S.view, true);
-    // Restore focus + cursor position after the re-render replaces the input
-    var el = $('board-style-filter-input');
-    if (el) { el.focus(); var len = el.value.length; el.setSelectionRange(len, len); }
-  }, 60);
-}
-function clearBoardStyleFilter() {
-  _styleFilterQuery = '';
-  renderBoard(S.view, true);
-}
-
 async function renderBoard(uid, skipDataReload) {
   const merch = S.users.find(u => u.id === uid);
   if (!merch) { setView('dashboard'); return; }
@@ -3105,13 +3076,6 @@ async function renderBoard(uid, skipDataReload) {
   const VSTEPS = getSteps(division);
   let os = (await loadBoardOrders(uid))
     .sort((a, b) => (daysTo(a.ship_date)||999) - (daysTo(b.ship_date)||999));
-
-  if (!isBoardRefresh) _styleFilterQuery = ''; // fresh navigation to a different merchant clears any stale filter
-  const osUnfiltered = os;
-  os = _styleFilterQuery ? osUnfiltered.filter(function(o){
-    var q = _styleFilterQuery.toUpperCase();
-    return (o.style||'').toUpperCase().indexOf(q) !== -1 || (o.po_number||'').toUpperCase().indexOf(q) !== -1;
-  }) : osUnfiltered;
 
   // Load custom field values for all visible orders
   if (!skipDataReload) {
@@ -3141,14 +3105,7 @@ async function renderBoard(uid, skipDataReload) {
   if (canMessageThisMerchant) actBtns += `<button class="btn" onclick="openSendMessageModal('${uid}')">+ Send Message</button>`;
   actBtns += `<button class="btn ghost" onclick="openPrint('${uid}')">Print</button>`;
   if (canEdit) actBtns += `<button class="btn ghost" onclick="openBulkTNASelect('${uid}')">&#x1F4CB; TNA to Planning</button>`;
-  actBtns += `<div class="board-style-filter">`
-    + `<input type="text" id="board-style-filter-input" placeholder="Filter by style or PO\u2026" value="${htmlEsc(_styleFilterQuery)}" oninput="onBoardStyleFilterInput(this.value)" onkeydown="if(event.key==='Escape'){clearBoardStyleFilter();}">`
-    + (_styleFilterQuery ? `<button type="button" class="board-style-filter-clear" onclick="clearBoardStyleFilter()">&#x2715;</button>` : ``)
-    + `</div>`;
   $('act-row').innerHTML = actBtns;
-  if (_styleFilterQuery) {
-    $('page-sub').innerHTML = (osUnfiltered.length ? `Showing ${os.length} of ${osUnfiltered.length} live orders \u2014 filtered by "${htmlEsc(_styleFilterQuery)}"` : '');
-  }
 
   // ── Group by buyer (moved before no-orders check so buyer-status is checked first) ──
   var myBuyers = getBuyersForMerchant(uid);
@@ -3159,12 +3116,6 @@ async function renderBoard(uid, skipDataReload) {
   }
 
   if (!os.length) {
-    if (_styleFilterQuery) {
-      $('content').innerHTML = `<div class="card"><div class="empty">
-        <h4>No orders match "${htmlEsc(_styleFilterQuery)}"</h4><div>Try a different style or PO number, or <a href="#" onclick="event.preventDefault();clearBoardStyleFilter()">clear the filter</a> to see everything.</div>
-      </div></div>`;
-      return;
-    }
     $('content').innerHTML = `<div class="card"><div class="empty">
       <h4>No live orders</h4><div>Add the first order to start tracking against the TNA plan.</div>
       ${canEdit ? `<div style="margin-top:14px"><button class="btn pri" onclick="openOrder('${uid}')">+ New order</button></div>` : ''}
@@ -3190,7 +3141,7 @@ async function renderBoard(uid, skipDataReload) {
     var open = localStorage.getItem(sk) !== '0';
     var bQty = bOrders.reduce(function(s,o){ return s+(o.qty||0); }, 0);
     var bVal = bOrders.reduce(function(s,o){ return s+(o.qty||0)*(o.fob||0); }, 0);
-    allHtml += '<div style="margin-bottom:12px">'
+    allHtml += '<div style="margin-bottom:12px" >'
       + '<div class="buyer-section-hdr" data-sk="' + sk + '" onclick="toggleBuyerSection(this.dataset.sk)">'
       + '<div style="display:flex;align-items:center;gap:10px">'
       + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">' + b.name + '</span>'
@@ -3205,7 +3156,7 @@ async function renderBoard(uid, skipDataReload) {
   if (otherOrders.length) {
     var sk2 = 'bbs_' + uid + '_other';
     var open2 = localStorage.getItem(sk2) !== '0';
-    allHtml += '<div style="margin-bottom:12px">'
+    allHtml += '<div style="margin-bottom:12px" >'
       + '<div class="buyer-section-hdr" data-sk="' + sk2 + '" onclick="toggleBuyerSection(this.dataset.sk)">'
       + '<div style="display:flex;align-items:center;gap:10px">'
       + '<span style="font-family:var(--serif);font-size:16px;font-weight:600">Other</span>'
@@ -3429,7 +3380,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
-      + '<td style="white-space:nowrap;width:190px;min-width:190px">'
+      + '<td style="white-space:nowrap;width:225px;min-width:225px">'
       + '<button class="row-action-btn row-action-tna" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
@@ -3481,7 +3432,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="' + mfWrapCls + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
-  topRow += '<th rowspan="2" style="width:190px;min-width:190px"></th>';
+  topRow += '<th rowspan="2" style="width:225px;min-width:225px"></th>';
 
   return '<div class="card"><div class="scroller dyn-scroller"><table class="dyn-board">'
     + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
@@ -7047,7 +6998,7 @@ async function deleteMerchant(uid, name) {
 var _searchDebounce = null;
 function onGlobalSearchInput(query) {
   clearTimeout(_searchDebounce);
-  if (!query || query.trim().length < 2) { closeGlobalSearchResults(); return; }
+  if (!query || query.trim().length < 2) { closeGlobalSearchModal(); return; }
   _searchDebounce = setTimeout(function(){ runGlobalSearch(query.trim()); }, 300);
 }
 
@@ -7058,7 +7009,7 @@ async function runGlobalSearch(query) {
   // needs these, so stripping them is simpler and safer than trying to escape
   // them correctly. % and _ are separately neutralized as SQL LIKE wildcards.
   var esc = query.replace(/[,.()]/g, '').replace(/[%_]/g, '\\$&');
-  if (!esc) { closeGlobalSearchResults(); return; }
+  if (!esc) { closeGlobalSearchModal(); return; }
   var q = db.from('orders').select('id,style,po_number,buyer,merchant_id,stage')
     .or('style.ilike.%' + esc + '%,po_number.ilike.%' + esc + '%')
     .limit(15);
@@ -7084,30 +7035,31 @@ async function runGlobalSearch(query) {
 }
 
 function renderGlobalSearchResults(results, query) {
-  var el = $('global-search-results');
-  if (!el) return;
+  $('gsearch-modal-sub').textContent = results.length
+    ? (results.length + ' match' + (results.length===1?'':'es') + ' for \u201c' + query + '\u201d')
+    : 'No matches for \u201c' + query + '\u201d';
   if (!results.length) {
-    el.innerHTML = '<div class="gsearch-dropdown"><div class="gsearch-empty">No orders match \u201c' + htmlEsc(query) + '\u201d</div></div>';
-    return;
+    $('gsearch-modal-body').innerHTML = '<div class="gsearch-empty">No orders match \u201c' + htmlEsc(query) + '\u201d</div>';
+  } else {
+    $('gsearch-modal-body').innerHTML = results.map(function(r){
+      var merch = S.users.find(function(u){ return u.id === r.merchant_id; });
+      var stage = r.stage || 'live';
+      var stageLabel = stage === 'shipped' ? 'Shipped' : stage === 'laying' ? 'Laying Goods' : 'Live';
+      return '<div class="gsearch-item" onclick="jumpToSearchResult(\'' + r.id + '\',\'' + r.merchant_id + '\',\'' + stage + '\')">'
+        + '<div class="gsearch-style">' + htmlEsc(r.style||'') + ' <span class="gsearch-stage">' + stageLabel + '</span></div>'
+        + '<div class="gsearch-meta">PO ' + htmlEsc(r.po_number||'\u2014') + ' \u00b7 ' + htmlEsc(r.buyer||'') + ' \u00b7 ' + htmlEsc(merch?merch.name:'') + '</div>'
+        + '</div>';
+    }).join('');
   }
-  el.innerHTML = '<div class="gsearch-dropdown">' + results.map(function(r){
-    var merch = S.users.find(function(u){ return u.id === r.merchant_id; });
-    var stage = r.stage || 'live';
-    var stageLabel = stage === 'shipped' ? 'Shipped' : stage === 'laying' ? 'Laying Goods' : 'Live';
-    return '<div class="gsearch-item" onclick="jumpToSearchResult(\'' + r.id + '\',\'' + r.merchant_id + '\',\'' + stage + '\')">'
-      + '<div class="gsearch-style">' + htmlEsc(r.style||'') + ' <span class="gsearch-stage">' + stageLabel + '</span></div>'
-      + '<div class="gsearch-meta">PO ' + htmlEsc(r.po_number||'\u2014') + ' \u00b7 ' + htmlEsc(r.buyer||'') + ' \u00b7 ' + htmlEsc(merch?merch.name:'') + '</div>'
-      + '</div>';
-  }).join('') + '</div>';
+  openModal('ov-global-search');
 }
 
-function closeGlobalSearchResults() {
-  var el = $('global-search-results');
-  if (el) el.innerHTML = '';
+function closeGlobalSearchModal() {
+  closeModal('ov-global-search');
 }
 
 async function jumpToSearchResult(orderId, merchantId, stage) {
-  closeGlobalSearchResults();
+  closeGlobalSearchModal();
   var inp = $('global-search-input');
   if (inp) inp.value = '';
   if (stage === 'shipped') {
