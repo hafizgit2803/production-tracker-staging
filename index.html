@@ -114,6 +114,16 @@ tr.row-highlight td{animation:rowHighlightFlash 2.2s ease-out}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.pri:hover{background:#b4573a}
 .btn.sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
+.row-action-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:7px;
+  font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;
+  transition:transform .1s ease,box-shadow .1s ease;font-family:inherit}
+.row-action-btn:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.row-action-tna{background:var(--accent-soft);color:var(--accent);border-color:#E8CFC2}
+.row-action-edit{background:#DBEAFB;color:#1A5C94;border-color:#B7D6EF}
+.row-action-pack{background:#D7F0DF;color:#166534;border-color:#A9E1BC}
+[data-theme="dark"] .row-action-tna{background:rgba(201,100,66,.2);border-color:rgba(201,100,66,.4)}
+[data-theme="dark"] .row-action-edit{background:rgba(26,92,148,.25);color:#8FC7E8;border-color:rgba(26,92,148,.45)}
+[data-theme="dark"] .row-action-pack{background:rgba(22,101,52,.25);color:#8AE0AA;border-color:rgba(22,101,52,.45)}
 .btn.ghost{background:none;border-color:transparent;color:var(--muted)}
 .btn.ghost:hover{background:rgba(0,0,0,.05);color:var(--ink)}
 .btn.danger{background:#FEF2F2;border-color:#FECACA;color:var(--red)}
@@ -1245,7 +1255,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.31</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.33</p>
   </div>
 </div>
 
@@ -1287,7 +1297,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.31</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.33</div>
 </div>
 
 
@@ -3042,28 +3052,33 @@ function renderDashboard() {
 }
 
 // ─── BOARD ───
-// Filters the current board down to orders whose style contains the typed
-// text — resets automatically on navigating to a different merchant (see
-// isBoardRefresh check inside renderBoard) so it never silently carries over
-// and hides orders on a board the person didn't mean to filter.
+// Filters the current board down to orders whose style OR PO number contains
+// the typed text — resets automatically on navigating to a different merchant
+// (see isBoardRefresh check inside renderBoard) so it never silently carries
+// over and hides orders on a board the person didn't mean to filter.
+// skipDataReload=true is passed to renderBoard here specifically because this
+// is a pure re-filter of already-loaded data — nothing about the underlying
+// orders or their custom fields has changed, so there's no reason to hit the
+// database again just to show/hide rows. That network round-trip was the
+// actual cause of the sluggish feel, not the debounce delay.
 var _styleFilterQuery = '';
 var _styleFilterDebounce = null;
 function onBoardStyleFilterInput(val) {
   clearTimeout(_styleFilterDebounce);
   _styleFilterDebounce = setTimeout(function(){
     _styleFilterQuery = val.trim();
-    renderBoard(S.view);
+    renderBoard(S.view, true);
     // Restore focus + cursor position after the re-render replaces the input
     var el = $('board-style-filter-input');
     if (el) { el.focus(); var len = el.value.length; el.setSelectionRange(len, len); }
-  }, 250);
+  }, 60);
 }
 function clearBoardStyleFilter() {
   _styleFilterQuery = '';
-  renderBoard(S.view);
+  renderBoard(S.view, true);
 }
 
-async function renderBoard(uid) {
+async function renderBoard(uid, skipDataReload) {
   const merch = S.users.find(u => u.id === uid);
   if (!merch) { setView('dashboard'); return; }
 
@@ -3093,10 +3108,15 @@ async function renderBoard(uid) {
 
   if (!isBoardRefresh) _styleFilterQuery = ''; // fresh navigation to a different merchant clears any stale filter
   const osUnfiltered = os;
-  os = _styleFilterQuery ? osUnfiltered.filter(function(o){ return (o.style||'').toUpperCase().indexOf(_styleFilterQuery.toUpperCase()) !== -1; }) : osUnfiltered;
+  os = _styleFilterQuery ? osUnfiltered.filter(function(o){
+    var q = _styleFilterQuery.toUpperCase();
+    return (o.style||'').toUpperCase().indexOf(q) !== -1 || (o.po_number||'').toUpperCase().indexOf(q) !== -1;
+  }) : osUnfiltered;
 
   // Load custom field values for all visible orders
-  try { await loadFieldValues(os.map(function(o){ return o.id; })); } catch(e) { console.error('loadFieldValues:', e); }
+  if (!skipDataReload) {
+    try { await loadFieldValues(os.map(function(o){ return o.id; })); } catch(e) { console.error('loadFieldValues:', e); }
+  }
 
   const stale = merch.updated_at && (Date.now() - new Date(merch.updated_at).getTime()) > 86400000;
   const isMgmt  = S.user.role === 'management';
@@ -3122,12 +3142,12 @@ async function renderBoard(uid) {
   actBtns += `<button class="btn ghost" onclick="openPrint('${uid}')">Print</button>`;
   if (canEdit) actBtns += `<button class="btn ghost" onclick="openBulkTNASelect('${uid}')">&#x1F4CB; TNA to Planning</button>`;
   actBtns += `<div class="board-style-filter">`
-    + `<input type="text" id="board-style-filter-input" placeholder="Filter by style\u2026" value="${htmlEsc(_styleFilterQuery)}" oninput="onBoardStyleFilterInput(this.value)" onkeydown="if(event.key==='Escape'){clearBoardStyleFilter();}">`
+    + `<input type="text" id="board-style-filter-input" placeholder="Filter by style or PO\u2026" value="${htmlEsc(_styleFilterQuery)}" oninput="onBoardStyleFilterInput(this.value)" onkeydown="if(event.key==='Escape'){clearBoardStyleFilter();}">`
     + (_styleFilterQuery ? `<button type="button" class="board-style-filter-clear" onclick="clearBoardStyleFilter()">&#x2715;</button>` : ``)
     + `</div>`;
   $('act-row').innerHTML = actBtns;
   if (_styleFilterQuery) {
-    $('page-sub').innerHTML = (osUnfiltered.length ? `Showing ${os.length} of ${osUnfiltered.length} live orders \u2014 filtered by style "${htmlEsc(_styleFilterQuery)}"` : '');
+    $('page-sub').innerHTML = (osUnfiltered.length ? `Showing ${os.length} of ${osUnfiltered.length} live orders \u2014 filtered by "${htmlEsc(_styleFilterQuery)}"` : '');
   }
 
   // ── Group by buyer (moved before no-orders check so buyer-status is checked first) ──
@@ -3141,7 +3161,7 @@ async function renderBoard(uid) {
   if (!os.length) {
     if (_styleFilterQuery) {
       $('content').innerHTML = `<div class="card"><div class="empty">
-        <h4>No orders match "${htmlEsc(_styleFilterQuery)}"</h4><div>Try a different style number, or <a href="#" onclick="event.preventDefault();clearBoardStyleFilter()">clear the filter</a> to see everything.</div>
+        <h4>No orders match "${htmlEsc(_styleFilterQuery)}"</h4><div>Try a different style or PO number, or <a href="#" onclick="event.preventDefault();clearBoardStyleFilter()">clear the filter</a> to see everything.</div>
       </div></div>`;
       return;
     }
@@ -3410,9 +3430,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
       + '<td style="white-space:nowrap;width:190px;min-width:190px">'
-      + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
-      + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
-      + (canEdit ? ' <button class="btn sm" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
+      + '<button class="row-action-btn row-action-tna" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
+      + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
+      + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
       + ' <button class="btn sm" onclick="event.stopPropagation();openActivityModal(\'' + o.id + '\')" title="Activity history">&#x1F4DC;</button>'
       + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:8.5px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + jsAttrEsc(o.style) + '\',\'' + jsAttrEsc(o.buyer) + '\')">&#x2715;</button>' : '')
       + '</td></tr>';
