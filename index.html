@@ -1238,7 +1238,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.29</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.30</p>
   </div>
 </div>
 
@@ -1253,7 +1253,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
     </div>
     <div style="position:relative;padding:0 12px 10px">
-      <input type="text" id="global-search-input" placeholder="Search style or PO\u2026"
+      <input type="text" id="global-search-input" placeholder="Search style or PO…"
         style="width:100%;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px"
         oninput="onGlobalSearchInput(this.value)" onkeydown="if(event.key==='Escape'){this.value='';closeGlobalSearchResults();}"
         onblur="setTimeout(closeGlobalSearchResults, 200)">
@@ -1280,7 +1280,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.29</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.30</div>
 </div>
 
 
@@ -1340,7 +1340,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
 
       <div class="f" id="o_attach_box" style="margin-bottom:14px;background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:9px;padding:12px 14px">
-        <label style="margin-bottom:8px">Does this style have an attachment? <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. woven collar, arm patch \u2014 fabric pieces attached to the garment)</span></label>
+        <label style="margin-bottom:8px">Does this style have an attachment? <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. woven collar, arm patch — fabric pieces attached to the garment)</span></label>
         <div style="display:flex;gap:16px">
           <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_has_attach" value="yes" onchange="onAttachToggle(this)"> Yes</label>
           <label style="display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer"><input type="radio" name="o_has_attach" value="no" onchange="onAttachToggle(this)" checked> No</label>
@@ -1897,9 +1897,9 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
       <div class="f">
         <label>Message <span style="color:var(--red)">*</span></label>
-        <textarea id="sm-body" rows="5" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;resize:vertical;font-size:13.5px;line-height:1.5" placeholder="Type your message\u2026"></textarea>
+        <textarea id="sm-body" rows="5" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;resize:vertical;font-size:13.5px;line-height:1.5" placeholder="Type your message…"></textarea>
       </div>
-      <label class="sm-action-toggle"><input type="checkbox" id="sm-action-item"> This needs a response \u2014 track it as an action item until it's marked done</label>
+      <label class="sm-action-toggle"><input type="checkbox" id="sm-action-item"> This needs a response — track it as an action item until it's marked done</label>
       <div class="form-err" id="sm-err" style="display:none;margin-top:10px"></div>
     </div>
     <div class="m-f">
@@ -1916,7 +1916,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       <button class="btn" onclick="closeModal('ov-message-thread')">Close</button></div>
     <div class="m-b" id="mt-body" style="flex:1;overflow-y:auto;min-height:0"></div>
     <div class="mt-reply-row" id="mt-reply-row">
-      <input type="text" id="mt-reply-input" placeholder="Type a reply\u2026" onkeydown="if(event.key==='Enter')sendThreadReply()">
+      <input type="text" id="mt-reply-input" placeholder="Type a reply…" onkeydown="if(event.key==='Enter')sendThreadReply()">
       <button class="btn pri" onclick="sendThreadReply()">Send</button>
     </div>
   </div>
