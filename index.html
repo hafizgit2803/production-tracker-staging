@@ -41,6 +41,27 @@ a{color:var(--accent);text-decoration:none}
 .rail-body{flex:1;overflow-y:auto;padding:10px 8px;min-height:0;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .rail-body::-webkit-scrollbar{width:4px}
 .rail-body::-webkit-scrollbar-track{background:transparent}
+/* Global search */
+#global-search-input:focus{outline:none;border-color:var(--accent)}
+.gsearch-dropdown{position:absolute;top:100%;left:12px;right:12px;z-index:200;background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);
+  margin-top:4px;max-height:320px;overflow-y:auto}
+.gsearch-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0EDE4}
+.gsearch-item:last-child{border-bottom:none}
+.gsearch-item:hover{background:var(--accent-soft)}
+.gsearch-style{font-size:13px;font-weight:700;color:var(--ink)}
+.gsearch-stage{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.03em;background:#F0EDE4;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle}
+[data-theme="dark"] .gsearch-stage{background:#2A2828}
+.gsearch-meta{font-size:10.5px;color:var(--muted);margin-top:2px}
+.gsearch-empty{padding:12px;font-size:12px;color:var(--muted);text-align:center}
+@keyframes rowHighlightFlash{
+  0%{background:var(--accent-soft)}
+  70%{background:var(--accent-soft)}
+  100%{background:transparent}
+}
+tr.row-highlight td{animation:rowHighlightFlash 2.2s ease-out}
+
 .rail-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
 .rail-body::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 .rail-sep{height:1px;background:var(--line);margin:8px 4px}
@@ -1217,7 +1238,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.26</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.29</p>
   </div>
 </div>
 
@@ -1230,6 +1251,13 @@ table.dyn-board thead th.stk-dyn{z-index:35}
         <div class="brand-name">Shahana Group</div>
         <div class="brand-sub">Production Tracker</div>
       </div>
+    </div>
+    <div style="position:relative;padding:0 12px 10px">
+      <input type="text" id="global-search-input" placeholder="Search style or PO\u2026"
+        style="width:100%;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12.5px"
+        oninput="onGlobalSearchInput(this.value)" onkeydown="if(event.key==='Escape'){this.value='';closeGlobalSearchResults();}"
+        onblur="setTimeout(closeGlobalSearchResults, 200)">
+      <div id="global-search-results"></div>
     </div>
     <div class="rail-body" id="rail-body"></div>
     <div class="rail-foot">
@@ -1252,7 +1280,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.26</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.29</div>
 </div>
 
 
@@ -3318,7 +3346,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     var rowCells = visItems.map(function(item){ return cellsByKey[item.key] || ''; }).join('');
 
-    return '<tr class="' + rowClass(o) + '">'
+    return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
       + '<td style="white-space:nowrap;width:190px;min-width:190px">'
       + '<button class="btn sm" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
@@ -3414,7 +3442,7 @@ function renderArchive() {
     const merch = S.users.find(u => u.id === o.merchant_id);
     const exp = new Date(o.shipped_on);
     exp.setFullYear(exp.getFullYear() + 2);
-    return `<tr>
+    return `<tr id="row-${o.id}">
       <td class="sty">${o.style}</td>
       <td>${merch ? merch.name : '—'}</td>
       <td>${o.buyer}</td><td>${o.house}</td>
@@ -6928,6 +6956,103 @@ async function deleteMerchant(uid, name) {
 }
 
 // ─── RENDER RAIL (6-tier sidebar) ───
+// ─── GLOBAL SEARCH — style/PO, scoped live orders ───
+// Searches live orders only for now (the primary "find this style" case).
+// Respects the same visibility rules as everywhere else: a Manager only ever
+// finds results within their own assigned merchants, a JM within their
+// assigned merchants, a Merchant within their own board — matching setView's
+// own guards exactly, so a search result is never something the person
+// couldn't already navigate to directly.
+var _searchDebounce = null;
+function onGlobalSearchInput(query) {
+  clearTimeout(_searchDebounce);
+  if (!query || query.trim().length < 2) { closeGlobalSearchResults(); return; }
+  _searchDebounce = setTimeout(function(){ runGlobalSearch(query.trim()); }, 300);
+}
+
+async function runGlobalSearch(query) {
+  // Strip characters that are structurally significant in PostgREST's .or()
+  // filter-string syntax (comma separates conditions, dot separates
+  // field.operator.value, parens group) — a style/PO search never legitimately
+  // needs these, so stripping them is simpler and safer than trying to escape
+  // them correctly. % and _ are separately neutralized as SQL LIKE wildcards.
+  var esc = query.replace(/[,.()]/g, '').replace(/[%_]/g, '\\$&');
+  if (!esc) { closeGlobalSearchResults(); return; }
+  var q = db.from('orders').select('id,style,po_number,buyer,merchant_id,stage')
+    .or('style.ilike.%' + esc + '%,po_number.ilike.%' + esc + '%')
+    .limit(15);
+  var role = S.user.role;
+  if (role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
+  else if (role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if (role === 'merchant') q = q.eq('merchant_id', S.user.id);
+  else if (!['admin','management','hod','audit'].includes(role)) {
+    // Unrecognized role — deny by default rather than silently searching
+    // everyone, matching how the rest of the app treats unknown roles.
+    renderGlobalSearchResults([], query);
+    return;
+  }
+  // admin / management / hod / audit: no merchant filter — search everyone, matching their existing "see all boards" access
+  const { data, error } = await q;
+  if (error) { console.error('global search error:', error); return; }
+  // Discard stale results — if the box has changed since this search started
+  // (a faster later request already won), don't let a slow earlier response
+  // overwrite what's currently being typed.
+  var liveInput = $('global-search-input');
+  if (liveInput && liveInput.value.trim() !== query) return;
+  renderGlobalSearchResults(data || [], query);
+}
+
+function renderGlobalSearchResults(results, query) {
+  var el = $('global-search-results');
+  if (!el) return;
+  if (!results.length) {
+    el.innerHTML = '<div class="gsearch-dropdown"><div class="gsearch-empty">No orders match \u201c' + htmlEsc(query) + '\u201d</div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="gsearch-dropdown">' + results.map(function(r){
+    var merch = S.users.find(function(u){ return u.id === r.merchant_id; });
+    var stage = r.stage || 'live';
+    var stageLabel = stage === 'shipped' ? 'Shipped' : stage === 'laying' ? 'Laying Goods' : 'Live';
+    return '<div class="gsearch-item" onclick="jumpToSearchResult(\'' + r.id + '\',\'' + r.merchant_id + '\',\'' + stage + '\')">'
+      + '<div class="gsearch-style">' + htmlEsc(r.style||'') + ' <span class="gsearch-stage">' + stageLabel + '</span></div>'
+      + '<div class="gsearch-meta">PO ' + htmlEsc(r.po_number||'\u2014') + ' \u00b7 ' + htmlEsc(r.buyer||'') + ' \u00b7 ' + htmlEsc(merch?merch.name:'') + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+function closeGlobalSearchResults() {
+  var el = $('global-search-results');
+  if (el) el.innerHTML = '';
+}
+
+async function jumpToSearchResult(orderId, merchantId, stage) {
+  closeGlobalSearchResults();
+  var inp = $('global-search-input');
+  if (inp) inp.value = '';
+  if (stage === 'shipped') {
+    S.view = 'shipped';
+    renderRail();
+    await renderShippedPage();
+  } else if (stage === 'laying') {
+    S.view = 'laying-goods';
+    renderRail();
+    _lgFilter = 'all'; // a leftover filter (e.g. "Awaiting Inspection") could otherwise hide the very row we're jumping to
+    await renderLayingGoods();
+  } else {
+    S.view = merchantId;
+    renderRail();
+    await renderBoard(merchantId);
+  }
+  requestAnimationFrame(function(){
+    var row = document.getElementById('row-' + orderId);
+    if (row) {
+      row.scrollIntoView({behavior:'smooth', block:'center'});
+      row.classList.add('row-highlight');
+      setTimeout(function(){ row.classList.remove('row-highlight'); }, 2200);
+    }
+  });
+}
+
 function renderRail() {
   var u=S.user; if(!u) return;
   var r=u.role;
@@ -7543,7 +7668,7 @@ function lgTable(orders,showM){
     var canAct=S.user.role==='admin'||actsAsMerchant(o.merchant_id);
     var shortH=o.short_qty?'<span class="chip warn" style="font-size:10px;margin-left:4px">Short '+fmt(o.short_qty)+'</span>':'';
     var customCells = buildFieldDataCells(customFields, o.id, canAct);
-    return '<tr>'
+    return '<tr id="row-'+o.id+'">'
       +'<td class="sty">'+o.style+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+o.po_number+'</div>':'')+'</td>'
       +'<td>'+(o.buyer||'--')+'</td>'
       +'<td class="num">'+fmt(o.packing_list_qty||o.qty)+shortH+'</td>'
