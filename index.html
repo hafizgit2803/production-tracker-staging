@@ -1251,7 +1251,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 5</p>
   </div>
 </div>
 
@@ -1291,7 +1291,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">2026-09-16 &middot; 4</div>
+  <div id="ver-stamp">2026-09-16 &middot; 5</div>
 </div>
 
 
@@ -4769,7 +4769,7 @@ async function openColourApprovalModal(ordId, merchantId, style, type) {
   _ppcOrdId = ordId; _ppcMerchantId = merchantId; _ppcStyle = style; _ppcType = type;
   _ppcCanEdit = can('edit', merchantId);
   _ppcMode = 'list';
-  _ppcSubmitSelected = {}; _ppcBulkSelected = {}; _ppcPickingResult = null; _ppcBulkPickingOutcome = null;
+  _ppcSubmitSelected = {}; _ppcBulkSelected = {}; _ppcPickingResult = null; _ppcBulkPickingOutcome = null; _ppcSubmitOnePicking = null;
   var typeLabel = type === 'labdip' ? 'Lab Dip Approval' : 'PP Approval';
   $('ppc-title').textContent = typeLabel + ' \u2014 ' + style;
   $('ppc-sub').textContent = 'Shared across every PO of this style \u2014 tracked per colour';
@@ -4859,11 +4859,20 @@ function renderPPColourCard(c) {
     detailLine = '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:11.5px">'
       + '<div><strong>' + htmlEsc(c.latest.supplier_name||'Supplier not noted') + '</strong> &middot; sent ' + short(sentDate0) + ' &middot; <span style="' + (daysElapsed0>=5?'color:var(--red);font-weight:700':'color:var(--muted)') + '">' + daysElapsed0 + ' day' + (daysElapsed0===1?'':'s') + ' with supplier</span></div>'
       + (c.latest.tracking_ref ? '<div style="margin-top:3px">Tracking: ' + (isLink0 ? '<a href="'+htmlEsc(c.latest.tracking_ref)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+htmlEsc(c.latest.tracking_ref)+'</a>' : htmlEsc(c.latest.tracking_ref)) + '</div>' : '')
-      + '</div>'
-      + (_ppcCanEdit ? '<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">'
-        + '<button class="btn sm pri" style="padding:3px 8px" onclick="ppcSubmitOne(\''+jsAttrEsc(c.colour)+'\')">Submit to Buyer</button>'
+      + '</div>';
+    if (_ppcSubmitOnePicking === c.colour) {
+      detailLine += '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px;margin-top:6px">'
+        + '<div style="display:flex;gap:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;flex-shrink:0">Submitted on</span>'
+        + '<input type="date" id="ppc-submitone-date-'+jsAttrEsc(c.colour)+'" value="'+today0+'" style="flex:1;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;color:var(--ink);font-size:12px">'
+        + '<button class="btn sm" style="padding:3px 8px" onclick="ppcCancelSubmitOne()">Cancel</button>'
+        + '<button class="btn sm pri" style="padding:3px 8px" onclick="ppcConfirmSubmitOne(\''+jsAttrEsc(c.colour)+'\')">Confirm</button></div>'
+        + '</div>';
+    } else if (_ppcCanEdit) {
+      detailLine += '<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">'
+        + '<button class="btn sm pri" style="padding:3px 8px" onclick="ppcPickSubmitOne(\''+jsAttrEsc(c.colour)+'\')">Submit to Buyer</button>'
         + '<button class="btn sm ghost" style="padding:3px 8px" onclick="ppcUndoSource(\''+jsAttrEsc(c.colour)+'\')">&#x21A9; Undo</button>'
-        + '</div>' : '');
+        + '</div>';
+    }
   } else if (isPicking && c.status==='awaiting') {
     var outcome = _ppcPickingResult.outcome;
     detailLine = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
@@ -4874,7 +4883,8 @@ function renderPPColourCard(c) {
       + '<button class="btn sm pri" style="padding:3px 8px;' + (outcome==='approve'?'background:var(--green);border-color:var(--green)':'background:var(--red);border-color:var(--red)') + '" onclick="ppcConfirmResult(\''+jsAttrEsc(c.colour)+'\')">Confirm</button></div>'
       + '</div>';
   } else if (c.status==='awaiting' && c.latest) {
-    detailLine = '<div style="font-size:11px;color:var(--muted)">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
+    detailLine = (c.latest.sent_to_supplier_on ? '<div style="font-size:11px;color:var(--muted)">Sent to ' + (c.latest.supplier_name?htmlEsc(c.latest.supplier_name):'supplier') + ' ' + short(c.latest.sent_to_supplier_on) + '</div>' : '')
+      + '<div style="font-size:11px;color:var(--muted)">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
       + (_ppcCanEdit ? '<div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">'
         + '<button class="btn sm" style="padding:3px 8px;background:var(--green);border-color:var(--green);color:#fff" onclick="ppcPickResult(\''+jsAttrEsc(c.colour)+'\',\'approve\')">&#x2713; Approve</button>'
         + '<button class="btn sm danger" style="padding:3px 8px" onclick="ppcPickResult(\''+jsAttrEsc(c.colour)+'\',\'reject\')">&#x2717; Reject</button>'
@@ -4899,7 +4909,12 @@ function renderPPColourCard(c) {
   if (c.rounds.length > 1) {
     historyHtml = '<details style="margin-top:5px"><summary style="font-size:10.5px;color:var(--muted);cursor:pointer">' + (c.rounds.length-1) + ' earlier round' + (c.rounds.length-1>1?'s':'') + '</summary>'
       + c.rounds.slice(0,-1).map(function(r){
-          var line = r.approved_on ? 'Approved ' + short(r.approved_on) : r.rejected_on ? 'Rejected ' + short(r.rejected_on) : 'Submitted ' + short(r.submitted_on) + ' (no outcome recorded)';
+          var parts = [];
+          if (r.sent_to_supplier_on) parts.push('Sent to ' + (r.supplier_name?htmlEsc(r.supplier_name):'supplier') + ' ' + short(r.sent_to_supplier_on));
+          if (r.submitted_on) parts.push('Submitted to buyer ' + short(r.submitted_on));
+          if (r.approved_on) parts.push('Approved ' + short(r.approved_on));
+          else if (r.rejected_on) parts.push('Rejected ' + short(r.rejected_on));
+          var line = parts.length ? parts.join(' \u2192 ') : 'No activity recorded';
           return '<div style="font-size:11px;color:var(--muted);padding:3px 0">Round ' + r.round + ': ' + line + '</div>';
         }).join('') + '</details>';
   }
@@ -4978,20 +4993,27 @@ async function ppcConfirmSubmit() {
   await renderPPColourModal();
 }
 
-// Submit a single colour straight from its card (used in the "sourcing" state).
-async function ppcSubmitOne(colour) {
+var _ppcSubmitOnePicking = null;
+function ppcPickSubmitOne(colour) { _ppcSubmitOnePicking = colour; renderPPColourModal(); }
+function ppcCancelSubmitOne() { _ppcSubmitOnePicking = null; renderPPColourModal(); }
+
+async function ppcConfirmSubmitOne(colour) {
   if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var dt = document.getElementById('ppc-submitone-date-'+jsAttrEsc(colour));
+  var date = dt ? dt.value : '';
+  if (!date) { toast('Please pick a date', 'err'); return; }
   var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
   if (!cEntry || !cEntry.latest) return;
-  var date = new Date().toISOString().slice(0,10);
   await db.from('pp_colour_approvals').update({ submitted_on: date }).eq('id', cEntry.latest.id);
   await clearLabDipSupplierAlerts(_ppcMerchantId, _ppcStyle, colour);
   toast('Submitted to buyer', 'ok-t');
+  _ppcSubmitOnePicking = null;
   await reloadSummaries(_ppcMerchantId);
   renderBoard(S.view);
   await renderPPColourModal();
 }
 
+// Submit a single colour straight from its card (used in the "sourcing" state).
 // ─── Send-to-supplier stage (Lab Dip only) ───
 var _ppcSourceSelected = {};
 function ppcStartSource() { _ppcMode = 'source-pick'; _ppcSourceSelected = {}; renderPPColourModal(); }
