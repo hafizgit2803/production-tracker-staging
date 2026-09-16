@@ -1245,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.36</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.37-WIP</p>
   </div>
 </div>
 
@@ -1285,7 +1285,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.36</div>
+  <div id="ver-stamp">v2026-09-10 WF-9.37-WIP</div>
 </div>
 
 
@@ -1599,6 +1599,15 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <div class="m-h" style="flex-shrink:0"><div><h3 id="mat-title">Yarn Booking</h3><div class="msub" id="mat-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-material')">Close</button></div>
     <div class="m-b" id="mat-body" style="flex:1;overflow-y:auto;min-height:0"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ACCESSORIES (Sewing/Packing) ═══ -->
+<div class="ov" id="ov-accessory" onclick="if(event.target===this)closeModal('ov-accessory')">
+  <div class="modal" style="max-width:800px;width:96vw;max-height:88vh;display:flex;flex-direction:column">
+    <div class="m-h" style="flex-shrink:0"><div><h3 id="acc-title">Accessories</h3><div class="msub" id="acc-sub"></div></div>
+      <button class="btn" onclick="closeModal('ov-accessory')">Close</button></div>
+    <div class="m-b" id="acc-body" style="flex:1;overflow-y:auto;min-height:0"></div>
   </div>
 </div>
 
@@ -2527,12 +2536,14 @@ async function loadBoardOrders(merchantId) {
     const attachByOrder = await loadAttachmentsByOrder(merchantId, data || []);
     const ppByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'pp');
     const labdipByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'labdip');
+    const sewByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'sewing');
+    const packByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'packing');
     const [ap, acc] = await Promise.all([
       db.from('approvals').select('*').in('order_id', ids).order('round'),
       db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
     ]);
     const sums = {};
-    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0}, labdip: labdipByOrder[id] || {total:0,approved:0,submitted:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+    ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0}, labdip: labdipByOrder[id] || {total:0,approved:0,submitted:0}, sew: sewByOrder[id] || {total:0,received:0}, pack: packByOrder[id] || {total:0,received:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
     (ap.data || []).forEach(a => {
       if (sums[a.order_id]) {
         if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -2608,12 +2619,14 @@ async function reloadSummaries(merchantId) {
   const attachByOrder = await loadAttachmentsByOrder(merchantId, orders);
   const ppByOrder = await loadColourApprovalSummaryByOrder(merchantId, orders, 'pp');
   const labdipByOrder = await loadColourApprovalSummaryByOrder(merchantId, orders, 'labdip');
+  const sewByOrder = await loadAccessorySummaryByOrder(merchantId, orders, 'sewing');
+  const packByOrder = await loadAccessorySummaryByOrder(merchantId, orders, 'packing');
   const [ap, acc] = await Promise.all([
     db.from('approvals').select('*').in('order_id', ids).order('round'),
     db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
   ]);
   const sums = {};
-  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0}, labdip: labdipByOrder[id] || {total:0,approved:0,submitted:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
+  ids.forEach(id => { sums[id] = Object.assign({ ap: {}, acc: {}, attach: attachByOrder[id] || [], pp: ppByOrder[id] || {total:0,approved:0,submitted:0}, labdip: labdipByOrder[id] || {total:0,approved:0,submitted:0}, sew: sewByOrder[id] || {total:0,received:0}, pack: packByOrder[id] || {total:0,received:0} }, yarnByOrder[id] || { bk: 0, rc: 0 }); });
   (ap.data || []).forEach(a => {
     if (sums[a.order_id]) {
       if (!sums[a.order_id].ap[a.type]) sums[a.order_id].ap[a.type] = [];
@@ -3200,22 +3213,16 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   const matLabel = division === 'knit' ? 'Fabric' : 'Yarn';
   const isMerchant = actsAsMerchant(uid);
 
-  const ACC_ITEMS = [
-    {k:'hangtag', n:'Hang tag'}, {k:'main_label', n:'Main label'}, {k:'care_label', n:'Care label'},
-    {k:'hanger', n:'Hanger'}, {k:'sewing_thread', n:'Sewing thread'}, {k:'other', n:'Other'},
-  ];
-
-  function accChip(sum, ordId, canUpd) {
-    const acc = sum.acc || {};
-    const booked = ACC_ITEMS.filter(function(it){ return acc[it.k] && acc[it.k].booked_on; });
-    const inhoused = ACC_ITEMS.filter(function(it){ return acc[it.k] && acc[it.k].inhouse_on; });
-    const total = ACC_ITEMS.length;
-    const oc = "event.stopPropagation();openAccessoriesModal('" + ordId + "')";
-    if (inhoused.length === total && booked.length === total) return '<button class="acc-pill approved" onclick="' + oc + '">All inhoused</button>';
-    if (booked.length === total && inhoused.length > 0) return '<button class="acc-pill submitted" onclick="' + oc + '">Booked<span class="sub">' + inhoused.length + '/' + total + ' inhoused</span></button>';
-    if (booked.length === total) return '<button class="acc-pill all-booked" onclick="' + oc + '">All booked</button>';
-    if (booked.length > 0) return '<button class="acc-pill partial" onclick="' + oc + '">Partial<span class="sub">' + booked.length + '/' + total + ' booked</span></button>';
-    return '<button class="acc-pill not-booked" onclick="' + oc + '">Not booked</button>';
+  function accCategoryChip(catSum, ordId, merchantId, style, category) {
+    var total = catSum ? catSum.total : 0;
+    var received = catSum ? catSum.received : 0;
+    var oc = "event.stopPropagation();openAccessoryModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "','" + category + "')";
+    var pct = total > 0 ? Math.min(100, Math.round((received/total)*100)) : 0;
+    var cls = total === 0 ? 'empty' : received >= total ? 'complete' : received > 0 ? 'partial' : 'empty';
+    var label = total > 0 ? (received + '/' + total + ' items') : 'No items';
+    var catLabel = category === 'sewing' ? 'Sewing' : 'Packing';
+    return '<div class="yarn-pill ' + cls + '" onclick="' + oc + '" style="cursor:pointer;margin-bottom:3px"><div class="yarn-pill-fill" style="width:' + pct + '%"></div>'
+      + '<span class="yarn-pill-label">' + catLabel + ': ' + label + '</span></div>';
   }
 
   // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
@@ -3280,7 +3287,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, null);
     const ppChip = colourApprovalPill(sum.pp, o.id, o.merchant_id, o.style, 'pp') + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
-    const acChip = accChip(sum, o.id, isMerchant);
+    const acChip = accCategoryChip(sum.sew, o.id, o.merchant_id, o.style, 'sewing') + accCategoryChip(sum.pack, o.id, o.merchant_id, o.style, 'packing');
 
     const totalBk = sum.bk, totalRc = sum.rc;
     const yarnPct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
@@ -3332,7 +3339,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       var attachHtml = '<button type="button" class="attach-pill ' + attachPillCls + '" onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')">' + attachText + '</button>';
       cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml);
     }
-    if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'apv-col', acChip);
+    if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', '', acChip);
 
     if (itemByKey['_approvals']) {
       var apIt = itemByKey['_approvals'];
@@ -4569,6 +4576,7 @@ function downloadPDF() {
 // under. Every PO sharing that style mirrors the exact same booking data.
 var _yarnMerchantId = null, _yarnStyle = null, _yarnUnit = 'lbs', _yarnCompositions = [];
 var _yarnHasAttachment = false, _yarnMaterialType = 'yarn';
+var _accOrderId = null, _accMerchantId = null, _accStyle = null, _accCategory = 'sewing';
 
 // ─── PP APPROVAL — style-wide, tracked per colour ───
 // Every colour entered on any PO of a style gets its own independent approval
@@ -6070,105 +6078,307 @@ async function cancelRequest(reqId) {
 }
 
 
-// ─── ACCESSORIES MODAL ───
-const ACC_ITEMS_DEF = [
-  {k:'hangtag',      n:'Hang tag'},
-  {k:'main_label',   n:'Main label'},
-  {k:'care_label',   n:'Care label'},
-  {k:'hanger',       n:'Hanger'},
-  {k:'sewing_thread',n:'Sewing thread'},
-  {k:'other',        n:'Other'},
-];
+// ─── ACCESSORIES — style-wide, sewing & packing tracked independently ───
+// Bookings mirror Yarn's exact mechanics (book from a supplier with a date,
+// log inhouse receipts against that booking), but each specific ITEM (Main
+// Label, Price Tag, etc.) is tracked separately within its category, since
+// each one genuinely needs its own "is this done yet" answer — closer to how
+// PP tracks each colour than how Yarn tracks one undifferentiated substance.
+var ACCESSORY_COMMON_ITEMS = {
+  sewing: ['Main label','Size label','Care label','Barcode label','Security label','Sewing thread','Hanger loop','Elastic'],
+  packing: ['Price tag','Additional hangtag','RSE tag','Eco vera tag','Discount tag','Rope','Leg sticker','Hanger','Sizer','Supper Dry','Poly','Transparent sticker','Hanger & Picture sticker','Carton','Shipping mark']
+};
 
-var _accOrdId = null, _accMerchantId = null;
-
-async function openAccessoriesModal(ordId) {
-  _accOrdId = ordId;
-  var o = null;
-  Object.keys(S.boardCache).forEach(function(m){ if(!o) o=(S.boardCache[m]||[]).find(function(x){return x.id===ordId;}); });
-  o = o || S.orders.find(function(x){return x.id===ordId;}) || {};
-  _accMerchantId = o.merchant_id || null;
-  $('acc-title').textContent = 'Accessories \u2014 ' + (o.style||'');
-  $('acc-sub').textContent = (o.buyer||'') + (o.qty ? ' \u00b7 ' + fmt(o.qty) + ' pcs' : '');
-  $('acc-body').innerHTML = '<div class="loading"><span class="spin"></span></div>';
-  openModal('ov-accessories');
-
-  const { data } = await db.from('accessories').select('*').eq('order_id', ordId);
-  const existing = {};
-  (data || []).forEach(function(a){ existing[a.item_type] = a; });
-
-  const canEdit = can('edit', _accMerchantId);
-
-  var html = '<table style="width:100%;border-collapse:collapse;font-size:13px">'
-    + '<thead><tr>'
-    + '<th style="text-align:left;padding:7px 10px;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);background:#F7F5EF">Item</th>'
-    + '<th style="text-align:center;padding:7px 10px;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);background:#F7F5EF;width:160px">Booked on</th>'
-    + '<th style="text-align:center;padding:7px 10px;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line);background:#F7F5EF;width:160px">Inhouse on</th>'
-    + '</tr></thead><tbody>';
-
-  ACC_ITEMS_DEF.forEach(function(item) {
-    var rec = existing[item.k] || {};
-    var isOther = item.k === 'other';
-
-    var nameCell;
-    if (isOther) {
-      nameCell = '<span style="color:var(--muted);font-size:11px;margin-right:6px">Other:</span>'
-        + (canEdit
-          ? '<input type="text" value="' + (rec.item_name||'').replace(/"/g,'&quot;') + '" placeholder="e.g. polybag" style="width:120px;padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12px;color:var(--ink)" onchange="saveAccField(\'' + ordId + '\',\'' + item.k + '\',\'item_name\',this.value)">'
-          : (rec.item_name || '\u2014'));
-    } else {
-      nameCell = '<span style="font-weight:500">' + item.n + '</span>';
-    }
-
-    var inp = 'style="padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12px;color:var(--ink);width:130px"';
-
-    var bookedCell = canEdit
-      ? '<input type="date" value="' + (rec.booked_on||'') + '" ' + inp + ' onchange="saveAccField(\'' + ordId + '\',\'' + item.k + '\',\'booked_on\',this.value)">'
-      : '<span style="font-family:var(--mono);font-size:12px">' + (short(rec.booked_on)||'\u2014') + '</span>';
-
-    var inhouseCell = canEdit
-      ? '<input type="date" value="' + (rec.inhouse_on||'') + '" ' + inp + ' onchange="saveAccField(\'' + ordId + '\',\'' + item.k + '\',\'inhouse_on\',this.value)">'
-      : '<span style="font-family:var(--mono);font-size:12px">' + (short(rec.inhouse_on)||'\u2014') + '</span>';
-
-    var statusDot = rec.inhouse_on
-      ? '<span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:7px;flex-shrink:0"></span>'
-      : rec.booked_on
-      ? '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:7px;flex-shrink:0"></span>'
-      : '<span style="width:7px;height:7px;border-radius:50%;background:#D1CFC8;display:inline-block;margin-right:7px;flex-shrink:0"></span>';
-
-    html += '<tr style="border-bottom:1px solid #F0EDE4">'
-      + '<td style="padding:9px 10px;display:flex;align-items:center">' + statusDot + nameCell + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;border-left:1px solid #F0EDE4">' + bookedCell + '</td>'
-      + '<td style="padding:9px 10px;text-align:center;border-left:1px solid #F0EDE4">' + inhouseCell + '</td>'
-      + '</tr>';
+async function getAccessoryItemData(merchantId, style, category) {
+  var upper = (style||'').toUpperCase();
+  const res = await db.from('accessory_bookings').select('*').eq('merchant_id', merchantId).eq('style', upper).eq('category', category).order('booked_on');
+  var bookings = res.data || [];
+  var items = Array.from(new Set(bookings.map(function(b){ return b.item; })));
+  var bookingIds = bookings.map(function(b){ return b.id; });
+  var receipts = [];
+  if (bookingIds.length) {
+    const rcRes = await db.from('accessory_receipts').select('*').in('booking_id', bookingIds).order('received_on');
+    receipts = rcRes.data || [];
+  }
+  return items.map(function(item){
+    var itemBookings = bookings.filter(function(b){ return b.item === item; });
+    var itemBookingIds = itemBookings.map(function(b){ return b.id; });
+    var itemReceipts = receipts.filter(function(r){ return itemBookingIds.indexOf(r.booking_id) !== -1; });
+    var hasQty = itemBookings.some(function(b){ return b.qty != null; });
+    var totalBooked = itemBookings.reduce(function(s,b){ return s+(b.qty||0); }, 0);
+    var totalReceived = itemReceipts.reduce(function(s,r){ return s+(r.qty||0); }, 0);
+    var complete = hasQty ? (totalBooked > 0 && totalReceived >= totalBooked) : (itemReceipts.length > 0);
+    return { item: item, bookings: itemBookings, receipts: itemReceipts, hasQty: hasQty, totalBooked: totalBooked, totalReceived: totalReceived, complete: complete };
   });
-
-  html += '</tbody></table>';
-
-  var bookedCount = ACC_ITEMS_DEF.filter(function(it){ return existing[it.k] && existing[it.k].booked_on; }).length;
-  var inhousedCount = ACC_ITEMS_DEF.filter(function(it){ return existing[it.k] && existing[it.k].inhouse_on; }).length;
-  html += '<div style="display:flex;gap:20px;padding:12px 10px 0;font-size:12px;border-top:1px solid var(--line);margin-top:4px">'
-    + '<span style="color:var(--muted)">Booked: <strong style="color:' + (bookedCount===6?'var(--green)':'var(--ink)') + '">' + bookedCount + ' / 6</strong></span>'
-    + '<span style="color:var(--muted)">Inhoused: <strong style="color:' + (inhousedCount===6?'var(--green)':inhousedCount>0?'var(--amber)':'var(--muted)') + '">' + inhousedCount + ' / 6</strong></span>'
-    + (bookedCount===6&&inhousedCount===6 ? '<span style="color:var(--green);font-weight:600">&#x2713; All complete</span>' : '')
-    + '</div>';
-
-  $('acc-body').innerHTML = html;
 }
 
-async function saveAccField(ordId, itemType, field, value) {
-  var accO = findOrderAnywhere(ordId);
-  if (!can('edit', accO ? accO.merchant_id : null)) { toast('You don\u2019t have permission to do this', 'err'); return; }
-  var update = {order_id: ordId, item_type: itemType};
-  update[field] = value || null;
-  const { error } = await db.from('accessories').upsert(update, { onConflict: 'order_id,item_type' });
-  if (!error) {
-    await reloadSummaries(S.view);
-    renderBoard(S.view);
-  } else {
-    console.error('saveAccField error:', error);
-    toast('Error saving accessory', 'err');
+// Style-wide summary for every order on the board in ONE pass, mirroring
+// loadYarnSummaryByOrder/loadColourApprovalSummaryByOrder's approach exactly.
+async function loadAccessorySummaryByOrder(merchantId, orders, category) {
+  var styles = Array.from(new Set(orders.map(function(o){ return (o.style||'').toUpperCase(); }).filter(Boolean)));
+  var result = {};
+  orders.forEach(function(o){ result[o.id] = { total: 0, received: 0 }; });
+  if (!styles.length) return result;
+  const bkRes = await db.from('accessory_bookings').select('*').eq('merchant_id', merchantId).eq('category', category).in('style', styles);
+  var bookings = bkRes.data || [];
+  var bookingIds = bookings.map(function(b){ return b.id; });
+  var receipts = [];
+  if (bookingIds.length) {
+    const rcRes = await db.from('accessory_receipts').select('booking_id,qty').in('booking_id', bookingIds);
+    receipts = rcRes.data || [];
   }
+  var receivedByBooking = {};
+  receipts.forEach(function(r){ receivedByBooking[r.booking_id] = (receivedByBooking[r.booking_id]||0) + (r.qty||0); });
+  var summaryByStyle = {};
+  styles.forEach(function(s){
+    var styleBookings = bookings.filter(function(b){ return (b.style||'').toUpperCase() === s; });
+    var items = Array.from(new Set(styleBookings.map(function(b){ return b.item; })));
+    var received = 0;
+    items.forEach(function(item){
+      var itemBookings = styleBookings.filter(function(b){ return b.item === item; });
+      var hasQty = itemBookings.some(function(b){ return b.qty != null; });
+      if (hasQty) {
+        var totalBooked = itemBookings.reduce(function(s,b){ return s+(b.qty||0); }, 0);
+        var totalReceived = itemBookings.reduce(function(s,b){ return s+(receivedByBooking[b.id]||0); }, 0);
+        if (totalBooked > 0 && totalReceived >= totalBooked) received++;
+      } else {
+        var anyReceived = itemBookings.some(function(b){ return (receivedByBooking[b.id]||0) > 0; });
+        if (anyReceived) received++;
+      }
+    });
+    summaryByStyle[s] = { total: items.length, received: received };
+  });
+  orders.forEach(function(o){
+    var s = (o.style||'').toUpperCase();
+    if (summaryByStyle[s]) result[o.id] = summaryByStyle[s];
+  });
+  return result;
+}
+
+// Fires only when EVERY item in the category is complete — the date used is
+// the LATEST completing date among all items (the day the category genuinely
+// finished). Mirrors to every PO of the style, same as Yarn and PP.
+async function recomputeAccessoryActual(merchantId, style, category) {
+  var upper = (style||'').toUpperCase();
+  var milesKey = category === 'sewing' ? 'sew' : 'pack';
+  var itemData = await getAccessoryItemData(merchantId, upper, category);
+  var completedOn = null;
+  if (itemData.length && itemData.every(function(it){ return it.complete; })) {
+    var dates = itemData.map(function(it){
+      if (it.hasQty) {
+        var sorted = it.receipts.slice().sort(function(a,b){ return (a.received_on||'') < (b.received_on||'') ? -1 : (a.received_on||'') > (b.received_on||'') ? 1 : 0; });
+        var running = 0;
+        for (var i = 0; i < sorted.length; i++) {
+          running += sorted[i].qty || 0;
+          if (running >= it.totalBooked) return sorted[i].received_on;
+        }
+        return null;
+      } else {
+        var earliest = it.receipts.slice().sort(function(a,b){ return (a.received_on||'') < (b.received_on||'') ? -1 : 1; })[0];
+        return earliest ? earliest.received_on : null;
+      }
+    }).filter(Boolean);
+    completedOn = dates.length ? dates.sort().slice(-1)[0] : null;
+  }
+  var orders = (S.boardCache[merchantId] || []).filter(function(o){ return (o.style||'').toUpperCase() === upper; });
+  for (var j = 0; j < orders.length; j++) {
+    await setMilestoneActual(orders[j].id, milesKey, completedOn);
+  }
+}
+
+// ─── ACCESSORY MODAL — mirrors openMaterialModal/renderMaterialModalBody exactly,
+// with one extra grouping level: each booking belongs to one item, so items are
+// rendered as cards containing their own booking(s) and receipts. ───
+async function openAccessoryModal(ordId, merchantId, style, category) {
+  _accOrderId = ordId; _accMerchantId = merchantId; _accStyle = (style || '').toUpperCase();
+  _accCategory = category || 'sewing';
+  $('acc-title').textContent = 'Accessories \u2014 ' + _accStyle;
+  $('acc-sub').textContent = 'Shared across every PO of this style';
+  $('acc-body').innerHTML = '<div class="exp-loading">Loading\u2026</div>';
+  openModal('ov-accessory');
+  await renderAccessoryModalBody();
+}
+
+function switchAccessoryCategory(category) {
+  _accCategory = category;
+  renderAccessoryModalBody();
+}
+
+async function renderAccessoryModalBody() {
+  var tabsHtml = '<div class="inbox-tabs" style="margin-bottom:14px">'
+    + '<button class="inbox-tab-btn' + (_accCategory==='sewing'?' active':'') + '" onclick="switchAccessoryCategory(\'sewing\')">Sewing</button>'
+    + '<button class="inbox-tab-btn' + (_accCategory==='packing'?' active':'') + '" onclick="switchAccessoryCategory(\'packing\')">Packing</button>'
+    + '</div>';
+
+  var itemData = await getAccessoryItemData(_accMerchantId, _accStyle, _accCategory);
+  var canEdit = can('edit', _accMerchantId);
+  var catLabel = _accCategory === 'sewing' ? 'Sewing' : 'Packing';
+
+  var totalItems = itemData.length;
+  var completedItems = itemData.filter(function(it){ return it.complete; }).length;
+  var pct = totalItems > 0 ? Math.min(100, Math.round((completedItems/totalItems)*100)) : 0;
+
+  var overallHtml = '<div class="yarn-overall-card">'
+    + '<div class="yarn-overall-top"><div class="yarn-overall-lbl">' + catLabel + ' \u2014 Items Complete</div><div class="yarn-overall-nums">' + completedItems + ' / ' + totalItems + ' items</div></div>'
+    + '<div class="yarn-bar-track"><div class="yarn-bar-fill ' + yarnBarClass(pct) + '" style="width:' + pct + '%"></div></div>'
+    + '</div>';
+
+  var addBtnHtml = canEdit ? '<button class="btn pri" style="width:100%;margin:14px 0" onclick="openAddAccessoryBookingForm()">+ Add Booking</button>' : '';
+
+  var bookedNames = itemData.map(function(it){ return it.item; });
+  var commonList = (ACCESSORY_COMMON_ITEMS[_accCategory] || []).slice();
+  // Order items: common list order first (whether booked or not shown via booked cards),
+  // booked items keep their natural order from getAccessoryItemData (booking-date derived).
+  var itemCards = itemData.map(function(it){ return renderAccessoryItemCard(it, canEdit); }).join('');
+
+  $('acc-body').innerHTML = tabsHtml + overallHtml + addBtnHtml
+    + '<div id="acc-add-booking-form"></div>'
+    + (itemCards || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No ' + catLabel.toLowerCase() + ' items booked yet for this style.</div>');
+}
+
+function renderAccessoryItemCard(it, canEdit) {
+  var badgeCls = it.complete ? 'complete' : ((it.totalReceived > 0 || it.receipts.length > 0) ? 'partial' : 'empty');
+  var badgeLabel = it.complete ? '\u2713 Complete' : ((it.totalReceived > 0 || it.receipts.length > 0) ? 'In Progress' : 'Not Received');
+
+  var bookingCards = it.bookings.map(function(b) {
+    var myReceipts = it.receipts.filter(function(r){ return r.booking_id === b.id; });
+    var bReceived = myReceipts.reduce(function(s,r){ return s+(r.qty||0); }, 0);
+    var hasQty = b.qty != null;
+    var bPct = hasQty && b.qty > 0 ? Math.min(100, Math.round((bReceived/b.qty)*100)) : (myReceipts.length ? 100 : 0);
+    var numsHtml = hasQty
+      ? fmt(bReceived) + ' / ' + fmt(b.qty) + ' pcs'
+      : (myReceipts.length ? 'Received' : 'Pending first receipt');
+    var receiptRows = myReceipts.map(function(r){
+      return '<div class="yarn-receipt-row">'
+        + '<span>' + short(r.received_on) + '</span>'
+        + '<span>' + (r.qty != null ? fmt(r.qty) + ' pcs' : '\u2014') + '</span>'
+        + (canEdit ? '<button class="yarn-x" onclick="deleteAccessoryReceipt(\''+r.id+'\')">&#x2715;</button>' : '<span></span>')
+        + '</div>';
+    }).join('');
+    var receiptsTableHtml = '<div class="yarn-receipts-table">'
+      + '<div class="yarn-receipts-hdr"><span>Date</span><span>Quantity</span><span></span></div>'
+      + (receiptRows || '<div class="yarn-receipts-empty">No inhouse entries yet</div>')
+      + '<div id="acc-add-row-'+b.id+'"></div>'
+      + '</div>';
+    return '<div class="yarn-booking-card">'
+      + '<div class="yarn-booking-hdr">'
+      + '<div><div class="yarn-booking-supplier">'+(b.supplier?htmlEsc(b.supplier):'<span style="color:var(--muted)">No supplier noted</span>')+'</div>'
+      + '<div class="yarn-booking-meta">'+short(b.booked_on)+(b.pi_number?' \u00b7 PI '+htmlEsc(b.pi_number):'')+(b.lc_number?' \u00b7 LC '+htmlEsc(b.lc_number):'')+'</div></div>'
+      + (canEdit ? '<button class="yarn-x" onclick="deleteAccessoryBooking(\''+b.id+'\')">&#x1F5D1;</button>' : '')
+      + '</div>'
+      + '<div class="yarn-bar-track sm"><div class="yarn-bar-fill sm ' + yarnBarClass(bPct) + '" style="width:'+bPct+'%"></div></div>'
+      + '<div class="yarn-booking-nums">'+numsHtml+'</div>'
+      + receiptsTableHtml
+      + (canEdit ? '<button class="btn sm ghost" style="margin-top:8px" onclick="addAccessoryReceiptRow(\''+b.id+'\')">+ Add Inhouse</button>' : '')
+      + '</div>';
+  }).join('');
+
+  return '<div style="margin-bottom:18px">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+    + '<div style="font-weight:700;font-size:14px">'+htmlEsc(it.item)+'</div>'
+    + '<span class="chip ' + (badgeCls==='complete'?'ok':badgeCls==='partial'?'warn':'') + '" style="font-size:10px">'+badgeLabel+'</span>'
+    + '</div>'
+    + bookingCards
+    + '</div>';
+}
+
+function openAddAccessoryBookingForm() {
+  var opts = (ACCESSORY_COMMON_ITEMS[_accCategory] || []).map(function(n){ return '<option value="'+htmlEsc(n)+'">'+htmlEsc(n)+'</option>'; }).join('');
+  var today0 = new Date().toISOString().slice(0,10);
+  $('acc-add-booking-form').innerHTML = '<div class="yarn-form-card">'
+    + '<div class="yarn-form-title">New ' + (_accCategory==='sewing'?'Sewing':'Packing') + ' Booking</div>'
+    + '<div class="yarn-form-grid">'
+    + '<div class="f"><label>Item <span style="color:var(--red)">*</span></label><select id="ab-item" onchange="document.getElementById(\'ab-item-other-wrap\').style.display=(this.value===\'__other__\'?\'block\':\'none\')"><option value="">Select item\u2026</option>'+opts+'<option value="__other__">Others (type below)</option></select></div>'
+    + '<div class="f" id="ab-item-other-wrap" style="display:none"><label>Item Name <span style="color:var(--red)">*</span></label><input id="ab-item-other" placeholder="Type item name"></div>'
+    + '<div class="f"><label>Supplier</label><input id="ab-supplier" placeholder="optional"></div>'
+    + '<div class="f"><label>Booking Date <span style="color:var(--red)">*</span></label><input type="date" id="ab-date" value="'+today0+'"></div>'
+    + '<div class="f"><label>Quantity</label><input type="number" step="0.01" id="ab-qty" placeholder="optional \u2014 blank = complete on first receipt"></div>'
+    + '<div class="f"><label>PI Number</label><input id="ab-pi" placeholder="optional"></div>'
+    + '<div class="f"><label>LC Number</label><input id="ab-lc" placeholder="optional"></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:10px">'
+    + '<button class="btn" onclick="$(\'acc-add-booking-form\').innerHTML=\'\'">Cancel</button>'
+    + '<button class="btn pri" onclick="saveNewAccessoryBooking()">Add Booking</button>'
+    + '</div></div>';
+}
+
+async function saveNewAccessoryBooking() {
+  if (!can('edit', _accMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var sel = $('ab-item').value;
+  var item = sel === '__other__' ? $('ab-item-other').value.trim() : sel;
+  var supplier = $('ab-supplier').value.trim();
+  var date = $('ab-date').value;
+  var qtyRaw = $('ab-qty').value.trim();
+  var qty = qtyRaw === '' ? null : (parseFloat(qtyRaw) || 0);
+  var pi = $('ab-pi').value.trim();
+  var lc = $('ab-lc').value.trim();
+  if (!item || !date) { toast('Item and booking date are required', 'err'); return; }
+  await db.from('accessory_bookings').insert({
+    merchant_id: _accMerchantId, style: _accStyle, category: _accCategory,
+    item: item, supplier: supplier || null, booked_on: date, qty: qty,
+    pi_number: pi || null, lc_number: lc || null,
+    created_by: S.user.name
+  });
+  toast('Booking added', 'ok-t');
+  await recomputeAccessoryActual(_accMerchantId, _accStyle, _accCategory);
+  await reloadSummaries(_accMerchantId);
+  renderBoard(S.view);
+  await renderAccessoryModalBody();
+}
+
+async function deleteAccessoryBooking(id) {
+  if (!can('edit', _accMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var rcRes = await db.from('accessory_receipts').select('id').eq('booking_id', id);
+  var hasReceipts = (rcRes.data||[]).length > 0;
+  var msg = hasReceipts
+    ? 'This booking has inhouse entries recorded against it. Deleting it will also delete those entries. Continue?'
+    : 'Delete this booking?';
+  if (!confirm(msg)) return;
+  await db.from('accessory_receipts').delete().eq('booking_id', id);
+  await db.from('accessory_bookings').delete().eq('id', id);
+  toast('Booking deleted', 'ok-t');
+  await recomputeAccessoryActual(_accMerchantId, _accStyle, _accCategory);
+  await reloadSummaries(_accMerchantId);
+  renderBoard(S.view);
+  await renderAccessoryModalBody();
+}
+
+function addAccessoryReceiptRow(bookingId) {
+  var existing = document.getElementById('acc-new-receipt-'+bookingId);
+  if (existing) { existing.remove(); return; }
+  var today0 = new Date().toISOString().slice(0,10);
+  var html = '<div class="yarn-add-receipt-row" id="acc-new-receipt-'+bookingId+'">'
+    + '<input type="date" id="ab-new-rc-date-'+bookingId+'" value="'+today0+'">'
+    + '<input type="number" step="0.01" id="ab-new-rc-qty-'+bookingId+'" placeholder="Qty (optional)">'
+    + '<button class="btn sm pri" onclick="saveNewAccessoryReceipt(\''+bookingId+'\')">Add</button>'
+    + '</div>';
+  var target = $('acc-add-row-'+bookingId);
+  if (target) target.outerHTML = '<div id="acc-add-row-'+bookingId+'">' + html + '</div>';
+}
+
+async function saveNewAccessoryReceipt(bookingId) {
+  if (!can('edit', _accMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var date = $('ab-new-rc-date-'+bookingId).value;
+  var qtyRaw = $('ab-new-rc-qty-'+bookingId).value.trim();
+  var qty = qtyRaw === '' ? null : (parseFloat(qtyRaw) || 0);
+  if (!date) { toast('Date is required', 'err'); return; }
+  await db.from('accessory_receipts').insert({ booking_id: bookingId, received_on: date, qty: qty, created_by: S.user.name });
+  toast('Inhouse recorded', 'ok-t');
+  await recomputeAccessoryActual(_accMerchantId, _accStyle, _accCategory);
+  await reloadSummaries(_accMerchantId);
+  renderBoard(S.view);
+  await renderAccessoryModalBody();
+}
+
+async function deleteAccessoryReceipt(id) {
+  if (!can('edit', _accMerchantId)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (!confirm('Remove this inhouse entry?')) return;
+  await db.from('accessory_receipts').delete().eq('id', id);
+  toast('Removed', 'ok-t');
+  await recomputeAccessoryActual(_accMerchantId, _accStyle, _accCategory);
+  await reloadSummaries(_accMerchantId);
+  renderBoard(S.view);
+  await renderAccessoryModalBody();
 }
 
 // ─── DELETE ORDER ───
