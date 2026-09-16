@@ -1251,7 +1251,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 2</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 4</p>
   </div>
 </div>
 
@@ -1291,7 +1291,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">2026-09-16 &middot; 2</div>
+  <div id="ver-stamp">2026-09-16 &middot; 4</div>
 </div>
 
 
@@ -2522,9 +2522,17 @@ async function loadDashOrders() {
 
 
 async function loadAlerts() {
-  const canSee = ['admin','management','hod','manager','audit'].includes(S.user.role);
-  if (!canSee) { S.alerts = []; return; }
-  const { data: ad } = await db.from('shipment_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false });
+  const isSenior = ['admin','management','hod','manager','audit'].includes(S.user.role);
+  const isOwnerRole = ['merchant','jm'].includes(S.user.role);
+  if (!isSenior && !isOwnerRole) { S.alerts = []; return; }
+  let q = db.from('shipment_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false });
+  if (!isSenior) {
+    // Merchant/JM only see the Lab Dip supplier follow-up nags for their own merchant(s) — not shipment late/short alerts, which stay senior-only.
+    var myIds = S.user.role === 'merchant' ? [S.user.id] : (S.myJMMerchants || []);
+    if (!myIds.length) { S.alerts = []; return; }
+    q = q.eq('alert_type', 'labdip_supplier_late').in('merchant_id', myIds);
+  }
+  const { data: ad } = await q;
   S.alerts = ad || [];
 }
 
@@ -2542,6 +2550,7 @@ async function loadBoardOrders(merchantId) {
     const attachByOrder = await loadAttachmentsByOrder(merchantId, data || []);
     const ppByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'pp');
     const labdipByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'labdip');
+    checkLabDipSupplierAlerts(merchantId, data || []); // fire-and-forget; own try/catch inside
     const sewByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'sewing');
     const packByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'packing');
     const [ap, acc] = await Promise.all([
@@ -4621,6 +4630,7 @@ async function getColourApprovalData(merchantId, style, type) {
       if (latest.approved_on) status = 'approved';
       else if (latest.rejected_on) status = 'rejected';
       else if (latest.submitted_on) status = 'awaiting';
+      else if (latest.sent_to_supplier_on) status = 'sourcing';
     }
     return { colour: c, rounds: entry.rounds, latest: latest, status: status };
   });
@@ -4671,6 +4681,46 @@ async function loadColourApprovalSummaryByOrder(merchantId, orders, type) {
     if (summaryByStyle[s]) result[o.id] = summaryByStyle[s];
   });
   return result;
+}
+
+// Nags via the shared alert inbox: 5 days after a Lab Dip swatch goes to the
+// supplier with no submission to the buyer yet, then again at 7, then every
+// 2 days after that. One alert row per checkpoint (not per day) so repeated
+// board loads don't spam duplicates; dismissing one doesn't suppress the
+// next checkpoint since each checkpoint is its own row.
+async function checkLabDipSupplierAlerts(merchantId, orders) {
+  try {
+    var styles = Array.from(new Set(orders.map(function(o){ return (o.style||'').toUpperCase(); }).filter(Boolean)));
+    if (!styles.length) return;
+    const res = await db.from('pp_colour_approvals').select('*').eq('merchant_id', merchantId).eq('type', 'labdip').in('style', styles);
+    var rows = res.data || [];
+    var byStyleColour = {};
+    rows.forEach(function(r){
+      var key = r.style + '\u0001' + r.colour;
+      if (!byStyleColour[key] || (r.round||0) > (byStyleColour[key].round||0)) byStyleColour[key] = r;
+    });
+    var today0 = new Date().toISOString().slice(0,10);
+    for (var key in byStyleColour) {
+      var latest = byStyleColour[key];
+      if (!latest.sent_to_supplier_on || latest.submitted_on || latest.approved_on || latest.rejected_on) continue;
+      var daysElapsed = Math.floor((new Date(today0) - new Date(latest.sent_to_supplier_on)) / 86400000);
+      if (daysElapsed < 5) continue;
+      var checkpoint = daysElapsed < 7 ? 5 : 7 + 2*Math.floor((daysElapsed-7)/2);
+      var ord = orders.find(function(o){ return (o.style||'').toUpperCase() === latest.style; });
+      if (!ord) continue;
+      const existing = await db.from('shipment_alerts').select('days_late')
+        .eq('order_id', ord.id).eq('alert_type', 'labdip_supplier_late').eq('colour', latest.colour)
+        .order('days_late', { ascending: false }).limit(1);
+      var maxSoFar = (existing.data && existing.data[0]) ? existing.data[0].days_late : -1;
+      if (maxSoFar >= checkpoint) continue;
+      await db.from('shipment_alerts').insert({
+        order_id: ord.id, style: ord.style, buyer: ord.buyer, merchant_id: merchantId,
+        alert_type: 'labdip_supplier_late', days_late: checkpoint,
+        colour: latest.colour, supplier_name: latest.supplier_name || null, sent_to_supplier_on: latest.sent_to_supplier_on,
+        shipped_qty: null, short_qty: null, value_lost: null
+      });
+    }
+  } catch (e) { /* best-effort — never block board load */ }
 }
 
 // Fires only when EVERY colour is approved — the date used is the LATEST
@@ -4747,12 +4797,14 @@ async function renderPPColourModal() {
     + '<div class="yarn-bar-track"><div class="yarn-bar-fill ' + (summary.total&&summary.approved===summary.total?'complete':summary.approved>0?'partial':'empty') + '" style="width:' + pct + '%"></div></div>'
     + '</div>';
 
-  var bodyHtml = _ppcMode === 'submit-pick' ? renderPPSubmitPicker() : renderPPColourList();
+  var bodyHtml = _ppcMode === 'submit-pick' ? renderPPSubmitPicker() : _ppcMode === 'source-pick' ? renderPPSourcePicker() : renderPPColourList();
   $('ppc-body').innerHTML = overallHtml + bodyHtml;
 }
 
 function renderPPColourList() {
   var eligibleColours = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+  var sourcingEligible = _ppcColourData.filter(function(c){ return c.status==='sourcing'; });
+  var isLabdip = _ppcType === 'labdip';
   var actionBar = '';
   if (_ppcCanEdit) {
     var bulkCount = Object.keys(_ppcBulkSelected).filter(function(c){return _ppcBulkSelected[c];}).length;
@@ -4768,7 +4820,12 @@ function renderPPColourList() {
         + '</div></div>';
     } else {
       var btns = [];
-      if (eligibleColours.length) btns.push('<button class="btn pri" onclick="ppcStartSubmit()">Submit Sample(s)</button>');
+      if (isLabdip) {
+        if (eligibleColours.length) btns.push('<button class="btn pri" onclick="ppcStartSource()">Send to Supplier</button>');
+        if (sourcingEligible.length) btns.push('<button class="btn pri" style="background:var(--accent2,#6366F1);border-color:var(--accent2,#6366F1)" onclick="ppcStartSubmit()">Submit to Buyer (' + sourcingEligible.length + ')</button>');
+      } else {
+        if (eligibleColours.length) btns.push('<button class="btn pri" onclick="ppcStartSubmit()">Submit Sample(s)</button>');
+      }
       if (bulkCount > 0) {
         btns.push('<button class="btn sm" style="background:var(--green);border-color:var(--green);color:#fff" onclick="ppcBulkPickResult(\'approve\')">&#x2713; Approve ' + bulkCount + ' selected</button>');
         btns.push('<button class="btn sm danger" onclick="ppcBulkPickResult(\'reject\')">&#x2717; Reject ' + bulkCount + ' selected</button>');
@@ -4784,6 +4841,7 @@ function renderPPColourCard(c) {
   var statusBadge = c.status==='approved' ? '<span class="chip ok">Approved</span>'
     : c.status==='rejected' ? '<span class="chip bad">Rejected</span>'
     : c.status==='awaiting' ? '<span class="chip warn">Awaiting outcome</span>'
+    : c.status==='sourcing' ? '<span class="chip run">With supplier</span>'
     : '<span class="chip run">Not submitted</span>';
 
   var checkbox = (_ppcCanEdit && c.status==='awaiting')
@@ -4794,7 +4852,19 @@ function renderPPColourCard(c) {
   var today0 = new Date().toISOString().slice(0,10);
 
   var detailLine = '<div style="color:var(--muted);font-size:11px">Never submitted</div>';
-  if (isPicking && c.status==='awaiting') {
+  if (c.status==='sourcing' && c.latest) {
+    var sentDate0 = c.latest.sent_to_supplier_on;
+    var daysElapsed0 = sentDate0 ? Math.floor((new Date(today0) - new Date(sentDate0)) / 86400000) : 0;
+    var isLink0 = c.latest.tracking_ref && /^https?:\/\//i.test(c.latest.tracking_ref);
+    detailLine = '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:11.5px">'
+      + '<div><strong>' + htmlEsc(c.latest.supplier_name||'Supplier not noted') + '</strong> &middot; sent ' + short(sentDate0) + ' &middot; <span style="' + (daysElapsed0>=5?'color:var(--red);font-weight:700':'color:var(--muted)') + '">' + daysElapsed0 + ' day' + (daysElapsed0===1?'':'s') + ' with supplier</span></div>'
+      + (c.latest.tracking_ref ? '<div style="margin-top:3px">Tracking: ' + (isLink0 ? '<a href="'+htmlEsc(c.latest.tracking_ref)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+htmlEsc(c.latest.tracking_ref)+'</a>' : htmlEsc(c.latest.tracking_ref)) + '</div>' : '')
+      + '</div>'
+      + (_ppcCanEdit ? '<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">'
+        + '<button class="btn sm pri" style="padding:3px 8px" onclick="ppcSubmitOne(\''+jsAttrEsc(c.colour)+'\')">Submit to Buyer</button>'
+        + '<button class="btn sm ghost" style="padding:3px 8px" onclick="ppcUndoSource(\''+jsAttrEsc(c.colour)+'\')">&#x21A9; Undo</button>'
+        + '</div>' : '');
+  } else if (isPicking && c.status==='awaiting') {
     var outcome = _ppcPickingResult.outcome;
     detailLine = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
       + '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px">'
@@ -4839,21 +4909,26 @@ function renderPPColourCard(c) {
     + detailLine + historyHtml + '</div>';
 }
 
+function ppcSubmitEligible() {
+  return _ppcType === 'labdip'
+    ? _ppcColourData.filter(function(c){ return c.status==='sourcing'; })
+    : _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+}
 function ppcStartSubmit() { _ppcMode = 'submit-pick'; _ppcSubmitSelected = {}; renderPPColourModal(); }
 function ppcCancelSubmit() { _ppcMode = 'list'; renderPPColourModal(); }
 
 function renderPPSubmitPicker() {
-  var eligible = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+  var eligible = ppcSubmitEligible();
   var today0 = new Date().toISOString().slice(0,10);
   var rows = eligible.map(function(c){
     return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer">'
       + '<input type="checkbox" ' + (_ppcSubmitSelected[c.colour]?'checked':'') + ' onchange="ppcToggleSubmitSel(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px">'
-      + '<span style="font-weight:600;flex:1">' + htmlEsc(c.colour) + '</span>'
+      + '<span style="font-weight:600;flex:1">' + htmlEsc(c.colour) + (c.status==='sourcing' && c.latest && c.latest.supplier_name ? '<span style="font-weight:400;color:var(--muted);font-size:11px"> &middot; '+htmlEsc(c.latest.supplier_name)+'</span>' : '') + '</span>'
       + (c.status==='rejected' ? '<span class="chip bad" style="font-size:9px">Resubmitting</span>' : '')
       + '</label>';
   }).join('');
   return '<div class="yarn-form-card">'
-    + '<div class="yarn-form-title">Select colours to submit</div>'
+    + '<div class="yarn-form-title">Select colours to submit ' + (_ppcType==='labdip'?'to buyer':'') + '</div>'
     + '<div style="margin-bottom:10px"><button type="button" class="btn sm" onclick="ppcSelectAllSubmit()">Select all</button> <button type="button" class="btn sm" onclick="ppcClearSubmit()">Clear</button></div>'
     + rows
     + '<div class="f" style="margin-top:10px"><label>Submission Date</label><input type="date" id="ppc-submit-date" value="'+today0+'" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>'
@@ -4864,10 +4939,20 @@ function renderPPSubmitPicker() {
 }
 function ppcToggleSubmitSel(colour, checked) { if(checked) _ppcSubmitSelected[colour]=true; else delete _ppcSubmitSelected[colour]; }
 function ppcSelectAllSubmit() {
-  _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; }).forEach(function(c){ _ppcSubmitSelected[c.colour]=true; });
+  ppcSubmitEligible().forEach(function(c){ _ppcSubmitSelected[c.colour]=true; });
   renderPPColourModal();
 }
 function ppcClearSubmit() { _ppcSubmitSelected={}; renderPPColourModal(); }
+
+// Auto-clears any still-open Lab Dip "with supplier" nags for this colour —
+// called the moment it's actually submitted to the buyer, so the inbox
+// doesn't keep showing a stale alert for something that's already moved on.
+async function clearLabDipSupplierAlerts(merchantId, style, colour) {
+  try {
+    await db.from('shipment_alerts').update({ dismissed: true, dismissed_by: 'system', dismissed_at: new Date().toISOString() })
+      .eq('merchant_id', merchantId).eq('style', style).eq('colour', colour).eq('alert_type', 'labdip_supplier_late').eq('dismissed', false);
+  } catch (e) { /* best-effort */ }
+}
 
 async function ppcConfirmSubmit() {
   if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
@@ -4877,14 +4962,104 @@ async function ppcConfirmSubmit() {
   for (var i=0;i<selected.length;i++) {
     var c = selected[i];
     var cEntry = _ppcColourData.find(function(x){return x.colour===c;});
-    var nextRound = cEntry && cEntry.latest ? (cEntry.latest.round||0)+1 : 1;
-    await db.from('pp_colour_approvals').insert({ merchant_id:_ppcMerchantId, style:_ppcStyle, type:_ppcType, colour:c, round:nextRound, submitted_on:date, created_by:S.user.name });
+    if (_ppcType === 'labdip' && cEntry && cEntry.status === 'sourcing' && cEntry.latest) {
+      await db.from('pp_colour_approvals').update({ submitted_on: date }).eq('id', cEntry.latest.id);
+      await clearLabDipSupplierAlerts(_ppcMerchantId, _ppcStyle, c);
+    } else {
+      var nextRound = cEntry && cEntry.latest ? (cEntry.latest.round||0)+1 : 1;
+      await db.from('pp_colour_approvals').insert({ merchant_id:_ppcMerchantId, style:_ppcStyle, type:_ppcType, colour:c, round:nextRound, submitted_on:date, created_by:S.user.name });
+    }
   }
   toast(selected.length + ' colour(s) submitted', 'ok-t');
   _ppcMode='list';
   if (_ppcType === 'pp') await recomputePPActual(_ppcMerchantId, _ppcStyle);
   await reloadSummaries(_ppcMerchantId);
   renderBoard(S.view);
+  await renderPPColourModal();
+}
+
+// Submit a single colour straight from its card (used in the "sourcing" state).
+async function ppcSubmitOne(colour) {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
+  if (!cEntry || !cEntry.latest) return;
+  var date = new Date().toISOString().slice(0,10);
+  await db.from('pp_colour_approvals').update({ submitted_on: date }).eq('id', cEntry.latest.id);
+  await clearLabDipSupplierAlerts(_ppcMerchantId, _ppcStyle, colour);
+  toast('Submitted to buyer', 'ok-t');
+  await reloadSummaries(_ppcMerchantId);
+  renderBoard(S.view);
+  await renderPPColourModal();
+}
+
+// ─── Send-to-supplier stage (Lab Dip only) ───
+var _ppcSourceSelected = {};
+function ppcStartSource() { _ppcMode = 'source-pick'; _ppcSourceSelected = {}; renderPPColourModal(); }
+function ppcCancelSource() { _ppcMode = 'list'; renderPPColourModal(); }
+function ppcToggleSourceSel(colour, checked) { if(checked) _ppcSourceSelected[colour]=true; else delete _ppcSourceSelected[colour]; }
+function ppcSelectAllSource() {
+  _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; }).forEach(function(c){ _ppcSourceSelected[c.colour]=true; });
+  renderPPColourModal();
+}
+function ppcClearSource() { _ppcSourceSelected={}; renderPPColourModal(); }
+
+function renderPPSourcePicker() {
+  var eligible = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
+  var today0 = new Date().toISOString().slice(0,10);
+  var rows = eligible.map(function(c){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer">'
+      + '<input type="checkbox" ' + (_ppcSourceSelected[c.colour]?'checked':'') + ' onchange="ppcToggleSourceSel(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px">'
+      + '<span style="font-weight:600;flex:1">' + htmlEsc(c.colour) + '</span>'
+      + (c.status==='rejected' ? '<span class="chip bad" style="font-size:9px">Resubmitting</span>' : '')
+      + '</label>';
+  }).join('');
+  return '<div class="yarn-form-card">'
+    + '<div class="yarn-form-title">Send swatch(es) to supplier</div>'
+    + '<div style="margin-bottom:10px"><button type="button" class="btn sm" onclick="ppcSelectAllSource()">Select all</button> <button type="button" class="btn sm" onclick="ppcClearSource()">Clear</button></div>'
+    + rows
+    + '<div class="yarn-form-grid" style="margin-top:10px">'
+    + '<div class="f"><label>Supplier Name</label><input id="ppc-source-supplier" placeholder="optional"></div>'
+    + '<div class="f"><label>Sent Date <span style="color:var(--red)">*</span></label><input type="date" id="ppc-source-date" value="'+today0+'"></div>'
+    + '<div class="f" style="grid-column:1/-1"><label>Tracking Number / Link</label><input id="ppc-source-tracking" placeholder="optional \u2014 courier tracking # or a link"></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:12px">'
+    + '<button class="btn" onclick="ppcCancelSource()">Cancel</button>'
+    + '<button class="btn pri" onclick="ppcConfirmSource()">Send to Supplier</button>'
+    + '</div></div>';
+}
+
+async function ppcConfirmSource() {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var date = $('ppc-source-date').value;
+  var supplier = $('ppc-source-supplier').value.trim();
+  var tracking = $('ppc-source-tracking').value.trim();
+  var selected = Object.keys(_ppcSourceSelected).filter(function(c){return _ppcSourceSelected[c];});
+  if (!date || !selected.length) { toast('Pick a date and at least one colour', 'err'); return; }
+  for (var i=0;i<selected.length;i++) {
+    var c = selected[i];
+    var cEntry = _ppcColourData.find(function(x){return x.colour===c;});
+    var nextRound = cEntry && cEntry.latest ? (cEntry.latest.round||0)+1 : 1;
+    await db.from('pp_colour_approvals').insert({
+      merchant_id:_ppcMerchantId, style:_ppcStyle, type:_ppcType, colour:c, round:nextRound,
+      sent_to_supplier_on:date, supplier_name: supplier||null, tracking_ref: tracking||null,
+      created_by:S.user.name
+    });
+  }
+  toast(selected.length + ' colour(s) sent to supplier', 'ok-t');
+  _ppcMode='list';
+  await renderPPColourModal();
+}
+
+// Reverts a colour out of "sourcing" — deletes the round if it never went
+// further (no submitted/approved/rejected recorded on it).
+async function ppcUndoSource(colour) {
+  if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
+  if (!cEntry || !cEntry.latest) return;
+  if (!confirm('Undo sending this colour to the supplier?')) return;
+  await db.from('pp_colour_approvals').delete().eq('id', cEntry.latest.id);
+  await clearLabDipSupplierAlerts(_ppcMerchantId, _ppcStyle, colour);
+  toast('Reverted', 'ok-t');
   await renderPPColourModal();
 }
 
@@ -5967,19 +6142,24 @@ function getMyVisibleRequests() {
 function buildAlertCardsHTML() {
   if (!S.alerts || !S.alerts.length) return '';
   const isMA = S.user.role === 'management';
+  const canDismiss = isMA || ['merchant','jm'].includes(S.user.role);
   return S.alerts.map(function(a) {
+    if (a.alert_type === 'labdip_supplier_late') {
+      const merchLD = S.users.find(function(u){return u.id===a.merchant_id;});
+      return '<div class="alert-card pp_late"><div class="alert-icon">&#x1F9EA;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + htmlEsc(a.colour||'') + ' \u00b7 ' + a.buyer + (merchLD?' \u00b7 '+merchLD.name:'') + '</div><div class="alert-detail">Lab Dip still with ' + htmlEsc(a.supplier_name||'supplier') + (a.sent_to_supplier_on?' since '+short(a.sent_to_supplier_on):'') + ' \u2014 <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + '</strong>, not yet submitted to buyer</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+    }
     var apvLateType = a.alert_type && a.alert_type.slice(-5) === '_late' ? a.alert_type.slice(0,-5) : null;
     if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
       const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
       const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
-      return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+      return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
     }
     const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
     const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
     let detail = '';
     if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
     if (a.alert_type === 'late' || a.alert_type === 'both') detail += '<strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong>';
-    return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (isMA?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+    return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
   }).join('');
 }
 
