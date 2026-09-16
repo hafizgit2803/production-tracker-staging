@@ -1245,7 +1245,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">v2026-09-10 WF-9.37-WIP</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 1</p>
   </div>
 </div>
 
@@ -1285,7 +1285,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">v2026-09-10 WF-9.37-WIP</div>
+  <div id="ver-stamp">2026-09-16 &middot; 1</div>
 </div>
 
 
@@ -3218,12 +3218,12 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     var pack = sumObj.pack || {total:0, received:0};
     var total = sew.total + pack.total;
     var received = sew.received + pack.received;
-    var oc = "event.stopPropagation();openAccessoryModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "','sewing')";
     var pct = total > 0 ? Math.min(100, Math.round((received/total)*100)) : 0;
-    var cls = total === 0 ? 'empty' : received >= total ? 'complete' : received > 0 ? 'partial' : 'empty';
-    var label = total > 0 ? (received + '/' + total + ' items') : 'No items';
-    return '<div class="yarn-pill ' + cls + '" onclick="' + oc + '" style="cursor:pointer"><div class="yarn-pill-fill" style="width:' + pct + '%"></div>'
-      + '<span class="yarn-pill-label">Accessories: ' + label + '</span></div>';
+    var inner = total > 0
+      ? '<div class="yarn-pill ' + yarnBarClass(pct) + '"><div class="yarn-pill-fill" style="width:' + pct + '%"></div>'
+        + '<span class="yarn-pill-label">' + received + ' / ' + total + ' items</span></div>'
+      : '<div class="yarn-pill no-booking"><span class="yarn-pill-label">No booking</span></div>';
+    return '<div onclick="event.stopPropagation();openAccessoryModal(\'' + ordId + '\',\'' + merchantId + '\',\'' + jsAttrEsc(style) + '\',\'sewing\')" style="cursor:pointer">' + inner + '</div>';
   }
 
   // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
@@ -3340,7 +3340,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       var attachHtml = '<button type="button" class="attach-pill ' + attachPillCls + '" onclick="event.stopPropagation();openAttachEditPopover(\'' + o.id + '\',\'' + o.merchant_id + '\',\'' + jsAttrEsc(o.style) + '\')">' + attachText + '</button>';
       cellsByKey['_attachment'] = singleTd('_attachment', '', attachHtml);
     }
-    if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', '', acChip);
+    if (itemByKey['_accessories']) cellsByKey['_accessories'] = singleTd('_accessories', 'col-yarn', acChip);
 
     if (itemByKey['_approvals']) {
       var apIt = itemByKey['_approvals'];
