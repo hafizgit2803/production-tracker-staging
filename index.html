@@ -3213,16 +3213,17 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
   const matLabel = division === 'knit' ? 'Fabric' : 'Yarn';
   const isMerchant = actsAsMerchant(uid);
 
-  function accCategoryChip(catSum, ordId, merchantId, style, category) {
-    var total = catSum ? catSum.total : 0;
-    var received = catSum ? catSum.received : 0;
-    var oc = "event.stopPropagation();openAccessoryModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "','" + category + "')";
+  function accessoryChip(sumObj, ordId, merchantId, style) {
+    var sew = sumObj.sew || {total:0, received:0};
+    var pack = sumObj.pack || {total:0, received:0};
+    var total = sew.total + pack.total;
+    var received = sew.received + pack.received;
+    var oc = "event.stopPropagation();openAccessoryModal('" + ordId + "','" + merchantId + "','" + jsAttrEsc(style) + "','sewing')";
     var pct = total > 0 ? Math.min(100, Math.round((received/total)*100)) : 0;
     var cls = total === 0 ? 'empty' : received >= total ? 'complete' : received > 0 ? 'partial' : 'empty';
     var label = total > 0 ? (received + '/' + total + ' items') : 'No items';
-    var catLabel = category === 'sewing' ? 'Sewing' : 'Packing';
-    return '<div class="yarn-pill ' + cls + '" onclick="' + oc + '" style="cursor:pointer;margin-bottom:3px"><div class="yarn-pill-fill" style="width:' + pct + '%"></div>'
-      + '<span class="yarn-pill-label">' + catLabel + ': ' + label + '</span></div>';
+    return '<div class="yarn-pill ' + cls + '" onclick="' + oc + '" style="cursor:pointer"><div class="yarn-pill-fill" style="width:' + pct + '%"></div>'
+      + '<span class="yarn-pill-label">Accessories: ' + label + '</span></div>';
   }
 
   // ── Determine visible/ordered items for this buyer (fixed blocks + custom fields, unified) ──
@@ -3287,7 +3288,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const ftChip = apvChip(sum, 'fit',     o.id, division, isMerchant, null);
     const ppChip = colourApprovalPill(sum.pp, o.id, o.merchant_id, o.style, 'pp') + '<div class="apv-date-line' + (o.plan_pp?'':' empty') + '">' + (o.plan_pp ? 'TNA: '+short(o.plan_pp) : 'No TNA date') + '</div>';
     const ssChip = apvChip(sum, 'sizeset', o.id, division, isMerchant, null);
-    const acChip = accCategoryChip(sum.sew, o.id, o.merchant_id, o.style, 'sewing') + accCategoryChip(sum.pack, o.id, o.merchant_id, o.style, 'packing');
+    const acChip = accessoryChip(sum, o.id, o.merchant_id, o.style);
 
     const totalBk = sum.bk, totalRc = sum.rc;
     const yarnPct = totalBk > 0 ? Math.min(100, Math.round((totalRc/totalBk)*100)) : 0;
@@ -6205,9 +6206,17 @@ function switchAccessoryCategory(category) {
 }
 
 async function renderAccessoryModalBody() {
+  var order = findOrderAnywhere(_accOrderId) || {};
   var tabsHtml = '<div class="inbox-tabs" style="margin-bottom:14px">'
     + '<button class="inbox-tab-btn' + (_accCategory==='sewing'?' active':'') + '" onclick="switchAccessoryCategory(\'sewing\')">Sewing</button>'
     + '<button class="inbox-tab-btn' + (_accCategory==='packing'?' active':'') + '" onclick="switchAccessoryCategory(\'packing\')">Packing</button>'
+    + '</div>';
+
+  var planDate = _accCategory === 'sewing' ? order.plan_sew : order.plan_pack;
+  var actDate = _accCategory === 'sewing' ? order.act_sew : order.act_pack;
+  var tnaLineHtml = '<div class="apv-date-line' + (planDate?'':' empty') + '" style="margin-bottom:12px">'
+    + (planDate ? 'TNA: '+short(planDate) : 'No TNA date')
+    + (actDate ? ' \u00b7 Actual: '+short(actDate) : '')
     + '</div>';
 
   var itemData = await getAccessoryItemData(_accMerchantId, _accStyle, _accCategory);
@@ -6231,7 +6240,7 @@ async function renderAccessoryModalBody() {
   // booked items keep their natural order from getAccessoryItemData (booking-date derived).
   var itemCards = itemData.map(function(it){ return renderAccessoryItemCard(it, canEdit); }).join('');
 
-  $('acc-body').innerHTML = tabsHtml + overallHtml + addBtnHtml
+  $('acc-body').innerHTML = tabsHtml + tnaLineHtml + overallHtml + addBtnHtml
     + '<div id="acc-add-booking-form"></div>'
     + (itemCards || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No ' + catLabel.toLowerCase() + ' items booked yet for this style.</div>');
 }
