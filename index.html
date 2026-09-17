@@ -1245,10 +1245,10 @@ table.dyn-board th.num{font-family:inherit;font-weight:800;letter-spacing:.05em}
 table.dyn-board td:has(.style-thumb:hover){overflow:visible}
 /* The row-actions cell holds up to 5 buttons (TNA/Edit/Pack List/Activity/Trash).
    Kept on one line as a normal action row — width is set generously above what
-   the buttons need (see the matching 300px in the JS that builds this cell and
+   the buttons need (see the matching 380px in the JS that builds this cell and
    its header spacer) so nothing clips; overflow:visible is a safety net, not
    the mechanism doing the work. If more buttons get added here later, widen
-   both the 300px in this rule and the matching 300px in board.js/index.html
+   both the 380px in this rule and the matching 380px in index.html
    (search "row-actions-cell") by the same amount rather than relying on wrap. */
 table.dyn-board td.row-actions-cell{overflow:visible;white-space:nowrap;text-overflow:clip}
 
@@ -1292,7 +1292,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:7</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:8</p>
   </div>
 </div>
 
@@ -1332,7 +1332,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:7</div>
+  <div id="ver-stamp">Version:26-09-17:8</div>
 </div>
 
 
@@ -3505,7 +3505,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
-    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '" onclick="event.stopPropagation();openOrderChecklist(\'' + o.id + '\')" title="View outstanding items for this order" style="cursor:pointer">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:12px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
@@ -3579,8 +3579,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
-      + '<td class="row-actions-cell" style="width:300px;min-width:300px">'
+      + '<td class="row-actions-cell" style="width:380px;min-width:380px">'
       + '<button class="row-action-btn row-action-tna" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
+      + ' <button class="btn sm" onclick="event.stopPropagation();openOrderChecklist(\'' + o.id + '\')" title="What\'s left to do on this order">&#x1F4CB; To-Do</button>'
       + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
       + ' <button class="btn sm" onclick="event.stopPropagation();openActivityModal(\'' + o.id + '\')" title="Activity history">&#x1F4DC;</button>'
@@ -3631,7 +3632,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="' + mfWrapCls + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
-  topRow += '<th rowspan="2" style="width:300px;min-width:300px"></th>';
+  topRow += '<th rowspan="2" style="width:380px;min-width:380px"></th>';
 
   return '<div class="card"><div class="scroller dyn-scroller"><table class="dyn-board">'
     + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
