@@ -1251,7 +1251,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 10</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 11</p>
   </div>
 </div>
 
@@ -1291,7 +1291,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">2026-09-16 &middot; 10</div>
+  <div id="ver-stamp">2026-09-16 &middot; 11</div>
 </div>
 
 
@@ -2374,8 +2374,12 @@ async function init() {
     console.error('Init error:', e);
   }
 
-  // Check saved session
-  const saved = localStorage.getItem('pt_uid');
+  // Check saved session — sessionStorage, not localStorage: localStorage is
+  // shared by every tab of the same origin, so with pt_uid stored there,
+  // logging in on one tab silently switched the identity of every OTHER open
+  // tab the next time each one re-read it. sessionStorage is per-tab, so each
+  // tab keeps its own logged-in user independently.
+  const saved = sessionStorage.getItem('pt_uid');
   if (saved) {
     try {
       const { data } = await db.from('users').select('*').eq('id', saved).single();
@@ -2426,7 +2430,7 @@ async function doLogin() {
         return;
       }
       S.user = data;
-      localStorage.setItem('pt_uid', data.id);
+      sessionStorage.setItem('pt_uid', data.id);
       await startApp();
     } else {
       $('l_err').style.display = 'block';
@@ -2439,7 +2443,7 @@ async function doLogin() {
 }
 
 function doLogout() {
-  localStorage.removeItem('pt_uid');
+  sessionStorage.removeItem('pt_uid');
   if (S.channel) db.removeChannel(S.channel);
   location.reload();
 }
@@ -2517,7 +2521,7 @@ async function startApp() {
     // S.view stays untouched, which this detects and falls back to the
     // normal dashboard render.
     var savedView = null;
-    try { savedView = localStorage.getItem('pt_last_view'); } catch(e) { /* private browsing etc */ }
+    try { savedView = sessionStorage.getItem('pt_last_view'); } catch(e) { /* private browsing etc */ }
     if (savedView && savedView !== 'dashboard') {
       var viewBeforeAttempt = S.view;
       setView(savedView);
@@ -2925,7 +2929,7 @@ function setView(v) {
     return;
   }
   S.view = v;
-  try { localStorage.setItem('pt_last_view', v); } catch(e) { /* private browsing etc — not critical */ }
+  try { sessionStorage.setItem('pt_last_view', v); } catch(e) { /* private browsing etc — not critical */ }
   renderRail();
   if (v === 'dashboard') renderDashboard();
   else if (v === 'shipped' || v === 'archive') renderShippedPage();
