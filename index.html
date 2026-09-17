@@ -1292,7 +1292,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:8</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:9</p>
   </div>
 </div>
 
@@ -1332,7 +1332,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:8</div>
+  <div id="ver-stamp">Version:26-09-17:9</div>
 </div>
 
 
@@ -6335,19 +6335,24 @@ async function openOrderChecklist(ordId) {
   // its true completion already shows up as the 'pp' TNA milestone above via
   // recomputePPActual, so repeating it here would just duplicate the same fact
   // with no deadline attached to it.
-  var apRows = [];
+  //
+  // Each of these becomes its own "block" below, positioned by that column's
+  // actual position in the buyer's live table (col_order) — not a fixed order —
+  // so a buyer who has Yarn before Approvals sees Yarn first here too.
+  var apGroupRows = [];
   if (buyerHasColumn(buyerId, '_approvals', location)) {
-    var ld = checklistLabDipStatus(sum); if (ld) apRows.push({ name:'Lab Dip', status: ld });
-    var ft = checklistApprovalStatus(sum, 'fit'); if (ft) apRows.push({ name:'Fit', status: ft });
-    var ss = checklistApprovalStatus(sum, 'sizeset'); if (ss) apRows.push({ name:'Size Set', status: ss });
+    var ld = checklistLabDipStatus(sum); if (ld) apGroupRows.push({ name:'Lab Dip', status: ld });
+    var ft = checklistApprovalStatus(sum, 'fit'); if (ft) apGroupRows.push({ name:'Fit', status: ft });
+    var ss = checklistApprovalStatus(sum, 'sizeset'); if (ss) apGroupRows.push({ name:'Size Set', status: ss });
   }
+  var inlineRow = null, pptRow = null, lockRow = null, spudiRow = null;
   if (location === 'live') {
-    if (buyerHasColumn(buyerId, 'inline_insp', 'live')) { var il = checklistApprovalStatus(sum, 'inline'); if (il) apRows.push({ name:'Inline Inspection', status: il }); }
-    if (buyerHasColumn(buyerId, 'pre_prod_test', 'live')) { var pt = checklistApprovalStatus(sum, 'ppt'); if (pt) apRows.push({ name:'Pre-Production Test', status: pt }); }
-    if (buyerHasColumn(buyerId, 'lock_sample', 'live')) { var lk = checklistApprovalStatus(sum, 'lock_sample'); if (lk) apRows.push({ name:'Lock Sample', status: lk }); }
+    if (buyerHasColumn(buyerId, 'inline_insp', 'live')) inlineRow = checklistApprovalStatus(sum, 'inline');
+    if (buyerHasColumn(buyerId, 'pre_prod_test', 'live')) pptRow = checklistApprovalStatus(sum, 'ppt');
+    if (buyerHasColumn(buyerId, 'lock_sample', 'live')) lockRow = checklistApprovalStatus(sum, 'lock_sample');
   }
   if (location === 'laying' && buyerHasColumn(buyerId, 'spudi_status', 'laying')) {
-    var sp = checklistApprovalStatus(sum, 'spudi_status'); if (sp) apRows.push({ name:'Spudi Status', status: sp });
+    spudiRow = checklistApprovalStatus(sum, 'spudi_status');
   }
 
   // Section 3 — yarn/fabric, buyer-filtered
@@ -6373,7 +6378,7 @@ async function openOrderChecklist(ordId) {
     } catch(e) { console.error('checklist accessory load failed:', e); }
   }
 
-  var nothingOutstanding = !msRows.length && !apRows.length && !yarnRow && !accRows.length;
+  var nothingOutstanding = !msRows.length && !apGroupRows.length && !inlineRow && !pptRow && !lockRow && !spudiRow && !yarnRow && !accRows.length;
 
   function sectionHeader(label) {
     return '<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;font-weight:700;padding:0 0 8px;border-bottom:2px solid #191817;margin-bottom:2px">' + label + '</div>';
@@ -6383,17 +6388,32 @@ async function openOrderChecklist(ordId) {
       + '<div style="font-weight:600;font-size:13px">' + htmlEsc(name) + '</div>'
       + '<div style="font-size:12.5px;font-family:var(--mono);' + (urgent?'color:#C0392B;font-weight:700':'color:#73706A') + '">' + htmlEsc(status) + '</div></div>';
   }
+  function colOrderOf(key) {
+    var cfg = getBuyerFieldConfig(buyerId, key);
+    return (cfg && cfg.col_order != null) ? cfg.col_order : 999;
+  }
+
+  // Every section below except Milestones corresponds to one real column on the
+  // buyer's live board, so it's positioned at that column's actual col_order —
+  // a buyer with Yarn before Approvals on their live table sees the same order
+  // here. Milestones has no single matching column (it summarises six separate
+  // TNA plan dates), so it's pinned first as the overall schedule summary.
+  var blocks = [];
+  if (apGroupRows.length) blocks.push({ order: colOrderOf('_approvals'), html: sectionHeader('Pending Approvals') + apGroupRows.map(function(r){ return row(r.name, r.status, r.status.indexOf('Rejected')===0); }).join('') });
+  if (yarnRow) blocks.push({ order: colOrderOf('_yarn'), html: sectionHeader(division==='knit'?'Fabric':'Yarn') + row(division==='knit'?'Fabric Inhouse':'Yarn Inhouse', yarnRow, false) });
+  if (accRows.length) blocks.push({ order: colOrderOf('_accessories'), html: sectionHeader('Accessories') + accRows.map(function(r){ return row(r.cat + ' \u2014 ' + r.item, r.status, false); }).join('') });
+  if (inlineRow) blocks.push({ order: colOrderOf('inline_insp'), html: sectionHeader('Inline Inspection') + row('Inline Inspection', inlineRow, false) });
+  if (pptRow) blocks.push({ order: colOrderOf('pre_prod_test'), html: sectionHeader('Pre-Production Test') + row('Pre-Production Test', pptRow, false) });
+  if (lockRow) blocks.push({ order: colOrderOf('lock_sample'), html: sectionHeader('Lock Sample') + row('Lock Sample', lockRow, false) });
+  if (spudiRow) blocks.push({ order: colOrderOf('spudi_status'), html: sectionHeader('Spudi Status') + row('Spudi Status', spudiRow, false) });
+  blocks.sort(function(a,b){ return a.order - b.order; });
 
   var msHtml = msRows.length ? sectionHeader('Outstanding Milestones') + msRows.map(function(m){
     var label = m.plan ? (m.dl<0 ? (-m.dl)+' days overdue' : m.dl===0 ? 'Due today' : 'Due in '+m.dl+' days \u00b7 '+short(m.plan)) : 'No target date set';
     return row(m.name, label, m.dl!=null && m.dl<=0);
   }).join('') : '';
 
-  var apHtml = apRows.length ? sectionHeader('Pending Approvals') + apRows.map(function(r){ return row(r.name, r.status, r.status.indexOf('Rejected')===0); }).join('') : '';
-
-  var yarnHtml = yarnRow ? sectionHeader(division==='knit'?'Fabric':'Yarn') + row(division==='knit'?'Fabric Inhouse':'Yarn Inhouse', yarnRow, false) : '';
-
-  var accHtml = accRows.length ? sectionHeader('Accessories') + accRows.map(function(r){ return row(r.cat + ' \u2014 ' + r.item, r.status, false); }).join('') : '';
+  var bodyHtml = msHtml + blocks.map(function(b){ return b.html; }).join('');
 
   var photoUrl = getStyleImage(o.merchant_id, o.style);
   var genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
@@ -6417,7 +6437,7 @@ async function openOrderChecklist(ordId) {
     + '<div style="padding:20px 28px">'
     + (nothingOutstanding
         ? '<div style="text-align:center;padding:40px 0;color:#2F7A4F"><div style="font-size:32px;margin-bottom:10px">&#x2713;</div><div style="font-size:15px;font-weight:700">Nothing outstanding \u2014 fully on track</div></div>'
-        : msHtml + apHtml + yarnHtml + accHtml)
+        : bodyHtml)
     + '</div>'
     + '<div style="padding:14px 28px;border-top:1px solid #E5E2D9;font-size:10.5px;color:#A0A09A">Generated ' + genDate + ' by ' + htmlEsc(S.user.name) + '</div>'
     + '</div>';
