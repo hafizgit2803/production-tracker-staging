@@ -619,7 +619,7 @@ button.apv-chip{font-family:inherit}
 [data-theme="dark"] .apv-chip.submitted{background:#B45309;color:#FEF3C7;border-color:#92400E}
 [data-theme="dark"] .apv-chip.approved{background:#15803D;color:#DCFCE7;border-color:#166534}
 [data-theme="dark"] .apv-chip.rejected{background:#B91C1C;color:#FEE2E2;border-color:#991B1B}
-.apv-date-line{margin-top:3px;padding:2px 5px;border-radius:5px;background:var(--accent-soft);
+.apv-date-line{margin-top:6px;padding:3px 5px;border-radius:5px;background:var(--accent-soft);
   color:var(--accent);font-size:11.5px;font-weight:700;font-family:var(--mono);line-height:1.4;
   text-align:center;border:1px solid #E8CFC2;box-sizing:border-box}
 [data-theme="dark"] .apv-date-line{background:#3A2C24;color:#E8B4A0;border-color:#5A4335}
@@ -639,7 +639,7 @@ button.apv-chip{font-family:inherit}
 [data-theme="dark"] .acc-tna-banner{background:#3A2C24;color:#E8B4A0;border-color:#5A4335}
 .acc-tna-banner.empty{background:transparent;color:var(--muted);border:1.5px dashed var(--line);font-weight:700}
 [data-theme="dark"] .acc-tna-banner.empty{background:transparent;border-color:var(--line)}
-.apv-manual-date{margin-top:3px;padding:3px 5px;border:1.5px solid var(--line);border-radius:5px;
+.apv-manual-date{margin-top:6px;padding:3px 5px;border:1.5px solid var(--line);border-radius:5px;
   font-size:9.5px;font-weight:700;background:#FCFBF7;color:var(--ink);width:100%;box-sizing:border-box}
 .apv-col{width:108px;text-align:center;vertical-align:middle;padding:2px 4px !important}
 .apv-outcome-btn{padding:14px 10px;border-radius:10px;border:2px solid;font-size:14px;
@@ -1087,11 +1087,14 @@ input[type="date"].cf-input{padding:3px 4px;font-size:10px}
 .cf-chip.has-val{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
 /* Production Floor pill — bigger and more visible than the generic .cf-chip;
-   this is one of the columns actually used to route work, not just reference data. */
-.prod-floor-chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:7px 14px;border-radius:10px;font-size:12.5px;font-weight:800;letter-spacing:.01em;
+   this is one of the columns actually used to route work, not just reference data.
+   Full width, block display: an inline-flex button left a sliver of empty cell
+   next to it where the ordinary column divider showed through and read as a
+   stray tick mark beside the pill. */
+.prod-floor-chip{display:flex;width:100%;box-sizing:border-box;align-items:center;justify-content:center;gap:6px;
+  padding:8px 10px;border-radius:10px;font-size:13px;font-weight:800;letter-spacing:.01em;
   cursor:pointer;border:2px solid var(--line);background:var(--panel);color:var(--muted);
-  transition:all .15s;white-space:nowrap;min-width:64px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  transition:all .15s;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .prod-floor-chip:hover{border-color:var(--accent);box-shadow:0 2px 5px rgba(0,0,0,.08);transform:translateY(-1px)}
 .prod-floor-chip.has-val{background:var(--green-soft);border-color:var(--green);color:var(--green)}
 .prod-floor-chip .pf-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
@@ -1226,6 +1229,11 @@ table.dyn-board th,table.dyn-board td{overflow:hidden;text-overflow:ellipsis;whi
 table.dyn-board td.col-yarn,table.dyn-board td .cell{white-space:normal}
 table.dyn-board td.wrap2,table.dyn-board th.wrap2{white-space:normal;line-height:1.15;overflow:visible}
 table.dyn-board th{white-space:normal;line-height:1.15}
+/* A stray .card table th rule elsewhere forces overflow-wrap:break-word, which
+   this board never turned off — it was leaking a mid-word split into every
+   narrow wrapped header ("PRODUCTIO"/"N FLOOR") instead of breaking at the
+   space between words like a normal header should. */
+table.dyn-board th{overflow-wrap:normal;word-break:normal}
 table.dyn-board th.num{font-family:inherit;font-weight:800;letter-spacing:.05em}
 table.dyn-board td:has(.style-thumb:hover){overflow:visible}
 
@@ -1269,7 +1277,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:1</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:4</p>
   </div>
 </div>
 
@@ -1309,7 +1317,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:1</div>
+  <div id="ver-stamp">Version:26-09-17:4</div>
 </div>
 
 
@@ -1723,15 +1731,15 @@ table.dyn-board thead th.stk-dyn{z-index:35}
 <!-- ═══ MODAL: CONFIRM DELETE ORDER ═══ -->
 <div class="ov" id="ov-delete-order" onclick="if(event.target===this)closeModal('ov-delete-order')">
   <div class="modal slim">
-    <div class="m-h"><div><h3>Delete order?</h3><div class="msub" id="del-order-sub"></div></div></div>
+    <div class="m-h"><div><h3>Move order to Trash?</h3><div class="msub" id="del-order-sub"></div></div></div>
     <div class="m-b">
-      <div style="background:var(--red-soft);border:1px solid #FECACA;border-radius:9px;padding:12px 14px;font-size:13px;color:var(--red)">
-        <strong>This cannot be undone.</strong> All production data, approvals, yarn bookings and accessories for this order will be permanently deleted.
+      <div style="background:var(--amber-soft);border:1px solid #F6D860;border-radius:9px;padding:12px 14px;font-size:13px;color:#7A5B0A">
+        This order and all its production data will disappear from the board, but nothing is destroyed yet. It moves to <strong>Trash</strong>, where it can be restored at any time within 60 days. After 60 days in Trash it's deleted for good.
       </div>
     </div>
     <div class="m-f">
       <button class="btn" data-close="ov-delete-order">Cancel</button>
-      <button class="btn danger" onclick="confirmDeleteOrder()">Yes, delete order</button>
+      <button class="btn danger" onclick="confirmDeleteOrder()">Move to Trash</button>
     </div>
   </div>
 </div>
@@ -2051,6 +2059,8 @@ const S = {
   users: [],
   orders: [],       // lightweight live orders (dashboard cols only)
   archive: [],
+  trash: [],
+  trashLoaded: false,
   memo: {},
   boardCache: {},   // { merchantId: fullOrders[] } — cached on first click
   view: 'dashboard',
@@ -2780,6 +2790,11 @@ async function cleanOldArchive() {
   cutoff.setFullYear(cutoff.getFullYear() - 2);
   const cutStr = cutoff.toISOString().slice(0, 10);
   await db.from('orders').delete().eq('shipped', true).lt('shipped_on', cutStr);
+
+  // Trash is a 60-day safety window, not permanent storage — anything sitting
+  // there longer than that is purged for good, same as old shipped orders above.
+  const trashCutoff = new Date(Date.now() - 60*86400000).toISOString();
+  await db.from('orders').delete().eq('stage', 'trash').lt('deleted_at', trashCutoff);
 }
 
 // ─── ACTIVITY LOG ───
@@ -2822,12 +2837,23 @@ function upsertLocalOrder(newRow) {
     if (newRow.merchant_id && S.boardCache[newRow.merchant_id]) rmArr(S.boardCache[newRow.merchant_id]);
     if (S.layingGoods) rmArr(S.layingGoods);
     if (S.archive) upsertArr(S.archive);
+    if (S.trash) rmArr(S.trash);
+  } else if (newRow.stage === 'trash') {
+    // Without this branch a trashed order fell through to the "else" case below,
+    // which unconditionally re-adds to S.orders/boardCache — so deleting an order
+    // in one tab would make it pop back onto the live board in another.
+    rmArr(S.orders);
+    if (newRow.merchant_id && S.boardCache[newRow.merchant_id]) rmArr(S.boardCache[newRow.merchant_id]);
+    if (S.layingGoods) rmArr(S.layingGoods);
+    if (S.archive) rmArr(S.archive);
+    if (S.trash) upsertArr(S.trash);
   } else {
     upsertArr(S.orders);
     if (newRow.merchant_id && S.boardCache[newRow.merchant_id]) upsertArr(S.boardCache[newRow.merchant_id]);
     if (newRow.stage === 'laying' && S.layingGoods) upsertArr(S.layingGoods);
     else if (S.layingGoods) rmArr(S.layingGoods);
     if (S.archive) rmArr(S.archive);
+    if (S.trash) rmArr(S.trash);
   }
 }
 function removeLocalOrder(ordId, merchantId) {
@@ -2849,9 +2875,11 @@ function subscribeRealtime() {
         upsertLocalOrder(payload.new); // merge in place — no cache wipe, no reload flash
       }
       if (S.archiveLoaded) S.archiveLoaded = false; // shipped list may be stale — refetch lazily when opened
+      if (S.trashLoaded) S.trashLoaded = false; // same idea for trash
       await loadDashOrders();
       renderRail();
       if (S.view === 'dashboard') renderDashboard();
+      else if (S.view === 'trash') renderTrashPage();
       else if (S.view === mid) renderBoard(mid); // in-place refresh — scroll position preserved (see renderBoard)
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, async () => {
@@ -2908,6 +2936,7 @@ function render() {
   renderRail();
   if (S.view === 'dashboard') renderDashboard();
   else if (S.view === 'shipped' || S.view === 'archive') renderShippedPage();
+  else if (S.view === 'trash') renderTrashPage();
   else if (S.view === 'requests') renderRequestsView();
   else if (S.view === 'my-requests') renderMyRequests();
   else if (S.view === 'inbox') renderInbox();
@@ -2924,7 +2953,7 @@ function setView(v) {
     return;
   }
   if (!isJMOverview && S.user.role === 'manager' &&
-      !['dashboard','shipped','requests','my-requests','admin','inbox','laying-goods'].includes(v) &&
+      !['dashboard','shipped','trash','requests','my-requests','admin','inbox','laying-goods'].includes(v) &&
       v !== S.user.id) {
     if (!S.myAssignments.includes(v)) {
       toast('You are not assigned to this merchant');
@@ -2932,7 +2961,7 @@ function setView(v) {
     }
   }
   if (!isJMOverview && S.user.role === 'jm' &&
-      !['dashboard','shipped','requests','my-requests','admin','laying-goods','inbox'].includes(v)) {
+      !['dashboard','shipped','trash','requests','my-requests','admin','laying-goods','inbox'].includes(v)) {
     if (!S.myJMMerchants || !S.myJMMerchants.includes(v)) {
       toast('You are not assigned to this merchant');
       return;
@@ -2951,6 +2980,7 @@ function setView(v) {
   renderRail();
   if (v === 'dashboard') renderDashboard();
   else if (v === 'shipped' || v === 'archive') renderShippedPage();
+  else if (v === 'trash') { renderTrashPage(); return; }
   else if (v === 'requests') renderRequestsView();
   else if (v === 'my-requests') renderMyRequests();
   else if (v === 'inbox') renderInbox();
@@ -3453,9 +3483,9 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11.5px;font-weight:700;font-family:var(--mono);color:var(--ink);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
     if (itemByKey['_house']) cellsByKey['_house'] = singleTd('_house', '', (o.house||'\u2014'), 'font-size:9px;');
-    if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:9px;font-weight:700;');
-    if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:9px;font-weight:700;');
-    if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:9px;font-weight:700;');
+    if (itemByKey['_gauge']) cellsByKey['_gauge'] = singleTd('_gauge', '', (fmtGauge(o.gauge)||'\u2014'), 'font-size:9.9px;font-weight:700;');
+    if (itemByKey['_colour']) cellsByKey['_colour'] = singleTd('_colour', '', (o.color||'\u2014'), 'font-size:9.45px;font-weight:700;');
+    if (itemByKey['_composition']) cellsByKey['_composition'] = singleTd('_composition', '', (o.comp||'\u2014'), 'font-size:9.45px;font-weight:700;');
     if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty), 'font-weight:700;');
     if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2), 'font-weight:700;');
     if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)), 'font-weight:700;');
@@ -3525,7 +3555,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
       + ' <button class="btn sm" onclick="event.stopPropagation();openActivityModal(\'' + o.id + '\')" title="Activity history">&#x1F4DC;</button>'
-      + (canEdit ? ' <button class="btn sm danger" style="padding:2px 6px;font-size:8.5px" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + jsAttrEsc(o.style) + '\',\'' + jsAttrEsc(o.buyer) + '\')">&#x2715;</button>' : '')
+      + (canEdit ? ' <button class="btn sm danger" onclick="event.stopPropagation();openDeleteOrder(\'' + o.id + '\',\'' + jsAttrEsc(o.style) + '\',\'' + jsAttrEsc(o.buyer) + '\')" title="Move to Trash">&#x1F5D1; Trash</button>' : '')
       + '</td></tr>';
   }).join('');
 
@@ -6762,17 +6792,94 @@ function openDeleteOrder(ordId, style, buyer) {
 }
 async function confirmDeleteOrder() {
   if (!_deleteOrdId) return;
-  const { error } = await db.from('orders').delete().eq('id', _deleteOrdId);
-  if (error) { toast('Error deleting order', 'err'); return; }
+  // Soft delete: the row is never actually removed here. It moves to a 'trash'
+  // stage — which no existing query matches (live/laying/shipped all filter it
+  // out automatically) — with enough breadcrumbs (who deleted it, and what
+  // stage to go back to) to restore it later. Permanent removal only happens
+  // via the 60-day auto-purge in cleanOldArchive().
+  var o = findOrderAnywhere(_deleteOrdId);
+  var priorStage = (o && o.stage) || 'live';
+  const { error } = await db.from('orders').update({
+    stage: 'trash', pre_trash_stage: priorStage,
+    deleted_at: new Date().toISOString(), deleted_by: S.user.name
+  }).eq('id', _deleteOrdId);
+  if (error) { toast('Error moving order to trash', 'err'); return; }
   closeModal('ov-delete-order');
-  // Clear caches
+  // Clear caches — the order no longer belongs in whichever list it came from.
   Object.keys(S.boardCache).forEach(function(m){
-    S.boardCache[m] = (S.boardCache[m]||[]).filter(function(o){return o.id!==_deleteOrdId;});
+    S.boardCache[m] = (S.boardCache[m]||[]).filter(function(x){return x.id!==_deleteOrdId;});
   });
-  S.orders = S.orders.filter(function(o){return o.id!==_deleteOrdId;});
+  S.orders = S.orders.filter(function(x){return x.id!==_deleteOrdId;});
+  S.archive = (S.archive||[]).filter(function(x){return x.id!==_deleteOrdId;});
+  S.layingGoods = (S.layingGoods||[]).filter(function(x){return x.id!==_deleteOrdId;});
   _deleteOrdId = null;
-  toast('Order deleted');
-  renderBoard(S.view);
+  toast('Order moved to Trash — restorable for 60 days');
+  render();
+}
+
+// ─── TRASH ───
+async function loadTrashData() {
+  if (S.trashLoaded) return;
+  let q = db.from('orders').select('*').eq('stage', 'trash').order('deleted_at', { ascending: false });
+  if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
+  else if (S.user.role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if (S.user.role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
+  const { data } = await q;
+  S.trash = (data || []).map(function(o){ if (o.style) o.style = o.style.toUpperCase(); return o; });
+  S.trashLoaded = true;
+}
+
+async function renderTrashPage() {
+  $('crumb').textContent = 'History';
+  $('page-title').textContent = 'Trash';
+  $('page-sub').innerHTML = S.trash.length + ' order(s) &middot; auto-deleted for good after 60 days';
+  $('stamp').innerHTML = ''; $('act-row').innerHTML = '';
+  if (!S.trashLoaded) {
+    $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading trash…</div>';
+    await loadTrashData();
+  }
+  $('page-sub').innerHTML = S.trash.length + ' order(s) &middot; auto-deleted for good after 60 days';
+  if (!S.trash.length) {
+    $('content').innerHTML = '<div class="card"><div class="empty"><h4>Trash is empty</h4><div>Deleted orders will appear here for 60 days before being removed for good.</div></div></div>';
+    return;
+  }
+  const rows = S.trash.map(function(o) {
+    const merch = userById(o.merchant_id);
+    const canRestore = can('edit', o.merchant_id);
+    var purgeDate = o.deleted_at ? new Date(new Date(o.deleted_at).getTime() + 60*86400000) : null;
+    return '<tr id="row-' + o.id + '">'
+      + '<td class="sty">' + htmlEsc(o.style||'') + '</td>'
+      + '<td>' + htmlEsc(merch ? merch.name : '\u2014') + '</td>'
+      + '<td>' + htmlEsc(o.buyer||'') + '</td>'
+      + '<td class="num">' + fmt(o.qty) + '</td>'
+      + '<td>' + htmlEsc(o.deleted_by||'\u2014') + '</td>'
+      + '<td>' + (o.deleted_at ? short(o.deleted_at.slice(0,10)) : '\u2014') + '</td>'
+      + '<td class="sub2">' + (purgeDate ? 'Gone for good ' + purgeDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '\u2014') + '</td>'
+      + '<td>' + (canRestore ? '<button class="btn sm" onclick="restoreOrder(\'' + o.id + '\')">&#x21b6; Restore</button>' : '') + '</td>'
+      + '</tr>';
+  }).join('');
+  $('content').innerHTML = '<div class="card"><div class="scroller"><table>'
+    + '<thead><tr><th>Style</th><th>Merchandiser</th><th>Buyer</th><th class="num">Qty</th>'
+    + '<th>Deleted by</th><th>Deleted on</th><th>Purge date</th><th></th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table></div></div>';
+}
+
+async function restoreOrder(ordId) {
+  var o = (S.trash||[]).find(function(x){ return x.id === ordId; });
+  var backTo = (o && o.pre_trash_stage) || 'live';
+  const { error } = await db.from('orders').update({
+    stage: backTo, pre_trash_stage: null, deleted_at: null, deleted_by: null
+  }).eq('id', ordId);
+  if (error) { toast('Error restoring order', 'err'); return; }
+  S.trash = (S.trash||[]).filter(function(x){ return x.id !== ordId; });
+  // Whichever list it's going back to hasn't seen it in a while — refresh that
+  // one so the next visit shows it rather than a stale, incomplete picture.
+  S.boardCache = {};
+  if (backTo === 'shipped') { S.archiveLoaded = false; }
+  else if (backTo === 'laying') { await loadLayingGoods(); }
+  else { await loadDashOrders(); }
+  toast('Order restored');
+  renderTrashPage();
 }
 
 // ─── UNSHIP ORDER ───
@@ -7720,6 +7827,7 @@ function renderRail() {
   var lgc=(S.layingGoods||[]).length;
   html+=ni('laying-goods','&#x1F4E6;','Laying Goods',lgc,lgc>0);
   html+=ni('shipped','&#x2705;','Shipped',S.archive.length);
+  html+=ni('trash','&#x1F5D1;','Trash',S.trash.length);
   // Unified Inbox — Messages (everyone), plus Requests and Alerts, whichever
   // this role actually has access to. One nav item, one combined badge.
   var unreadMsgs = getMyThreads().filter(function(t2){ return t2.unread; }).length;
