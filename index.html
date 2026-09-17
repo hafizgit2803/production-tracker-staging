@@ -1292,7 +1292,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:6</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:7</p>
   </div>
 </div>
 
@@ -1332,7 +1332,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:6</div>
+  <div id="ver-stamp">Version:26-09-17:7</div>
 </div>
 
 
@@ -1543,6 +1543,20 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
     </div>
     <div class="m-b" id="tnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
+  </div>
+</div>
+
+<!-- === ORDER CHECKLIST (what's left to do) MODAL === -->
+<div class="ov" id="ov-order-todo" onclick="if(event.target===this)closeOrderChecklist()" style="padding:16px">
+  <div class="modal" style="max-width:820px;width:98vw;max-height:92vh;display:flex;flex-direction:column">
+    <div class="m-h no-print" style="flex-shrink:0">
+      <div><h3>Outstanding Items</h3><div class="msub" id="todo-sub">What's left to do on this order</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeOrderChecklist()">Cancel</button>
+        <button class="btn pri" onclick="printOrderChecklist()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+      </div>
+    </div>
+    <div class="m-b" id="todo-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
   </div>
 </div>
 
@@ -3491,7 +3505,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
-    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '" onclick="event.stopPropagation();openOrderChecklist(\'' + o.id + '\')" title="View outstanding items for this order" style="cursor:pointer">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:12px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
@@ -6246,6 +6260,176 @@ function closeTNAPrint() {
 function printTNADoc() {
   document.querySelectorAll('.ov').forEach(function(o){ o.classList.remove('printing'); });
   $('ov-tna-print').classList.add('printing');
+  window.print();
+}
+
+// ─── ORDER CHECKLIST ("what's left to do") ───
+// Every section below only appears if the buyer this order belongs to actually
+// has that column turned on (buyerHasColumn mirrors the exact same
+// getBuyerFieldConfig lookup the board itself uses for column visibility) — so
+// this stays in sync automatically if column settings change later, rather
+// than encoding buyer-specific rules here that could drift out of date.
+function buyerHasColumn(buyerId, key, location) {
+  var cfg = getBuyerFieldConfig(buyerId, key);
+  if (!cfg || !cfg.visible) return false;
+  if (location === 'live') return !!cfg.in_live;
+  if (location === 'laying') return !!cfg.in_laying;
+  if (location === 'shipped') return !!cfg.in_shipped;
+  return false;
+}
+function checklistApprovalStatus(sum, type) {
+  var rounds = ((sum && sum.ap && sum.ap[type]) || []).slice().sort(function(a,b){return (a.round||0)-(b.round||0);});
+  var latest = rounds[rounds.length-1];
+  if (latest && latest.approved_on) return null; // done — leave out of the checklist
+  var isOffer = !!(APV_TYPE_CONFIG[type] && APV_TYPE_CONFIG[type].offerWording);
+  if (!latest) return isOffer ? 'Not yet offered' : 'Not yet submitted';
+  if (latest.rejected_on) return 'Rejected — needs resubmission';
+  if (latest.submitted_on) return isOffer ? 'Offered, awaiting outcome' : 'Submitted, awaiting outcome';
+  return 'Round ' + latest.round + ' in progress';
+}
+function checklistLabDipStatus(sum) {
+  var s = sum && sum.labdip;
+  if (!s || !s.total) return 'Not started \u2014 no colours registered yet';
+  if (s.approved >= s.total) return null;
+  return s.approved + '/' + s.total + ' colours approved';
+}
+function accessoryItemStatus(it) {
+  return it.hasQty ? (fmt(it.totalReceived) + ' / ' + fmt(it.totalBooked) + ' received') : 'Booked, not yet received';
+}
+
+async function openOrderChecklist(ordId) {
+  var o = findOrderAnywhere(ordId);
+  if (!o) return;
+  var merch = userById(o.merchant_id);
+  var division = merch ? (merch.division||'sweater') : 'sweater';
+  var buyerId = o.buyer_id;
+  if (!buyerId && o.buyer) {
+    var bm = S.buyers.find(function(b){ return b.name.toLowerCase() === String(o.buyer).toLowerCase(); });
+    if (bm) buyerId = bm.id;
+  }
+  var location = o.stage === 'laying' ? 'laying' : o.stage === 'shipped' ? 'shipped' : 'live';
+  var VMILES = getMiles(division);
+  var sum = (S.boardSummaries[o.merchant_id]||{})[ordId] || { ap:{}, pp:{total:0,approved:0}, labdip:{total:0,approved:0}, sew:{total:0,received:0}, pack:{total:0,received:0}, bk:0, rc:0 };
+
+  $('todo-sub').textContent = o.style + (o.buyer ? ' \u2014 ' + o.buyer : '') + ' \u00b7 What\u2019s left to do';
+  $('todo-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading\u2026</div>';
+  openModal('ov-order-todo');
+
+  // Section 1 — outstanding TNA milestones. Universal: every order has these
+  // regardless of buyer column settings, so this section is never filtered.
+  var msRows = VMILES.map(function(x){
+    var p = o['plan_'+x.k], a = o['act_'+x.k];
+    if (a) return null; // already done
+    var dl = p ? daysTo(p) : null;
+    return { name: x.n, plan: p, dl: dl };
+  }).filter(Boolean);
+  msRows.sort(function(A,B){
+    if (A.dl==null && B.dl==null) return 0;
+    if (A.dl==null) return 1;
+    if (B.dl==null) return -1;
+    return A.dl - B.dl; // most overdue (most negative) first, then soonest due
+  });
+
+  // Section 2 — pending approvals, buyer-filtered. PP is deliberately excluded:
+  // its true completion already shows up as the 'pp' TNA milestone above via
+  // recomputePPActual, so repeating it here would just duplicate the same fact
+  // with no deadline attached to it.
+  var apRows = [];
+  if (buyerHasColumn(buyerId, '_approvals', location)) {
+    var ld = checklistLabDipStatus(sum); if (ld) apRows.push({ name:'Lab Dip', status: ld });
+    var ft = checklistApprovalStatus(sum, 'fit'); if (ft) apRows.push({ name:'Fit', status: ft });
+    var ss = checklistApprovalStatus(sum, 'sizeset'); if (ss) apRows.push({ name:'Size Set', status: ss });
+  }
+  if (location === 'live') {
+    if (buyerHasColumn(buyerId, 'inline_insp', 'live')) { var il = checklistApprovalStatus(sum, 'inline'); if (il) apRows.push({ name:'Inline Inspection', status: il }); }
+    if (buyerHasColumn(buyerId, 'pre_prod_test', 'live')) { var pt = checklistApprovalStatus(sum, 'ppt'); if (pt) apRows.push({ name:'Pre-Production Test', status: pt }); }
+    if (buyerHasColumn(buyerId, 'lock_sample', 'live')) { var lk = checklistApprovalStatus(sum, 'lock_sample'); if (lk) apRows.push({ name:'Lock Sample', status: lk }); }
+  }
+  if (location === 'laying' && buyerHasColumn(buyerId, 'spudi_status', 'laying')) {
+    var sp = checklistApprovalStatus(sum, 'spudi_status'); if (sp) apRows.push({ name:'Spudi Status', status: sp });
+  }
+
+  // Section 3 — yarn/fabric, buyer-filtered
+  var yarnRow = null;
+  if (buyerHasColumn(buyerId, '_yarn', location)) {
+    var bk = sum.bk||0, rc = sum.rc||0;
+    if (!bk) yarnRow = 'Not booked yet';
+    else if (rc < bk) yarnRow = fmt(rc) + ' / ' + fmt(bk) + ' received';
+  }
+
+  // Section 4 — accessories, buyer-filtered, item-level. Only items that have
+  // at least one booking are considered here — an item nobody has booked yet
+  // at all doesn't show up as "missing" (that's the same open question flagged
+  // separately: completeness is measured against items booked so far, not a
+  // fixed expected list).
+  var accRows = [];
+  if (buyerHasColumn(buyerId, '_accessories', location)) {
+    try {
+      var sewItems = await getAccessoryItemData(o.merchant_id, o.style, 'sewing');
+      var packItems = await getAccessoryItemData(o.merchant_id, o.style, 'packing');
+      sewItems.filter(function(it){ return !it.complete; }).forEach(function(it){ accRows.push({ cat:'Sewing', item: it.item, status: accessoryItemStatus(it) }); });
+      packItems.filter(function(it){ return !it.complete; }).forEach(function(it){ accRows.push({ cat:'Packing', item: it.item, status: accessoryItemStatus(it) }); });
+    } catch(e) { console.error('checklist accessory load failed:', e); }
+  }
+
+  var nothingOutstanding = !msRows.length && !apRows.length && !yarnRow && !accRows.length;
+
+  function sectionHeader(label) {
+    return '<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#73706A;font-weight:700;padding:0 0 8px;border-bottom:2px solid #191817;margin-bottom:2px">' + label + '</div>';
+  }
+  function row(name, status, urgent) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #E5E2D9">'
+      + '<div style="font-weight:600;font-size:13px">' + htmlEsc(name) + '</div>'
+      + '<div style="font-size:12.5px;font-family:var(--mono);' + (urgent?'color:#C0392B;font-weight:700':'color:#73706A') + '">' + htmlEsc(status) + '</div></div>';
+  }
+
+  var msHtml = msRows.length ? sectionHeader('Outstanding Milestones') + msRows.map(function(m){
+    var label = m.plan ? (m.dl<0 ? (-m.dl)+' days overdue' : m.dl===0 ? 'Due today' : 'Due in '+m.dl+' days \u00b7 '+short(m.plan)) : 'No target date set';
+    return row(m.name, label, m.dl!=null && m.dl<=0);
+  }).join('') : '';
+
+  var apHtml = apRows.length ? sectionHeader('Pending Approvals') + apRows.map(function(r){ return row(r.name, r.status, r.status.indexOf('Rejected')===0); }).join('') : '';
+
+  var yarnHtml = yarnRow ? sectionHeader(division==='knit'?'Fabric':'Yarn') + row(division==='knit'?'Fabric Inhouse':'Yarn Inhouse', yarnRow, false) : '';
+
+  var accHtml = accRows.length ? sectionHeader('Accessories') + accRows.map(function(r){ return row(r.cat + ' \u2014 ' + r.item, r.status, false); }).join('') : '';
+
+  var photoUrl = getStyleImage(o.merchant_id, o.style);
+  var genDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  function infoItem(label, val) {
+    if (!val) return '';
+    return '<div style="min-width:0"><div style="font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#73706A;font-weight:700">'+label+'</div><div style="font-size:13px;font-weight:600;color:#191817;margin-top:2px">'+htmlEsc(String(val))+'</div></div>';
+  }
+
+  var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#191817;background:#fff;margin:20px;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)">'
+    + '<div style="padding:24px 28px 20px;border-bottom:2px solid #191817;display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#73706A;font-weight:700;margin-bottom:6px">Shahana Group</div>'
+    + '<div style="font-family:Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.4px">Outstanding Items \u2014 ' + htmlEsc(o.style||'') + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:12px;color:#73706A">' + genDate + '</div></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:16px;align-items:flex-start;padding:20px 28px;background:#F7F5EF;border-bottom:1px solid #E5E2D9">'
+    + (photoUrl ? '<img src="'+photoUrl+'" style="width:70px;height:70px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid #E5E2D9">' : '')
+    + '<div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 16px">'
+    + infoItem('PO Number', o.po_number) + infoItem('Buyer', o.buyer) + infoItem('Buying House', o.house)
+    + infoItem('Quantity', o.qty?fmt(o.qty)+' pcs':'') + infoItem('Ship Date', o.ship_date?short(o.ship_date):'')
+    + '</div></div>'
+    + '<div style="padding:20px 28px">'
+    + (nothingOutstanding
+        ? '<div style="text-align:center;padding:40px 0;color:#2F7A4F"><div style="font-size:32px;margin-bottom:10px">&#x2713;</div><div style="font-size:15px;font-weight:700">Nothing outstanding \u2014 fully on track</div></div>'
+        : msHtml + apHtml + yarnHtml + accHtml)
+    + '</div>'
+    + '<div style="padding:14px 28px;border-top:1px solid #E5E2D9;font-size:10.5px;color:#A0A09A">Generated ' + genDate + ' by ' + htmlEsc(S.user.name) + '</div>'
+    + '</div>';
+
+  $('todo-body').innerHTML = html;
+}
+function closeOrderChecklist() {
+  $('ov-order-todo').classList.remove('printing');
+  closeModal('ov-order-todo');
+}
+function printOrderChecklist() {
+  document.querySelectorAll('.ov').forEach(function(o){ o.classList.remove('printing'); });
+  $('ov-order-todo').classList.add('printing');
   window.print();
 }
 
