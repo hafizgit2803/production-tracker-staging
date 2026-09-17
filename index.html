@@ -1236,6 +1236,15 @@ table.dyn-board th{white-space:normal;line-height:1.15}
 table.dyn-board th{overflow-wrap:normal;word-break:normal}
 table.dyn-board th.num{font-family:inherit;font-weight:800;letter-spacing:.05em}
 table.dyn-board td:has(.style-thumb:hover){overflow:visible}
+/* The row-actions cell holds up to 5 buttons (TNA/Edit/Pack List/Activity/Trash)
+   in a fixed 225px column. The board's blanket rule above forces every cell to
+   overflow:hidden + white-space:nowrap, which was silently clipping off
+   whichever button ran past 225px on one line — usually the last one added,
+   which is exactly why Trash/Delete kept "disappearing." Letting this one
+   column wrap onto a second line instead of clipping fixes that for good,
+   regardless of how many buttons a row ends up needing. */
+table.dyn-board td.row-actions-cell{overflow:visible;white-space:normal;text-overflow:clip;
+  display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:4px 6px}
 
 
 /* Sticky header rows for dynamic buyer table */
@@ -1277,7 +1286,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:4</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:5</p>
   </div>
 </div>
 
@@ -1317,7 +1326,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:4</div>
+  <div id="ver-stamp">Version:26-09-17:5</div>
 </div>
 
 
@@ -3550,7 +3559,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
-      + '<td style="white-space:nowrap;width:225px;min-width:225px">'
+      + '<td class="row-actions-cell" style="width:225px;min-width:225px">'
       + '<button class="row-action-btn row-action-tna" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
