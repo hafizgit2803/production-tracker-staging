@@ -1251,7 +1251,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 5</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 10</p>
   </div>
 </div>
 
@@ -1291,7 +1291,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">2026-09-16 &middot; 5</div>
+  <div id="ver-stamp">2026-09-16 &middot; 10</div>
 </div>
 
 
@@ -2204,6 +2204,11 @@ const fmt = n => n == null ? '—' : Number(n).toLocaleString('en-US');
 const fmtGauge = g => !g ? '' : (g.toLowerCase().includes('gg') ? g : g + 'GG');
 const money = n => '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+// LOCAL calendar date as YYYY-MM-DD. Deliberately NOT toISOString(), which returns
+// the UTC date — in Bangladesh (UTC+6) that is the PREVIOUS day until 6am local,
+// which silently pre-filled every date picker with yesterday and threw day-count
+// maths off by one for anyone working an early shift.
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
 const toDate = s => s ? new Date(s + 'T00:00:00') : null;
 const daysTo = s => s ? Math.round((toDate(s) - today()) / 86400000) : null;
 const short = s => { if(!s) return '—'; const p=String(s).split('-'); return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s; };
@@ -2351,10 +2356,14 @@ window.onerror = function(msg, src, line) {
 async function init() {
   // Load user names for dropdown
   try {
-    const { data, error } = await db.from('users').select('*').order('name');
+    // Only names are needed to populate the login dropdown. This query runs
+    // BEFORE anyone authenticates, so selecting '*' here published every user's
+    // id, role and password hash (and any not-yet-migrated plaintext password)
+    // to anyone who simply opened the login page.
+    const { data, error } = await db.from('users').select('name').order('name');
     if (data && data.length) {
       $('l_name').innerHTML = '<option value="">— Select your name —</option>' +
-        data.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+        data.map(u => `<option value="${htmlEsc(u.name)}">${htmlEsc(u.name)}</option>`).join('');
     } else {
       const msg = error ? error.message : 'No users found';
       $('l_name').innerHTML = '<option value="">' + msg + ' — run setup SQL</option>';
@@ -2392,7 +2401,23 @@ async function doLogin() {
   if (!pwd) { $('l_err').textContent = 'Please enter your password.'; $('l_err').style.display = 'block'; return; }
   $('l_spin').style.display = 'block';
   try {
-    const { data, error } = await db.from('users').select('*').eq('name', name).eq('password', pwd).maybeSingle();
+    // Passwords are stored SHA-256 hashed (resetPwd / saveEditUser / saveMyProfile /
+    // changeMgmtPwd all hash before writing), so the typed password must be hashed
+    // to compare. Older accounts may still hold a raw password — those are matched
+    // on a second pass and transparently migrated to a hash on successful login,
+    // so the legacy rows drain away without anyone being locked out.
+    const hashedPwd = await hashPassword(pwd);
+    let { data } = await db.from('users').select('*').eq('name', name).eq('password', hashedPwd).maybeSingle();
+    if (!data) {
+      const legacy = await db.from('users').select('*').eq('name', name).eq('password', pwd).maybeSingle();
+      if (legacy.data) {
+        data = legacy.data;
+        try {
+          await db.from('users').update({ password: hashedPwd }).eq('id', data.id);
+          data.password = hashedPwd;
+        } catch (e) { /* migration is best-effort — never block a valid login */ }
+      }
+    }
     if (data) {
       if (MAINTENANCE_MODE && data.role !== 'admin') {
         $('l_err').textContent = '&#x1F6A7; ' + MAINTENANCE_MSG;
@@ -2446,19 +2471,39 @@ async function startApp() {
 
   $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading…</div>';
 
-  try { await loadMyAssignments(); } catch(e) { console.error('loadMyAssignments:', e); }
-  try { await loadMyJMAssignments(); } catch(e) { console.error('loadMyJMAssignments:', e); }
-  try { await loadMyManager(); } catch(e) { console.error('loadMyManager:', e); }
-  try { await loadAllJMAssignments(); } catch(e) { console.error('loadAllJMAssignments:', e); }
-  try { await loadDashOrders(); } catch(e) { console.error('loadDashOrders:', e); }
-  try { await loadMemo(); } catch(e) { console.error('loadMemo:', e); }
-  try { await loadTNARequests(); } catch(e) { console.error('loadTNARequests:', e); }
-  try { await loadMessages(); } catch(e) { console.error('loadMessages:', e); }
-  try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
-  try { await loadBuyers(); } catch(e) { console.error('loadBuyers:', e); }
-  try { await loadBuyerAssignments(); } catch(e) { console.error('loadBuyerAssignments:', e); }
-  try { await loadFieldVisibility(); } catch(e) { console.error('loadFieldVisibility:', e); }
-  try { await loadLayingGoods(); } catch(e) { console.error('loadLayingGoods:', e); }
+  // These were 13 sequential awaits — each one a full network round trip that
+  // waited for the previous to finish, so boot cost ~13 RTTs of pure latency.
+  // They fall into three dependency waves instead.
+  //
+  // Wave 1: everything that depends on nothing. Note loadBuyers MUST land before
+  // loadDashOrders — autolinkBuyerId() reads S.buyers, and because loadBuyers
+  // used to run after it, buyer linking silently did nothing on first load.
+  var wave1 = [
+    ['loadMyAssignments',    loadMyAssignments],
+    ['loadMyJMAssignments',  loadMyJMAssignments],
+    ['loadAllJMAssignments', loadAllJMAssignments],
+    ['loadMemo',             loadMemo],
+    ['loadMessages',         loadMessages],
+    ['loadBuyers',           loadBuyers],
+    ['loadBuyerAssignments', loadBuyerAssignments],
+    ['loadFieldVisibility',  loadFieldVisibility]
+  ];
+  await Promise.all(wave1.map(function(p){
+    // Each is individually caught, exactly as before — one failing load must not
+    // take down the rest of the boot.
+    return p[1]().catch(function(e){ console.error(p[0] + ':', e); });
+  }));
+
+  // Wave 2: needs S.myAssignments / S.myJMMerchants (role scoping) and S.buyers.
+  var wave2 = [
+    ['loadMyManager',   loadMyManager],
+    ['loadDashOrders',  loadDashOrders],
+    ['loadLayingGoods', loadLayingGoods],
+    ['loadTNARequests', loadTNARequests]
+  ];
+  await Promise.all(wave2.map(function(p){
+    return p[1]().catch(function(e){ console.error(p[0] + ':', e); });
+  }));
 
   cleanOldArchive();
   subscribeRealtime();
@@ -2491,7 +2536,14 @@ async function startApp() {
 async function loadUsers() {
   const { data } = await db.from('users').select('*').order('name');
   S.users = data || [];
+  // Index by id once. Several render paths did S.users.find(...) per ORDER ROW
+  // (and renderApprovalFieldCell did it per CELL), which is O(rows × users) work
+  // repeated on every single render.
+  _userById = {};
+  S.users.forEach(function(u){ _userById[u.id] = u; });
 }
+var _userById = {};
+function userById(id) { return _userById[id] || null; }
 
 function autolinkBuyerId(orders) {
   // Match buyer text to buyer record by name (case-insensitive)
@@ -2510,10 +2562,15 @@ function autolinkBuyerId(orders) {
 }
 
 async function loadDashOrders() {
-  // Lightweight query — only columns needed for dashboard stats + TNA checking
+  // Lightweight query — only columns needed for dashboard stats + TNA checking.
+  // Scoped the same way as loadArchiveData/loadLayingGoods: JM and Manager are
+  // limited to their assigned merchants. Without this they saw company-wide
+  // order counts, quantities and FOB value on the dashboard.
   let q = db.from('orders').select(DASH_COLS)
     .or('stage.eq.live,stage.is.null').order('ship_date', { ascending: true });
   if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
+  else if (S.user.role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if (S.user.role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
   const { data } = await q;
   S.orders = autolinkBuyerId(data || []);
   await loadAlerts();
@@ -2537,23 +2594,26 @@ async function loadAlerts() {
 }
 
 async function loadBoardOrders(merchantId) {
-  await loadStyleImages(merchantId);
-  if (S.boardCache[merchantId]) return S.boardCache[merchantId];
+  // Kicked off first but not awaited yet, so it overlaps the order fetch instead
+  // of blocking it — and on a cache hit it's the only thing we wait for.
+  const imagesP = loadStyleImages(merchantId);
+  if (S.boardCache[merchantId]) { await imagesP; return S.boardCache[merchantId]; }
   const { data } = await db.from('orders').select('*')
     .eq('merchant_id', merchantId).or('stage.eq.live,stage.is.null')
     .order('ship_date', { ascending: true });
   S.boardCache[merchantId] = autolinkBuyerId(data || []);
-  // Load summaries in parallel (yarn totals + approval status)
   const ids = (data || []).map(o => o.id);
   if (ids.length) {
-    const yarnByOrder = await loadYarnSummaryByOrder(merchantId, data || []);
-    const attachByOrder = await loadAttachmentsByOrder(merchantId, data || []);
-    const ppByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'pp');
-    const labdipByOrder = await loadColourApprovalSummaryByOrder(merchantId, data || [], 'labdip');
     checkLabDipSupplierAlerts(merchantId, data || []); // fire-and-forget; own try/catch inside
-    const sewByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'sewing');
-    const packByOrder = await loadAccessorySummaryByOrder(merchantId, data || [], 'packing');
-    const [ap, acc] = await Promise.all([
+    // Genuinely in parallel now — these were sequential awaits despite the old
+    // comment claiming otherwise, costing ~8 round trips per board open.
+    const [yarnByOrder, attachByOrder, ppByOrder, labdipByOrder, sewByOrder, packByOrder, ap, acc] = await Promise.all([
+      loadYarnSummaryByOrder(merchantId, data || []),
+      loadAttachmentsByOrder(merchantId, data || []),
+      loadColourApprovalSummaryByOrder(merchantId, data || [], 'pp'),
+      loadColourApprovalSummaryByOrder(merchantId, data || [], 'labdip'),
+      loadAccessorySummaryByOrder(merchantId, data || [], 'sewing'),
+      loadAccessorySummaryByOrder(merchantId, data || [], 'packing'),
       db.from('approvals').select('*').in('order_id', ids).order('round'),
       db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
     ]);
@@ -2571,6 +2631,7 @@ async function loadBoardOrders(merchantId) {
     if (!S.boardSummaries) S.boardSummaries = {};
     S.boardSummaries[merchantId] = sums;
   }
+  await imagesP; // must be settled before the board renders, even for an empty board
   return S.boardCache[merchantId];
 }
 
@@ -2630,13 +2691,17 @@ async function reloadSummaries(merchantId) {
   const orders = S.boardCache[merchantId] || [];
   const ids = orders.map(o => o.id);
   if (!ids.length) return;
-  const yarnByOrder = await loadYarnSummaryByOrder(merchantId, orders);
-  const attachByOrder = await loadAttachmentsByOrder(merchantId, orders);
-  const ppByOrder = await loadColourApprovalSummaryByOrder(merchantId, orders, 'pp');
-  const labdipByOrder = await loadColourApprovalSummaryByOrder(merchantId, orders, 'labdip');
-  const sewByOrder = await loadAccessorySummaryByOrder(merchantId, orders, 'sewing');
-  const packByOrder = await loadAccessorySummaryByOrder(merchantId, orders, 'packing');
-  const [ap, acc] = await Promise.all([
+  // All eight of these are independent of one another, but they used to run as
+  // six sequential awaits followed by a pair — roughly eight round trips of
+  // latency on every board load and after every booking/receipt edit. Issued
+  // together they cost about as much as the slowest one.
+  const [yarnByOrder, attachByOrder, ppByOrder, labdipByOrder, sewByOrder, packByOrder, ap, acc] = await Promise.all([
+    loadYarnSummaryByOrder(merchantId, orders),
+    loadAttachmentsByOrder(merchantId, orders),
+    loadColourApprovalSummaryByOrder(merchantId, orders, 'pp'),
+    loadColourApprovalSummaryByOrder(merchantId, orders, 'labdip'),
+    loadAccessorySummaryByOrder(merchantId, orders, 'sewing'),
+    loadAccessorySummaryByOrder(merchantId, orders, 'packing'),
     db.from('approvals').select('*').in('order_id', ids).order('round'),
     db.from('accessories').select('order_id,item_type,item_name,booked_on,inhouse_on').in('order_id', ids),
   ]);
@@ -2713,6 +2778,12 @@ function logActivity(orderId, action, detail) {
 // start of the row" flash on every edit.
 function upsertLocalOrder(newRow) {
   if (!newRow || !newRow.id) return;
+  // Realtime delivers every order the database lets through, not just the ones
+  // this user is scoped to. Without this gate a foreign order gets merged into
+  // S.orders / S.layingGoods / S.archive — and while loadDashOrders() refetches
+  // S.orders straight after, layingGoods is never refetched, so the row would
+  // sit on the Laying Goods page for a merchant/JM/manager who can't see it.
+  if (!newRow.merchant_id || !can('view_board', newRow.merchant_id)) return;
   function upsertArr(arr) {
     if (!arr) return;
     var idx = arr.findIndex(function(x){ return x.id === newRow.id; });
@@ -2795,6 +2866,18 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'accessories' }, async () => {
       if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
     })
+    // The colour-approval and accessory booking/receipt tables drive board pills
+    // too, so without these a second user's submissions/receipts stayed invisible
+    // until a manual refresh.
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pp_colour_approvals' }, async () => {
+      if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'accessory_bookings' }, async () => {
+      if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'accessory_receipts' }, async () => {
+      if (S.view !== 'dashboard' && S.view !== 'shipped') { await reloadSummaries(S.view); renderBoard(S.view); }
+    })
     .subscribe();
 }
 
@@ -2832,6 +2915,14 @@ function setView(v) {
       toast('You are not assigned to this merchant');
       return;
     }
+  }
+  // Any view that names a merchant board: confirm this user is actually allowed
+  // to open it. Manager and JM are checked above, but nothing covered the other
+  // roles — a merchant could call setView(<another merchant's id>) directly and
+  // renderBoard would happily load that whole board.
+  if (!isJMOverview && S.users.some(function(u){ return u.id === v; }) && !can('view_board', v)) {
+    toast('You are not assigned to this merchant');
+    return;
   }
   S.view = v;
   try { localStorage.setItem('pt_last_view', v); } catch(e) { /* private browsing etc — not critical */ }
@@ -2959,7 +3050,7 @@ function renderDashboard() {
   const isMA = S.user.role === 'management';
   let alertHtml = '';
   if (can('inbox') && S.alerts && S.alerts.length) {
-    alertHtml = '<div class="alert-cards"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Shipment alerts — ' + S.alerts.length + ' unresolved</div>' +
+    alertHtml = '<div class="alert-cards"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">Alerts — ' + S.alerts.length + ' unresolved</div>' +
       buildAlertCardsHTML() + '</div>';
   }
 
@@ -2995,7 +3086,7 @@ function renderDashboard() {
       </tr></thead>
       <tbody>${atRisk.map(o => {
         const rm = atRiskMiles(o);
-        const merch = S.users.find(u => u.id === o.merchant_id);
+        const merch = userById(o.merchant_id);
         return `<tr>
           ${S.user.role !== 'merchant' ? `<td>${merch ? merch.name : '—'}</td>` : ''}
           <td>${o.buyer}</td><td class="sty">${o.style}</td>
@@ -3024,7 +3115,7 @@ function renderDashboard() {
           const p = o['plan_' + x.k], a = o['act_' + x.k];
           return a ? Math.round((toDate(a) - toDate(p)) / 86400000) : -daysTo(p);
         }));
-        const merch = S.users.find(u => u.id === o.merchant_id);
+        const merch = userById(o.merchant_id);
         return `<tr class="late">
           ${S.user.role !== 'merchant' ? `<td>${merch ? merch.name : '—'}</td>` : ''}
           <td>${o.buyer}</td><td class="sty">${o.style}</td>
@@ -3494,7 +3585,7 @@ function renderArchive() {
   }
 
   const rows = S.archive.map(o => {
-    const merch = S.users.find(u => u.id === o.merchant_id);
+    const merch = userById(o.merchant_id);
     const exp = new Date(o.shipped_on);
     exp.setFullYear(exp.getFullYear() + 2);
     return `<tr id="row-${o.id}">
@@ -4395,7 +4486,7 @@ function openShip(ordId) {
   if (!o) return;
   $('ship_qty_actual').value = o.qty || '';
   $('ship-sub').textContent = `${o.style} · ${o.buyer} · ${fmt(o.qty)} pcs`;
-  $('ship_date_actual').value = new Date().toISOString().slice(0, 10);
+  $('ship_date_actual').value = todayStr();
   $('confirm-ship-btn').disabled = false;
   $('confirm-ship-btn').textContent = 'Confirm shipped';
   openModal('ov-ship');
@@ -4409,7 +4500,7 @@ async function confirmShip() {
   if (!o) return;
   $('confirm-ship-btn').disabled = true;
   $('confirm-ship-btn').textContent = 'Saving...';
-  const shippedOn  = $('ship_date_actual').value || new Date().toISOString().slice(0, 10);
+  const shippedOn  = $('ship_date_actual').value || todayStr();
   const shippedQty = parseInt($('ship_qty_actual').value) || o.qty || 0;
   const planShip   = o.plan_ship || o.ship_date;
   const isLate  = planShip && shippedOn > planShip;
@@ -4699,27 +4790,50 @@ async function checkLabDipSupplierAlerts(merchantId, orders) {
       var key = r.style + '\u0001' + r.colour;
       if (!byStyleColour[key] || (r.round||0) > (byStyleColour[key].round||0)) byStyleColour[key] = r;
     });
-    var today0 = new Date().toISOString().slice(0,10);
+    var today0 = todayStr();
+    // Collect the work first, then fetch every existing alert in ONE query.
+    // Previously this ran a SELECT per colour inside the loop, so a merchant with
+    // a lot of lab dips out at suppliers paid dozens of round trips on every
+    // single board load.
+    var pending = [];
     for (var key in byStyleColour) {
       var latest = byStyleColour[key];
       if (!latest.sent_to_supplier_on || latest.submitted_on || latest.approved_on || latest.rejected_on) continue;
       var daysElapsed = Math.floor((new Date(today0) - new Date(latest.sent_to_supplier_on)) / 86400000);
       if (daysElapsed < 5) continue;
-      var checkpoint = daysElapsed < 7 ? 5 : 7 + 2*Math.floor((daysElapsed-7)/2);
       var ord = orders.find(function(o){ return (o.style||'').toUpperCase() === latest.style; });
       if (!ord) continue;
-      const existing = await db.from('shipment_alerts').select('days_late')
-        .eq('order_id', ord.id).eq('alert_type', 'labdip_supplier_late').eq('colour', latest.colour)
-        .order('days_late', { ascending: false }).limit(1);
-      var maxSoFar = (existing.data && existing.data[0]) ? existing.data[0].days_late : -1;
-      if (maxSoFar >= checkpoint) continue;
+      pending.push({ latest: latest, ord: ord, checkpoint: daysElapsed < 7 ? 5 : 7 + 2*Math.floor((daysElapsed-7)/2) });
+    }
+    if (!pending.length) return;
+
+    const existingRes = await db.from('shipment_alerts')
+      .select('order_id,colour,sent_to_supplier_on,days_late')
+      .eq('alert_type', 'labdip_supplier_late')
+      .in('order_id', Array.from(new Set(pending.map(function(p){ return p.ord.id; }))));
+    var maxByLeg = {};
+    (existingRes.data || []).forEach(function(r){
+      // Keyed on the supplier leg, not just the colour — a resend after a rejection
+      // must start its own alert clock instead of inheriting the previous round's.
+      var k = r.order_id + '\u0001' + r.colour + '\u0001' + r.sent_to_supplier_on;
+      if (maxByLeg[k] == null || r.days_late > maxByLeg[k]) maxByLeg[k] = r.days_late;
+    });
+
+    var inserted = 0;
+    for (var i = 0; i < pending.length; i++) {
+      var p = pending[i];
+      var legKey = p.ord.id + '\u0001' + p.latest.colour + '\u0001' + p.latest.sent_to_supplier_on;
+      if (maxByLeg[legKey] != null && maxByLeg[legKey] >= p.checkpoint) continue;
       await db.from('shipment_alerts').insert({
-        order_id: ord.id, style: ord.style, buyer: ord.buyer, merchant_id: merchantId,
-        alert_type: 'labdip_supplier_late', days_late: checkpoint,
-        colour: latest.colour, supplier_name: latest.supplier_name || null, sent_to_supplier_on: latest.sent_to_supplier_on,
+        order_id: p.ord.id, style: p.ord.style, buyer: p.ord.buyer, merchant_id: merchantId,
+        alert_type: 'labdip_supplier_late', days_late: p.checkpoint,
+        colour: p.latest.colour, supplier_name: p.latest.supplier_name || null, sent_to_supplier_on: p.latest.sent_to_supplier_on,
         shipped_qty: null, short_qty: null, value_lost: null
       });
+      inserted++;
     }
+    // Newly-fired alerts otherwise wouldn't show until the next full reload.
+    if (inserted) { await loadAlerts(); renderRail(); if (S.view === 'inbox') renderInbox(); }
   } catch (e) { /* best-effort — never block board load */ }
 }
 
@@ -4778,8 +4892,12 @@ async function openColourApprovalModal(ordId, merchantId, style, type) {
   await renderPPColourModal();
 }
 
+var _ppcRenderToken = 0;
 async function renderPPColourModal() {
-  _ppcColourData = await getColourApprovalData(_ppcMerchantId, _ppcStyle, _ppcType);
+  var myToken = ++_ppcRenderToken;
+  var _fetched = await getColourApprovalData(_ppcMerchantId, _ppcStyle, _ppcType);
+  if (myToken !== _ppcRenderToken) return; // superseded by a newer render
+  _ppcColourData = _fetched;
   // A colour resolved through the individual Approve/Reject buttons is no
   // longer "awaiting" — drop it from the bulk-selection set too, otherwise it
   // stays counted in the bulk action bar even though it's already been dealt
@@ -4809,7 +4927,7 @@ function renderPPColourList() {
   if (_ppcCanEdit) {
     var bulkCount = Object.keys(_ppcBulkSelected).filter(function(c){return _ppcBulkSelected[c];}).length;
     if (_ppcBulkPickingOutcome && bulkCount > 0) {
-      var today0b = new Date().toISOString().slice(0,10);
+      var today0b = todayStr();
       actionBar = '<div class="yarn-form-card" style="margin:14px 0">'
         + '<div class="yarn-form-title">' + (_ppcBulkPickingOutcome==='approve'?'Approve':'Reject') + ' ' + bulkCount + ' colour(s)</div>'
         + '<label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">' + (_ppcBulkPickingOutcome==='approve'?'Approval':'Rejection') + ' Date</label>'
@@ -4849,7 +4967,7 @@ function renderPPColourCard(c) {
     : '';
 
   var isPicking = _ppcPickingResult && _ppcPickingResult.colour === c.colour;
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
 
   var detailLine = '<div style="color:var(--muted);font-size:11px">Never submitted</div>';
   if (c.status==='sourcing' && c.latest) {
@@ -4863,7 +4981,7 @@ function renderPPColourCard(c) {
     if (_ppcSubmitOnePicking === c.colour) {
       detailLine += '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px;margin-top:6px">'
         + '<div style="display:flex;gap:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;flex-shrink:0">Submitted on</span>'
-        + '<input type="date" id="ppc-submitone-date-'+jsAttrEsc(c.colour)+'" value="'+today0+'" style="flex:1;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;color:var(--ink);font-size:12px">'
+        + '<input type="date" id="ppc-submitone-date" value="'+today0+'" style="flex:1;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;color:var(--ink);font-size:12px">'
         + '<button class="btn sm" style="padding:3px 8px" onclick="ppcCancelSubmitOne()">Cancel</button>'
         + '<button class="btn sm pri" style="padding:3px 8px" onclick="ppcConfirmSubmitOne(\''+jsAttrEsc(c.colour)+'\')">Confirm</button></div>'
         + '</div>';
@@ -4878,7 +4996,7 @@ function renderPPColourCard(c) {
     detailLine = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Submitted ' + short(c.latest.submitted_on) + ' \u00b7 round ' + c.latest.round + '</div>'
       + '<div style="background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px">'
       + '<div style="display:flex;gap:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;flex-shrink:0">' + (outcome==='approve'?'Approve':'Reject') + ' on</span>'
-      + '<input type="date" id="ppc-result-date-'+jsAttrEsc(c.colour)+'" value="'+today0+'" style="flex:1;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;color:var(--ink);font-size:12px">'
+      + '<input type="date" id="ppc-result-date" value="'+today0+'" style="flex:1;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;color:var(--ink);font-size:12px">'
       + '<button class="btn sm" style="padding:3px 8px" onclick="ppcCancelPickResult()">Cancel</button>'
       + '<button class="btn sm pri" style="padding:3px 8px;' + (outcome==='approve'?'background:var(--green);border-color:var(--green)':'background:var(--red);border-color:var(--red)') + '" onclick="ppcConfirmResult(\''+jsAttrEsc(c.colour)+'\')">Confirm</button></div>'
       + '</div>';
@@ -4934,7 +5052,7 @@ function ppcCancelSubmit() { _ppcMode = 'list'; renderPPColourModal(); }
 
 function renderPPSubmitPicker() {
   var eligible = ppcSubmitEligible();
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   var rows = eligible.map(function(c){
     return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer">'
       + '<input type="checkbox" ' + (_ppcSubmitSelected[c.colour]?'checked':'') + ' onchange="ppcToggleSubmitSel(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px">'
@@ -4999,7 +5117,7 @@ function ppcCancelSubmitOne() { _ppcSubmitOnePicking = null; renderPPColourModal
 
 async function ppcConfirmSubmitOne(colour) {
   if (!_ppcCanEdit) { toast('You don\u2019t have permission to do this', 'err'); return; }
-  var dt = document.getElementById('ppc-submitone-date-'+jsAttrEsc(colour));
+  var dt = document.getElementById('ppc-submitone-date');
   var date = dt ? dt.value : '';
   if (!date) { toast('Please pick a date', 'err'); return; }
   var cEntry = _ppcColourData.find(function(x){return x.colour===colour;});
@@ -5027,7 +5145,7 @@ function ppcClearSource() { _ppcSourceSelected={}; renderPPColourModal(); }
 
 function renderPPSourcePicker() {
   var eligible = _ppcColourData.filter(function(c){ return c.status==='not_submitted' || c.status==='rejected'; });
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   var rows = eligible.map(function(c){
     return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer">'
       + '<input type="checkbox" ' + (_ppcSourceSelected[c.colour]?'checked':'') + ' onchange="ppcToggleSourceSel(\''+jsAttrEsc(c.colour)+'\',this.checked)" style="width:16px;height:16px">'
@@ -5098,7 +5216,7 @@ function ppcCancelPickResult() {
 }
 async function ppcConfirmResult(colour) {
   if (!_ppcCanEdit || !_ppcPickingResult || _ppcPickingResult.colour !== colour) { toast('You don\u2019t have permission to do this', 'err'); return; }
-  var dateEl = $('ppc-result-date-' + colour);
+  var dateEl = $('ppc-result-date');
   var date = dateEl ? dateEl.value : '';
   if (!date) { toast('Pick a date', 'err'); return; }
   var outcome = _ppcPickingResult.outcome;
@@ -5281,7 +5399,7 @@ function openAddBookingForm() {
   var compOpts = _yarnCompositions.length
     ? _yarnCompositions.map(function(c){ return '<option value="'+htmlEsc(c)+'">'+htmlEsc(c)+'</option>'; }).join('')
     : '<option value="">No compositions found on this style\u2019s orders</option>';
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   $('yarn-add-booking-form').innerHTML = '<div class="yarn-form-card">'
     + '<div class="yarn-form-title">New ' + (_yarnMaterialType==='attachment_fabric'?'Attachment Fabric':'Yarn') + ' Booking</div>'
     + '<div class="yarn-form-grid">'
@@ -5340,7 +5458,7 @@ async function deleteBooking(id) {
 function addReceiptRow(bookingId) {
   var existing = document.getElementById('yarn-new-receipt-'+bookingId);
   if (existing) { existing.remove(); return; }
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   var html = '<div class="yarn-add-receipt-row" id="yarn-new-receipt-'+bookingId+'">'
     + '<input type="date" id="yb-new-rc-date-'+bookingId+'" value="'+today0+'">'
     + '<input type="number" step="0.01" id="yb-new-rc-qty-'+bookingId+'" placeholder="Qty">'
@@ -5632,7 +5750,7 @@ function renderApvModal() {
   var actionHTML='', footHTML='<button class="btn" onclick="closeModal(\'ov-apv-flow\')">Close</button>';
   var latest=S_apv.rounds.length?S_apv.rounds[S_apv.rounds.length-1]:null;
   var nextRound=latest?latest.round+1:1;
-  var today0=new Date().toISOString().slice(0,10);
+  var today0=todayStr();
   var canAct=can('edit', S_apv.merchantId);
 
   if (S_apv.step==='submit') {
@@ -5978,7 +6096,9 @@ function shiftDate(dateStr, days) {
   if (!dateStr || !days) return dateStr;
   var d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
+  // Local components, not toISOString() — the latter converts local midnight to
+  // the previous day in UTC+n, which shifted every buffered date an extra day back.
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 function generateTNAPrint() {
@@ -6054,7 +6174,7 @@ function openTNARequestForm(ordId, fieldName, fieldLabel, currentVal) {
   _tnareq = { ordId: ordId, field: fieldName, label: fieldLabel, current: currentVal };
   $('tnareq-field').textContent = fieldLabel;
   $('tnareq-current').textContent = currentVal ? short(currentVal) : 'Not set';
-  $('tnareq-date').value = currentVal || new Date().toISOString().slice(0,10);
+  $('tnareq-date').value = currentVal || todayStr();
   $('tnareq-reason').value = '';
   openModal('ov-tna-req');
 }
@@ -6168,20 +6288,20 @@ function buildAlertCardsHTML() {
   return S.alerts.map(function(a) {
     if (a.alert_type === 'labdip_supplier_late') {
       const merchLD = S.users.find(function(u){return u.id===a.merchant_id;});
-      return '<div class="alert-card pp_late"><div class="alert-icon">&#x1F9EA;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + htmlEsc(a.colour||'') + ' \u00b7 ' + a.buyer + (merchLD?' \u00b7 '+merchLD.name:'') + '</div><div class="alert-detail">Lab Dip still with ' + htmlEsc(a.supplier_name||'supplier') + (a.sent_to_supplier_on?' since '+short(a.sent_to_supplier_on):'') + ' \u2014 <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + '</strong>, not yet submitted to buyer</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+      return '<div class="alert-card pp_late"><div class="alert-icon">&#x1F9EA;</div><div class="alert-body"><div class="alert-title">' + htmlEsc(( a.style||'' ).toUpperCase()) + ' \u00b7 ' + htmlEsc(a.colour||'') + ' \u00b7 ' + htmlEsc(a.buyer||'') + (merchLD?' \u00b7 '+htmlEsc(merchLD.name):'') + '</div><div class="alert-detail">Lab Dip still with ' + htmlEsc(a.supplier_name||'supplier') + (a.sent_to_supplier_on?' since '+short(a.sent_to_supplier_on):'') + ' \u2014 <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + '</strong>, not yet submitted to buyer</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
     }
     var apvLateType = a.alert_type && a.alert_type.slice(-5) === '_late' ? a.alert_type.slice(0,-5) : null;
     if (apvLateType && APV_TYPE_CONFIG[apvLateType]) {
       const merchPP = S.users.find(function(u){return u.id===a.merchant_id;});
       const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
-      return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' \u00b7 ' + a.buyer + (merchPP?' \u00b7 '+merchPP.name:'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+      return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + htmlEsc(( a.style||'' ).toUpperCase()) + ' \u00b7 ' + htmlEsc(a.buyer||'') + (merchPP?' \u00b7 '+htmlEsc(merchPP.name):'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
     }
     const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
     const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
     let detail = '';
     if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
     if (a.alert_type === 'late' || a.alert_type === 'both') detail += '<strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong>';
-    return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + ( a.style||'' ).toUpperCase() + ' · ' + a.buyer + (merch2?' · '+merch2.name:'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
+    return '<div class="alert-card ' + a.alert_type + '"><div class="alert-icon">' + icon + '</div><div class="alert-body"><div class="alert-title">' + htmlEsc(( a.style||'' ).toUpperCase()) + ' · ' + htmlEsc(a.buyer||'') + (merch2?' · '+htmlEsc(merch2.name):'') + '</div><div class="alert-detail">Shipped ' + fmt(a.shipped_qty) + ' pcs · ' + detail + '</div></div>' + (canDismiss?'<button class="btn sm ghost no-print" onclick="dismissAlert(\'' + a.id + '\')">Dismiss</button>':'') + '</div>';
   }).join('');
 }
 
@@ -6413,7 +6533,11 @@ function switchAccessoryCategory(category) {
   renderAccessoryModalBody();
 }
 
+var _accRenderToken = 0;
 async function renderAccessoryModalBody() {
+  // Guards against out-of-order renders: switching tabs while a fetch is still in
+  // flight could otherwise let the slower, older request paint over the newer one.
+  var myToken = ++_accRenderToken;
   var order = findOrderAnywhere(_accOrderId) || {};
   var tabsHtml = '<div class="inbox-tabs" style="margin-bottom:14px">'
     + '<button class="inbox-tab-btn' + (_accCategory==='sewing'?' active':'') + '" onclick="switchAccessoryCategory(\'sewing\')">Sewing</button>'
@@ -6428,6 +6552,7 @@ async function renderAccessoryModalBody() {
     + '</div>';
 
   var itemData = await getAccessoryItemData(_accMerchantId, _accStyle, _accCategory);
+  if (myToken !== _accRenderToken) return; // a newer render started while this was loading
   var canEdit = can('edit', _accMerchantId);
   var catLabel = _accCategory === 'sewing' ? 'Sewing' : 'Packing';
 
@@ -6442,10 +6567,6 @@ async function renderAccessoryModalBody() {
 
   var addBtnHtml = canEdit ? '<button class="btn pri" style="width:100%;margin:14px 0" onclick="openAddAccessoryBookingForm()">+ Add Booking</button>' : '';
 
-  var bookedNames = itemData.map(function(it){ return it.item; });
-  var commonList = (ACCESSORY_COMMON_ITEMS[_accCategory] || []).slice();
-  // Order items: common list order first (whether booked or not shown via booked cards),
-  // booked items keep their natural order from getAccessoryItemData (booking-date derived).
   var itemCards = itemData.map(function(it){ return renderAccessoryItemCard(it, canEdit); }).join('');
 
   $('acc-body').innerHTML = tabsHtml + tnaLineHtml + overallHtml + addBtnHtml
@@ -6501,7 +6622,7 @@ function renderAccessoryItemCard(it, canEdit) {
 
 function openAddAccessoryBookingForm() {
   var opts = (ACCESSORY_COMMON_ITEMS[_accCategory] || []).map(function(n){ return '<option value="'+htmlEsc(n)+'">'+htmlEsc(n)+'</option>'; }).join('');
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   $('acc-add-booking-form').innerHTML = '<div class="yarn-form-card">'
     + '<div class="yarn-form-title">New ' + (_accCategory==='sewing'?'Sewing':'Packing') + ' Booking</div>'
     + '<div class="yarn-form-grid">'
@@ -6563,7 +6684,7 @@ async function deleteAccessoryBooking(id) {
 function addAccessoryReceiptRow(bookingId) {
   var existing = document.getElementById('acc-new-receipt-'+bookingId);
   if (existing) { existing.remove(); return; }
-  var today0 = new Date().toISOString().slice(0,10);
+  var today0 = todayStr();
   var html = '<div class="yarn-add-receipt-row" id="acc-new-receipt-'+bookingId+'">'
     + '<input type="date" id="ab-new-rc-date-'+bookingId+'" value="'+today0+'">'
     + '<input type="number" step="0.01" id="ab-new-rc-qty-'+bookingId+'" placeholder="Qty (optional)">'
@@ -6739,7 +6860,7 @@ async function saveMyProfile() {
   const { error } = await db.from('users').update(update).eq('id', S.user.id);
   if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
   S.user.name = name;
-  if (pwd) S.user.password = pwd;
+  if (pwd) S.user.password = update.password;
   await loadUsers();
   renderRail();
   renderAdminPage();
@@ -6970,7 +7091,7 @@ function renderODMaterial() {
   const totalBooked = bk.reduce(function(s,x){return s+(x.qty||0);},0);
   const totalRecvd  = rc.reduce(function(s,x){return s+(x.qty||0);},0);
   const balance = totalBooked - totalRecvd;
-  const today0 = new Date().toISOString().slice(0,10);
+  const today0 = todayStr();
 
   let bkRows = bk.length ? '<table class="mat-table"><thead><tr><th>Date</th><th>Supplier</th><th style="text-align:right">Qty (' + unit + ')</th>' + (canEdit?'<th></th>':'') + '</tr></thead><tbody>' +
     bk.map(function(b){ return '<tr><td style="font-family:var(--mono);font-size:12px">' + short(b.booked_on) + '</td><td>' + (b.supplier||'--') + '</td><td style="text-align:right;font-family:var(--mono)">' + fmt(b.qty) + '</td>' + (canEdit?'<td><button class="btn sm danger" onclick="odDeleteBooking(\'' + b.id + '\')">x</button></td>':'') + '</tr>'; }).join('') +
@@ -7122,7 +7243,7 @@ function exportExcelRun() {
   const ws=XLSX.utils.aoa_to_sheet([headers].concat(rows));
   ws['!cols']=headers.map(function(h){return {wch:Math.max(h.length+2,12)};});
   XLSX.utils.book_append_sheet(wb,ws,'Production Status');
-  const fname=(merch?merch.name:'Production')+'_'+(buyer||'All')+'_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  const fname=(merch?merch.name:'Production')+'_'+(buyer||'All')+'_'+todayStr()+'.xlsx';
   XLSX.writeFile(wb,fname);
   toast('Excel downloaded','ok-t');
 }
@@ -7189,7 +7310,7 @@ async function addMerchant() {
   if (dupUser) { errEl.textContent = 'A user named "' + dupUser.name + '" already exists.'; errEl.style.display='block'; return; }
   const division = type === 'merchant' && $('a_div') ? $('a_div').value : null;
   const designation = ($('a_designation').value||'').trim();
-  const { error } = await db.from('users').insert({ name, role: type, password: pwd, division, title: designation||null });
+  const { error } = await db.from('users').insert({ name, role: type, password: await hashPassword(pwd), division, title: designation||null });
   if (!error) {
     $('a_name').value=''; $('a_pwd').value=''; if($('a_designation')) $('a_designation').value='';
     $('a_type').value='merchant'; handleProfileType();
@@ -7341,7 +7462,7 @@ function renderDashPdf() {
         }).join('')
       + '</tr></thead><tbody>'
       + late.map(function(o) {
-          var merch = S.users.find(function(u){ return u.id===o.merchant_id; });
+          var merch = userById(o.merchant_id);
           var ms = missedMiles(o);
           var dl = daysTo(o.ship_date);
           return '<tr style="background:#FEF2F2;border-bottom:1px solid #FEE2E2">'
@@ -7469,7 +7590,7 @@ function renderGlobalSearchResults(results, query) {
     $('gsearch-modal-body').innerHTML = '<div class="gsearch-empty">No orders match \u201c' + htmlEsc(query) + '\u201d</div>';
   } else {
     $('gsearch-modal-body').innerHTML = results.map(function(r){
-      var merch = S.users.find(function(u){ return u.id === r.merchant_id; });
+      var merch = userById(r.merchant_id);
       var stage = r.stage || 'live';
       var stageLabel = stage === 'shipped' ? 'Shipped' : stage === 'laying' ? 'Laying Goods' : 'Live';
       return '<div class="gsearch-item" onclick="jumpToSearchResult(\'' + r.id + '\',\'' + r.merchant_id + '\',\'' + stage + '\')">'
@@ -7641,7 +7762,7 @@ function getMyThreads() {
 function getAvailableInboxTabs() {
   var tabs = [{ id: 'messages', label: 'Messages' }];
   if (can('requests') || S.user.role === 'merchant' || S.user.role === 'jm') tabs.push({ id: 'requests', label: 'Requests' });
-  if (can('inbox')) tabs.push({ id: 'alerts', label: 'Alerts' });
+  if (can('inbox') || S.user.role === 'merchant' || S.user.role === 'jm') tabs.push({ id: 'alerts', label: 'Alerts' });
   return tabs;
 }
 function inboxTabBadgeCount(tabId) {
@@ -7949,8 +8070,8 @@ function renderMAModal() {
       + '<div class="ma-ua-title">&#x26A0; ' + unassigned.length + ' unassigned merchant' + (unassigned.length!==1?'s':'') + '</div>'
       + '<div class="ma-ua-chips">'
       + unassigned.map(function(m){
-          return '<div class="ma-ua-chip"><span>' + m.name + '</span>'
-            + (m.division ? '<span class="ma-ua-div">' + m.division + '</span>' : '')
+          return '<div class="ma-ua-chip"><span>' + htmlEsc(m.name) + '</span>'
+            + (m.division ? '<span class="ma-ua-div">' + htmlEsc(m.division) + '</span>' : '')
             + '</div>';
         }).join('')
       + '</div></div>';
@@ -7958,13 +8079,15 @@ function renderMAModal() {
 
   $('ma-body').innerHTML = grid + uaHtml;
 
-  // Close dropdown on outside click (within the modal)
+  // Assignment, not addEventListener — ma-body persists across renders (innerHTML
+  // only replaces its children), so addEventListener stacked a duplicate handler
+  // every time this modal was opened.
   var body = $('ma-body');
-  if (body) body.addEventListener('click', function(e) {
+  if (body) body.onclick = function(e) {
     if (!e.target.closest('.ma-add-wrap')) {
       document.querySelectorAll('.ma-dropdown').forEach(function(d){ d.style.display='none'; });
     }
-  }, { once: false });
+  };
 }
 
 function maToggleDrop(managerId) {
@@ -8030,7 +8153,7 @@ function openPackingList(ordId){
   $('pl-sub').textContent=(o.style||'')+(o.po_number?' / '+o.po_number:'')+' -- '+(o.buyer||'');
   var packed=o.prod_packing||0, qty=o.qty||0;
   if(qty>0&&packed>=qty){
-    var today0=new Date().toISOString().slice(0,10);
+    var today0=todayStr();
     $('pl-body').innerHTML='<div style="background:#ECFDF5;border:1px solid #86EFAC;border-radius:9px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#065F46;font-weight:600">Packing complete - '+fmt(packed)+' pcs</div>'
       +'<div class="grid2"><div class="f"><label>Packing list date</label><input id="pl-date" type="date" value="'+today0+'" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)"></div>'
       +'<div class="f"><label>Packing list qty</label><input id="pl-qty" type="number" value="'+packed+'" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;color:var(--ink)" oninput="checkShortPL('+qty+')"></div></div>'
@@ -8236,7 +8359,7 @@ function openShipFromLaying(ordId){
   var o=(S.layingGoods||[]).find(function(x){return x.id===ordId;})||{};
   $('ship_qty_actual').value=o.packing_list_qty||o.qty||'';
   $('ship-sub').textContent=(o.style||'')+(o.po_number?' / '+o.po_number:'')+' -- '+fmt(o.packing_list_qty||o.qty||0)+' pcs';
-  $('ship_date_actual').value=new Date().toISOString().slice(0,10);
+  $('ship_date_actual').value=todayStr();
   openModal('ov-ship');
 }
 
@@ -8244,7 +8367,7 @@ async function confirmShipLaying(){
   var o=(S.layingGoods||[]).find(function(x){return x.id===S.shipTarget;})||{};
   var btn=$('confirm-ship-btn');
   if(btn){btn.disabled=true;btn.textContent='Saving...';}
-  var shippedOn=$('ship_date_actual').value||new Date().toISOString().slice(0,10);
+  var shippedOn=$('ship_date_actual').value||todayStr();
   var shippedQty=parseInt($('ship_qty_actual').value)||o.packing_list_qty||o.qty||0;
   var planShip=o.plan_ship||o.ship_date;
   var isLate=planShip&&shippedOn>planShip;
@@ -9154,7 +9277,7 @@ function renderApprovalFieldCell(field, orderId) {
   var apvType = field.approvalType;
   var cfg = APV_TYPE_CONFIG[apvType] || {};
   var sum = (S.boardSummaries[o.merchant_id]||{})[orderId] || {ap:{}};
-  var merch = S.users.find(function(u){return u.id===o.merchant_id;});
+  var merch = userById(o.merchant_id);
   var division = merch ? (merch.division||'sweater') : 'sweater';
   var canUpd = can('edit', o.merchant_id);
   var planDate = cfg.planKey ? o[cfg.planKey] : (cfg.planFieldKey ? getFieldValue(orderId, cfg.planFieldKey) : null);
@@ -9770,7 +9893,7 @@ async function renderJMOverview(jmId) {
     activityHtml = '<div class="card"><div class="empty"><h4>No activity yet</h4><p>Orders edited by ' + jm.name + ' will appear here.</p></div></div>';
   } else {
     var rows = activity.map(function(a) {
-      var merch = S.users.find(function(u){ return u.id === a.merchant_id; });
+      var merch = userById(a.merchant_id);
       var stageLabel = { live: 'Live', laying: 'Laying Goods', shipped: 'Shipped' }[a.stage] || a.stage;
       var stageColor = { live: '#065F46', laying: '#92400E', shipped: '#1E40AF' }[a.stage] || 'var(--muted)';
       return '<tr>'
