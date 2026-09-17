@@ -621,7 +621,14 @@ button.apv-chip{font-family:inherit}
 [data-theme="dark"] .apv-chip.rejected{background:#B91C1C;color:#FEE2E2;border-color:#991B1B}
 .apv-date-line{margin-top:6px;padding:3px 5px;border-radius:5px;background:var(--accent-soft);
   color:var(--accent);font-size:11.5px;font-weight:700;font-family:var(--mono);line-height:1.4;
-  text-align:center;border:1px solid #E8CFC2;box-sizing:border-box}
+  text-align:center;border:1px solid #E8CFC2;box-sizing:border-box;width:100%;
+  /* This cell's ancestor <td> forces white-space:nowrap on everything inside it,
+     which was pushing the date text straight past the pill's rounded background
+     instead of onto a second line — that's the "spilling out" you saw. Letting
+     it wrap at the one space in "TNA: 30/11/2026" keeps the bigger, more
+     readable font from before while the pill background grows to fit instead
+     of clipping or overflowing. */
+  white-space:normal}
 [data-theme="dark"] .apv-date-line{background:#3A2C24;color:#E8B4A0;border-color:#5A4335}
 .apv-date-line.empty{background:transparent;color:var(--muted);border-color:var(--line);font-weight:600}
 [data-theme="dark"] .apv-date-line.empty{background:transparent;border-color:var(--line)}
@@ -1236,15 +1243,14 @@ table.dyn-board th{white-space:normal;line-height:1.15}
 table.dyn-board th{overflow-wrap:normal;word-break:normal}
 table.dyn-board th.num{font-family:inherit;font-weight:800;letter-spacing:.05em}
 table.dyn-board td:has(.style-thumb:hover){overflow:visible}
-/* The row-actions cell holds up to 5 buttons (TNA/Edit/Pack List/Activity/Trash)
-   in a fixed 225px column. The board's blanket rule above forces every cell to
-   overflow:hidden + white-space:nowrap, which was silently clipping off
-   whichever button ran past 225px on one line — usually the last one added,
-   which is exactly why Trash/Delete kept "disappearing." Letting this one
-   column wrap onto a second line instead of clipping fixes that for good,
-   regardless of how many buttons a row ends up needing. */
-table.dyn-board td.row-actions-cell{overflow:visible;white-space:normal;text-overflow:clip;
-  display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:4px 6px}
+/* The row-actions cell holds up to 5 buttons (TNA/Edit/Pack List/Activity/Trash).
+   Kept on one line as a normal action row — width is set generously above what
+   the buttons need (see the matching 300px in the JS that builds this cell and
+   its header spacer) so nothing clips; overflow:visible is a safety net, not
+   the mechanism doing the work. If more buttons get added here later, widen
+   both the 300px in this rule and the matching 300px in board.js/index.html
+   (search "row-actions-cell") by the same amount rather than relying on wrap. */
+table.dyn-board td.row-actions-cell{overflow:visible;white-space:nowrap;text-overflow:clip}
 
 
 /* Sticky header rows for dynamic buyer table */
@@ -1286,7 +1292,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:5</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:6</p>
   </div>
 </div>
 
@@ -1326,7 +1332,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:5</div>
+  <div id="ver-stamp">Version:26-09-17:6</div>
 </div>
 
 
@@ -3559,7 +3565,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     return '<tr id="row-' + o.id + '" class="' + rowClass(o) + '">'
       + rowCells
-      + '<td class="row-actions-cell" style="width:225px;min-width:225px">'
+      + '<td class="row-actions-cell" style="width:300px;min-width:300px">'
       + '<button class="row-action-btn row-action-tna" onclick="event.stopPropagation();openTNA(\'' + o.id + '\',\'' + division + '\')">TNA' + (ms.length ? ' <span style="color:var(--red)">&#9679;</span>' : '') + '</button>'
       + (canEdit ? ' <button class="row-action-btn row-action-edit" onclick="event.stopPropagation();editOrder(\'' + o.id + '\')">Edit</button>' : '')
       + (canEdit ? ' <button class="row-action-btn row-action-pack" onclick="event.stopPropagation();openPackingList(\'' + o.id + '\')">Pack List</button>' : '')
@@ -3611,7 +3617,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="' + mfWrapCls + fClass + '" style="' + wStr + fStyle + ';font-size:9.5px" rowspan="2">' + (lbl||(mf?mf.name:key)) + '</th>';
     }
   });
-  topRow += '<th rowspan="2" style="width:225px;min-width:225px"></th>';
+  topRow += '<th rowspan="2" style="width:300px;min-width:300px"></th>';
 
   return '<div class="card"><div class="scroller dyn-scroller"><table class="dyn-board">'
     + '<thead><tr>' + topRow + '</tr><tr>' + bottomRow + '</tr></thead>'
