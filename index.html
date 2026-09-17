@@ -620,11 +620,19 @@ button.apv-chip{font-family:inherit}
 [data-theme="dark"] .apv-chip.approved{background:#15803D;color:#DCFCE7;border-color:#166534}
 [data-theme="dark"] .apv-chip.rejected{background:#B91C1C;color:#FEE2E2;border-color:#991B1B}
 .apv-date-line{margin-top:3px;padding:2px 5px;border-radius:5px;background:var(--accent-soft);
-  color:var(--accent);font-size:9.5px;font-weight:700;font-family:var(--mono);line-height:1.4;
+  color:var(--accent);font-size:11.5px;font-weight:700;font-family:var(--mono);line-height:1.4;
   text-align:center;border:1px solid #E8CFC2;box-sizing:border-box}
 [data-theme="dark"] .apv-date-line{background:#3A2C24;color:#E8B4A0;border-color:#5A4335}
 .apv-date-line.empty{background:transparent;color:var(--muted);border-color:var(--line);font-weight:600}
 [data-theme="dark"] .apv-date-line.empty{background:transparent;border-color:var(--line)}
+
+/* Days Left — one of the most-watched columns on the board, so it gets a bold,
+   colour-coded pill at every state instead of fading to plain text once healthy. */
+.days-left-chip{display:inline-block;padding:4px 11px;border-radius:20px;
+  font-size:13.5px;font-weight:800;font-family:var(--mono);letter-spacing:.01em}
+.days-left-chip.crit{background:var(--red);color:#fff;box-shadow:0 1px 3px rgba(220,38,38,.35)}
+.days-left-chip.warn{background:var(--orange);color:#fff;box-shadow:0 1px 3px rgba(192,86,33,.3)}
+.days-left-chip.ok{background:var(--green-soft);color:var(--green)}
 .acc-tna-banner{margin-bottom:14px;padding:10px 14px;border-radius:9px;background:var(--accent-soft);
   color:var(--accent);font-size:15px;font-weight:800;font-family:var(--mono);line-height:1.4;
   text-align:center;border:1.5px solid #E8CFC2;box-sizing:border-box;letter-spacing:.2px}
@@ -1078,6 +1086,16 @@ input[type="date"].cf-input{padding:3px 4px;font-size:10px}
 .cf-chip:hover{border-color:var(--accent);color:var(--accent)}
 .cf-chip.has-val{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
+/* Production Floor pill — bigger and more visible than the generic .cf-chip;
+   this is one of the columns actually used to route work, not just reference data. */
+.prod-floor-chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:7px 14px;border-radius:10px;font-size:12.5px;font-weight:800;letter-spacing:.01em;
+  cursor:pointer;border:2px solid var(--line);background:var(--panel);color:var(--muted);
+  transition:all .15s;white-space:nowrap;min-width:64px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.prod-floor-chip:hover{border-color:var(--accent);box-shadow:0 2px 5px rgba(0,0,0,.08);transform:translateY(-1px)}
+.prod-floor-chip.has-val{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.prod-floor-chip .pf-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+
 /* Column Manager modal */
 .cm-modal{max-width:900px;width:96vw;max-height:88vh;display:flex;flex-direction:column}
 .cm-modal .m-b{padding:0;flex:1;overflow-y:auto;min-height:0}
@@ -1251,7 +1269,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">2026-09-16 &middot; 11</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:1</p>
   </div>
 </div>
 
@@ -1291,7 +1309,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">2026-09-16 &middot; 11</div>
+  <div id="ver-stamp">Version:26-09-17:1</div>
 </div>
 
 
@@ -3408,7 +3426,11 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
         + '<span class="yarn-pill-label">' + fmt(totalRc) + ' / ' + fmt(totalBk) + ' ' + yarnUnitLabel + '</span></div>'
       : '<div class="yarn-pill no-booking"><span class="yarn-pill-label">No booking</span></div>';
 
-    const dlSpan = dl==null ? '\u2014' : dl<0 ? '<span class="chip bad" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : dl<=5 ? '<span class="chip warn" style="font-size:8.5px;font-weight:700">'+dl+' days</span>' : '<span style="font-weight:700">'+dl+' days</span>';
+    // Days Left is one of the most-watched columns on the board, so it always
+    // renders as a solid colour-coded pill (not plain text once healthy) and at
+    // a size that reads at a glance, not just on close inspection.
+    const dlSpan = dl==null ? '\u2014'
+      : '<span class="days-left-chip ' + (dl<0?'crit':dl<=5?'warn':'ok') + '">' + dl + 'd</span>';
 
     const notesText = (o.remarks||'').trim();
     const notesPreviewRaw = notesText ? notesText.replace(/\u2022\s*/g,'').split('\n')[0].slice(0,28) : '';
@@ -3426,7 +3448,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
 
     if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
-    if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:9px;font-weight:700;');
+    if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:12px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '--')), 'text-align:center;');
     if (itemByKey['_po']) cellsByKey['_po'] = singleTd('_po', '', (o.po_number||'\u2014'), 'font-size:11.5px;font-weight:700;font-family:var(--mono);color:var(--ink);');
     if (itemByKey['_buyer']) cellsByKey['_buyer'] = singleTd('_buyer', '', o.buyer);
@@ -3437,7 +3459,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     if (itemByKey['_qty']) cellsByKey['_qty'] = singleTd('_qty', 'num', fmt(o.qty), 'font-weight:700;');
     if (itemByKey['_fob']) cellsByKey['_fob'] = singleTd('_fob', 'num', '$' + (o.fob||0).toFixed(2), 'font-weight:700;');
     if (itemByKey['_value']) cellsByKey['_value'] = singleTd('_value', 'num', money((o.qty||0)*(o.fob||0)), 'font-weight:700;');
-    if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:9px;font-weight:700;');
+    if (itemByKey['_ship']) cellsByKey['_ship'] = singleTd('_ship', '', short(o.ship_date), 'font-size:12px;font-weight:700;');
     if (itemByKey['_days']) cellsByKey['_days'] = singleTd('_days', 'num', dlSpan);
     if (itemByKey['_yarn']) {
       var yarnHtml = '<div onclick="event.stopPropagation();openMaterialModal(\'' + o.id + '\',\'' + division + '\')" style="cursor:pointer">' + yarnInner + '</div>';
@@ -5640,9 +5662,12 @@ var APV_TYPE_CONFIG = {
   sizeset:     { label: 'Size Set' },
   pp:          { label: 'PP Approval',    planKey: 'plan_pp' },
   ppt:         { label: 'Pre-Production Test', manualDate: true },
-  inline:      { label: 'Inline Inspection',   manualDate: true },
+  // An inspection is OFFERED to the buyer for them to attend/conduct, not
+  // "submitted" — submission implies a document or sample being sent. Wording
+  // only; the underlying submitted_on column and state machine are unchanged.
+  inline:      { label: 'Inline Inspection',   manualDate: true, offerWording: true },
   lock_sample: { label: 'Lock Sample',    manualDate: true },
-  final_insp:  { label: 'Final Inspection', planKey: 'plan_insp' },
+  final_insp:  { label: 'Final Inspection', planKey: 'plan_insp', offerWording: true },
   spudi_status:{ label: 'Spudi Status' }
 };
 var APV_LABELS = { labdip: 'Lab Dip', sizeset: 'Size Set', fit: 'Fit', pp: 'PP Approval' }; // kept for back-compat
@@ -5660,10 +5685,14 @@ function apvChip(sum, type, ordId, div2, canUpd, planDate) {
   const tnaWarn = planDate && !approved && daysTo(planDate) < 0
     ? ' <span title="Past TNA date" style="background:#fff;color:#DC2626;border-radius:50%;padding:0 4px;font-size:9px;font-weight:900;box-shadow:0 1px 2px rgba(0,0,0,.25)">!</span>'
     : '';
-  if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">Not submitted' + tnaWarn + '</button>';
+  // Inspections are OFFERED, not submitted — see APV_TYPE_CONFIG.offerWording.
+  const isOffer = !!(APV_TYPE_CONFIG[type] && APV_TYPE_CONFIG[type].offerWording);
+  const notYetLabel = isOffer ? 'Not offered' : 'Not submitted';
+  const pendingLabel = isOffer ? 'Offered' : 'Submitted';
+  if (!latest) return '<button class="apv-chip not-sent" onclick="' + oc + '">' + notYetLabel + tnaWarn + '</button>';
   if (latest.approved_on) return '<button class="apv-chip approved" onclick="' + oc + '">&#x2713; Approved<br><span style="font-weight:400;font-size:9.5px">' + short(latest.approved_on) + '</span></button>';
   if (latest.rejected_on) return '<button class="apv-chip rejected" onclick="' + oc + '">&#x2717; Rejected<br><span style="font-weight:400;font-size:9.5px">' + short(latest.rejected_on) + '</span>' + tnaWarn + '</button>';
-  if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">&#x23F3; Submitted<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
+  if (latest.submitted_on) return '<button class="apv-chip submitted" onclick="' + oc + '">&#x23F3; ' + pendingLabel + '<br><span style="font-weight:400;font-size:9.5px">' + short(latest.submitted_on) + '</span>' + tnaWarn + '</button>';
   return '<button class="apv-chip not-sent" onclick="' + oc + '">Round ' + latest.round + tnaWarn + '</button>';
 }
 
@@ -5743,7 +5772,7 @@ function renderApvModal() {
           return '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F0EDE4">'
             + '<div style="width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0;margin-top:5px"></div>'
             + '<div style="flex:1"><div style="font-weight:600;font-size:12.5px;margin-bottom:4px">Round '+r.round+'</div>'
-            + (r.submitted_on?'<div style="font-size:12px;color:var(--muted);margin-bottom:2px">Submitted <strong style="color:var(--ink);font-family:var(--mono)">'+short(r.submitted_on)+'</strong></div>':'')
+            + (r.submitted_on?'<div style="font-size:12px;color:var(--muted);margin-bottom:2px">'+(apvCfg.offerWording?'Offered':'Submitted')+' <strong style="color:var(--ink);font-family:var(--mono)">'+short(r.submitted_on)+'</strong></div>':'')
             + (r.approved_on ?'<div style="font-size:12px;color:var(--green);font-weight:600">Approved <span style="font-family:var(--mono)">'+short(r.approved_on)+'</span></div>':'')
             + (r.rejected_on ?'<div style="font-size:12px;color:var(--red)">Rejected <span style="font-family:var(--mono)">'+short(r.rejected_on)+'</span></div>':'')
             + '</div>'+badge+'</div>';
@@ -5758,14 +5787,15 @@ function renderApvModal() {
   var canAct=can('edit', S_apv.merchantId);
 
   if (S_apv.step==='submit') {
-    var rLabel=S_apv.rounds.length?'Resubmit — Round '+nextRound:'Submit — Round 1';
+    var isOffer = !!apvCfg.offerWording;
+    var rLabel = S_apv.rounds.length ? 'Re-'+(isOffer?'offer':'submit')+' — Round '+nextRound : (isOffer?'Offer':'Submit')+' — Round 1';
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px">'
       +'<div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px">'+rLabel+'</div>'
-      +'<div style="font-size:13px;color:var(--muted);margin-bottom:8px">When did you send it to the buyer?</div>'
+      +'<div style="font-size:13px;color:var(--muted);margin-bottom:8px">'+(isOffer?'When was it offered to the buyer?':'When did you send it to the buyer?')+'</div>'
       +'<input class="apv-date-big" type="date" id="apv-submit-date" value="'+today0+'"></div>';
     footHTML='<button class="btn" onclick="closeModal(\'ov-apv-flow\')">Cancel</button>'
       + (canAct && latest && latest.rejected_on ? '<button class="btn" onclick="apvUndoLatest()" style="color:var(--red)">&#x21A9; Undo rejection</button>' : '')
-      + '<button class="btn pri" onclick="apvDoSubmit()">Confirm submission</button>';
+      + '<button class="btn pri" onclick="apvDoSubmit()">Confirm '+(isOffer?'offer':'submission')+'</button>';
   } else if (S_apv.step==='outcome') {
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px">'
       +'<div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Round '+(latest?latest.round:1)+' — What was the outcome?</div>'
@@ -8854,7 +8884,7 @@ var DEFAULT_COLUMN_ORDER = [
   '_serial','_style','_buyer','_house','_po','article_no','_confirm_date','_photo',
   '_qty','_fob','_value','country','season','department','_ship','_gauge','_colour',
   '_composition','avg_weight','sales_contract','lc_no','lc_status','_approvals',
-  '_accessories','_yarn','internal_pp','buyer_pp','khata_sign','_production'
+  '_accessories','_yarn','internal_pp','buyer_pp','khata_sign','knit_start','_production'
 ];
 DEFAULT_COLUMN_ORDER.splice(DEFAULT_COLUMN_ORDER.indexOf('_accessories'), 0, '_attachment');
 // Append any remaining keys (not explicitly listed above) in their natural definition order
@@ -9264,7 +9294,7 @@ function renderFieldCell(field, orderId, canEdit) {
   }
   if (field.type === 'special_floor') {
     var display2 = val ? val : 'Set';
-    return '<button class="cf-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openProdFloorModal(this.dataset.oid)">' + display2 + '</button>';
+    return '<button class="prod-floor-chip ' + (val?'has-val':'') + '" data-oid="' + orderId + '" onclick="openProdFloorModal(this.dataset.oid)"><span class="pf-dot"></span>' + display2 + '</button>';
   }
   if (field.type === 'special_delay') {
     return renderDelayCell(orderId);
