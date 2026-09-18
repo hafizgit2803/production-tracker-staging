@@ -640,6 +640,7 @@ button.apv-chip{font-family:inherit}
 .days-left-chip.crit{background:var(--red);color:#fff;box-shadow:0 1px 3px rgba(220,38,38,.35)}
 .days-left-chip.warn{background:var(--orange);color:#fff;box-shadow:0 1px 3px rgba(192,86,33,.3)}
 .days-left-chip.ok{background:var(--green-soft);color:var(--green)}
+.dv-lbl{display:block;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px}
 .acc-tna-banner{margin-bottom:14px;padding:10px 14px;border-radius:9px;background:var(--accent-soft);
   color:var(--accent);font-size:15px;font-weight:800;font-family:var(--mono);line-height:1.4;
   text-align:center;border:1.5px solid #E8CFC2;box-sizing:border-box;letter-spacing:.2px}
@@ -1292,7 +1293,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:9</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:16</p>
   </div>
 </div>
 
@@ -1332,7 +1333,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:9</div>
+  <div id="ver-stamp">Version:26-09-17:16</div>
 </div>
 
 
@@ -1543,6 +1544,49 @@ table.dyn-board thead th.stk-dyn{z-index:35}
       </div>
     </div>
     <div class="m-b" id="tnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
+  </div>
+</div>
+
+<!-- === NEW DEVELOPMENT MODAL === -->
+<div class="ov" id="ov-new-development" onclick="if(event.target===this)closeModal('ov-new-development')">
+  <div class="modal">
+    <div class="m-h"><div><h3>New Development</h3><div class="msub">Just the basics — everything else is filled in on the next screen</div></div>
+      <button class="btn" onclick="closeModal('ov-new-development')">Cancel</button></div>
+    <div class="m-b">
+      <div class="f" style="margin-bottom:10px"><label>Style <span style="color:var(--red)">*</span></label>
+        <input id="devnew-style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="e.g. KB-8801"></div>
+      <div class="f" style="margin-bottom:10px" id="devnew-merchant-wrap">
+        <label>Merchandiser</label>
+        <select id="devnew-merchant" onchange="onDevNewMerchantChange(this)" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7"></select>
+      </div>
+      <div class="f" style="margin-bottom:10px"><label>Buyer <span style="color:var(--red)">*</span></label>
+        <select id="devnew-buyer" onchange="onDevNewBuyerChange(this)" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7"><option value="">-- Select buyer --</option></select>
+        <div id="devnew-new-buyer-wrap" style="display:none;margin-top:8px">
+          <input id="devnew-new-buyer-name" placeholder="Type the new buyer's name" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7">
+          <div class="sub2" style="margin-top:5px">This sends a request to admin to add this buyer. The development is created now — the buyer just won't be confirmable into a real order until it's approved.</div>
+        </div>
+      </div>
+      <div class="f"><label>Photo <span style="font-size:11px;color:var(--muted);font-weight:400">(optional)</span></label>
+        <div class="img-upload-area" id="devnew-photo-area">
+          <input type="file" id="devnew-photo-input" accept="image/*" onchange="handleDevPhotoPreview(this)">
+          <div id="devnew-photo-placeholder" style="font-size:13px;color:var(--muted)">&#x1F4F7; Click to upload</div>
+          <img id="devnew-photo-preview" class="img-upload-preview" alt="Preview" style="display:none">
+        </div>
+      </div>
+    </div>
+    <div class="m-f">
+      <button class="btn" onclick="closeModal('ov-new-development')">Cancel</button>
+      <button class="btn pri" onclick="saveNewDevelopment()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- === DEVELOPMENT SAMPLE MODAL === -->
+<div class="ov" id="ov-dev-sample" onclick="if(event.target===this)closeDevSampleModal()">
+  <div class="modal">
+    <div class="m-h"><div><h3>Development Sample</h3><div class="msub">Send &rarr; Receive &rarr; Approve/Reject</div></div>
+      <button class="btn" onclick="closeDevSampleModal()">Close</button></div>
+    <div class="m-b" id="dsm-body"></div>
   </div>
 </div>
 
@@ -2090,6 +2134,8 @@ const S = {
   archive: [],
   trash: [],
   trashLoaded: false,
+  developments: [],
+  developmentsLoaded: false,
   memo: {},
   boardCache: {},   // { merchantId: fullOrders[] } — cached on first click
   view: 'dashboard',
@@ -2966,6 +3012,7 @@ function render() {
   if (S.view === 'dashboard') renderDashboard();
   else if (S.view === 'shipped' || S.view === 'archive') renderShippedPage();
   else if (S.view === 'trash') renderTrashPage();
+  else if (S.view === 'developments') renderDevelopmentsPage();
   else if (S.view === 'requests') renderRequestsView();
   else if (S.view === 'my-requests') renderMyRequests();
   else if (S.view === 'inbox') renderInbox();
@@ -2982,7 +3029,7 @@ function setView(v) {
     return;
   }
   if (!isJMOverview && S.user.role === 'manager' &&
-      !['dashboard','shipped','trash','requests','my-requests','admin','inbox','laying-goods'].includes(v) &&
+      !['dashboard','shipped','trash','developments','requests','my-requests','admin','inbox','laying-goods'].includes(v) &&
       v !== S.user.id) {
     if (!S.myAssignments.includes(v)) {
       toast('You are not assigned to this merchant');
@@ -2990,7 +3037,7 @@ function setView(v) {
     }
   }
   if (!isJMOverview && S.user.role === 'jm' &&
-      !['dashboard','shipped','trash','requests','my-requests','admin','laying-goods','inbox'].includes(v)) {
+      !['dashboard','shipped','trash','developments','requests','my-requests','admin','laying-goods','inbox'].includes(v)) {
     if (!S.myJMMerchants || !S.myJMMerchants.includes(v)) {
       toast('You are not assigned to this merchant');
       return;
@@ -3010,6 +3057,7 @@ function setView(v) {
   if (v === 'dashboard') renderDashboard();
   else if (v === 'shipped' || v === 'archive') renderShippedPage();
   else if (v === 'trash') { renderTrashPage(); return; }
+  else if (v === 'developments') { S._devDetailId = null; renderDevelopmentsPage(); return; }
   else if (v === 'requests') renderRequestsView();
   else if (v === 'my-requests') renderMyRequests();
   else if (v === 'inbox') renderInbox();
@@ -3866,7 +3914,7 @@ async function saveMultiPOOrders() {
     repeatHistoryJSON = JSON.stringify(chain);
   }
 
-  var created = 0, failed = 0;
+  var created = 0, failed = 0, createdIds = [];
   for (var i = 0; i < rowData.length; i++) {
     var rd = rowData[i];
     var rowColorStr = rd.colourOverride || sharedColorStr;
@@ -3893,6 +3941,7 @@ async function saveMultiPOOrders() {
     if (res.error || !res.data) { failed++; console.error('multi-PO create failed for', rd.po, res.error); continue; }
     created++;
     var newId = res.data.id;
+    createdIds.push(newId);
     var extras = [['article_no', rd.article], ['country', rd.country], ['season', seasonVal], ['department', deptVal], ['avg_weight', avgWeightVal]];
     for (var j = 0; j < extras.length; j++) { if (extras[j][1]) await saveFieldValue(newId, extras[j][0], extras[j][1]); }
   }
@@ -3909,6 +3958,10 @@ async function saveMultiPOOrders() {
   await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
 
   closeModal('ov-order');
+  if (_confirmingDevOptionId && createdIds.length) {
+    try { await finalizeDevConfirm(_confirmingDevOptionId, createdIds); } catch(e) { console.error('dev confirm finalize failed:', e); }
+  }
+  _confirmingDevOptionId = null;
   if (failed) toast(created + ' order(s) created, ' + failed + ' failed \u2014 check those POs and retry', created ? '' : 'err');
   else toast(created + ' order' + (created===1?'':'s') + ' created', 'ok-t');
   delete S.boardCache[orderForMerchant];
@@ -3920,6 +3973,7 @@ async function saveMultiPOOrders() {
 
 async function openOrder(mid) {
   _editOrderId = null;
+  _confirmingDevOptionId = null; // a normal "+ New Order" is never a development confirmation
   document.querySelector('#ov-order h3').textContent = 'New order';
   $('save-order-btn').textContent = 'Add order';
   var buyerSelReset = $('o_buyer');
@@ -4156,6 +4210,10 @@ async function saveOrder() {
     closeModal('ov-order');
     toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
     if (_editOrderId) logActivity(_editOrderId, 'Order details edited', styleVal ? ('Style ' + styleVal) : null);
+    if (!_editOrderId && _confirmingDevOptionId && newOrderId) {
+      try { await finalizeDevConfirm(_confirmingDevOptionId, [newOrderId]); } catch(e) { console.error('dev confirm finalize failed:', e); }
+    }
+    _confirmingDevOptionId = null;
     _editOrderId = null;
     delete S.boardCache[orderForMerchant];
     await loadDashOrders();
@@ -4175,6 +4233,7 @@ async function editOrder(orderId) {
   var o = (S.boardCache[S.view]||[]).find(function(x){ return x.id===orderId; });
   if (!o) { toast('Order not found', 'err'); return; }
   _editOrderId = orderId;
+  _confirmingDevOptionId = null; // editing an existing order is never a development confirmation
   orderForMerchant = o.merchant_id;
 
   $('ord-sub').textContent = 'Editing ' + o.style;
@@ -5460,7 +5519,7 @@ async function renderMaterialModalBody() {
     return '<div class="yarn-booking-card">'
       + '<div class="yarn-booking-hdr">'
       + '<div><div class="yarn-booking-supplier">'+htmlEsc(b.supplier)+'</div>'
-      + '<div class="yarn-booking-meta">'+htmlEsc(b.composition||'')+' \u00b7 '+short(b.booked_on)+(b.pi_number?' \u00b7 PI '+htmlEsc(b.pi_number):'')+(b.lc_number?' \u00b7 LC '+htmlEsc(b.lc_number):'')+'</div></div>'
+      + '<div class="yarn-booking-meta">'+htmlEsc(b.composition||'')+' \u00b7 '+short(b.booked_on)+(b.pi_number?' \u00b7 PI '+htmlEsc(b.pi_number):'')+(b.lc_number?' \u00b7 LC '+htmlEsc(b.lc_number):'')+(b.price_per_lb?' \u00b7 $'+Number(b.price_per_lb).toFixed(4)+'/lb \u00b7 Total $'+fmt(Math.round(b.qty*b.price_per_lb)):'')+'</div></div>'
       + (canEdit ? '<button class="yarn-x" onclick="deleteBooking(\''+b.id+'\')">&#x1F5D1;</button>' : '')
       + '</div>'
       + '<div class="yarn-bar-track sm"><div class="yarn-bar-fill sm ' + yarnBarClass(bPct) + '" style="width:'+bPct+'%"></div></div>'
@@ -5493,6 +5552,7 @@ function openAddBookingForm() {
     + '<div class="f"><label>Composition <span style="color:var(--red)">*</span></label><select id="yb-composition">'+compOpts+'</select></div>'
     + '<div class="f"><label>Booking Date <span style="color:var(--red)">*</span></label><input type="date" id="yb-date" value="'+today0+'"></div>'
     + '<div class="f"><label>Quantity (lbs) <span style="color:var(--red)">*</span></label><input type="number" step="0.01" id="yb-qty" placeholder="0"></div>'
+    + '<div class="f"><label>Price (USD/lb)</label><input type="number" step="0.0001" id="yb-price" placeholder="optional"></div>'
     + '<div class="f"><label>PI Number</label><input id="yb-pi" placeholder="optional"></div>'
     + '<div class="f"><label>LC Number</label><input id="yb-lc" placeholder="optional"></div>'
     + '</div>'
@@ -5508,12 +5568,13 @@ async function saveNewBooking() {
   var comp = $('yb-composition').value;
   var date = $('yb-date').value;
   var qty = parseFloat($('yb-qty').value) || 0;
+  var price = parseFloat($('yb-price').value); if (isNaN(price)) price = null;
   var pi = $('yb-pi').value.trim();
   var lc = $('yb-lc').value.trim();
   if (!supplier || !comp || !date || !qty) { toast('Supplier, composition, date, and quantity are required', 'err'); return; }
   await db.from('yarn_bookings').insert({
     merchant_id: _yarnMerchantId, style: _yarnStyle, material_type: _yarnMaterialType,
-    supplier: supplier, composition: comp, booked_on: date, qty: qty,
+    supplier: supplier, composition: comp, booked_on: date, qty: qty, price_per_lb: price,
     pi_number: pi || null, lc_number: lc || null,
     created_by: S.user.name
   });
@@ -7101,6 +7162,525 @@ async function restoreOrder(ordId) {
   toast('Order restored');
   renderTrashPage();
 }
+// ─── DEVELOPMENTS ───
+// A pre-order pipeline: a style comes in, possibly with several candidate
+// variations (composition/gauge/price), and 0 or more of those variations end
+// up becoming real confirmed orders. Deliberately a separate set of tables
+// rather than reusing `orders` — a development option carries fields (several
+// candidate compositions, per-composition gauge/weight) that a confirmed order
+// never needs once it exists, and vice versa (PO number, actual ship date).
+var _devOptionsCache = {}; // { developmentId: [options] }
+var _devSamplesCache = {}; // { optionId: [sample rounds] }
+
+async function loadDevelopments() {
+  if (S.developmentsLoaded) return;
+  let q = db.from('developments').select('*').order('created_at', { ascending: false });
+  if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
+  else if (S.user.role === 'jm') q = q.in('merchant_id', S.myJMMerchants && S.myJMMerchants.length ? S.myJMMerchants : ['00000000-0000-0000-0000-000000000000']);
+  else if (S.user.role === 'manager') q = q.in('merchant_id', S.myAssignments && S.myAssignments.length ? S.myAssignments : ['00000000-0000-0000-0000-000000000000']);
+  const { data } = await q;
+  S.developments = data || [];
+  S.developmentsLoaded = true;
+  // Prune cached options/samples for any development that is no longer visible
+  // (deleted, or out of scope after a reload). Keeps the cache in step with
+  // what this user can actually see, rather than relying on every delete path
+  // to remember to clean up after itself.
+  Object.keys(_devOptionsCache).forEach(function(did){
+    if (!S.developments.some(function(d){ return d.id === did; })) {
+      (_devOptionsCache[did]||[]).forEach(function(o){ delete _devSamplesCache[o.id]; });
+      delete _devOptionsCache[did];
+    }
+  });
+}
+
+async function loadDevOptions(developmentId) {
+  // Scope guard: S.developments is already role-filtered by loadDevelopments,
+  // so a development that isn't in it is one this user has no business reading.
+  // Callers reach this through the UI only after that check, but this closes
+  // the direct-call path too.
+  if (!S.developments.some(function(d){ return d.id === developmentId; })) {
+    _devOptionsCache[developmentId] = [];
+    return [];
+  }
+  const { data } = await db.from('development_options').select('*').eq('development_id', developmentId).order('sort_order').order('created_at');
+  _devOptionsCache[developmentId] = data || [];
+  return _devOptionsCache[developmentId];
+}
+
+async function renderDevelopmentsPage() {
+  $('crumb').textContent = 'Developments';
+  $('stamp').innerHTML = ''; $('act-row').innerHTML = '';
+  if (!S.developmentsLoaded) {
+    $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading developments\u2026</div>';
+    await loadDevelopments();
+  }
+  if (S._devDetailId) return renderDevelopmentDetail(S._devDetailId);
+
+  $('page-title').textContent = 'Developments';
+  $('page-sub').textContent = S.developments.length + ' style(s) in the pipeline';
+  // Matches can('edit') exactly (admin, or acting as the merchant) — management
+  // and HOD can't edit orders, so letting them create a development they'd then
+  // be locked out of editing would just be confusing.
+  var canAdd = S.user.role === 'admin' || S.user.role === 'merchant' || S.user.role === 'jm';
+  var addBtn = canAdd ? '<button class="btn pri" onclick="openNewDevelopmentModal()" style="margin-bottom:14px">+ New Development</button>' : '';
+
+  if (!S.developments.length) {
+    $('content').innerHTML = '<div class="card">' + addBtn + '<div class="empty"><h4>No developments yet</h4><div>Styles you\u2019re developing before they become confirmed orders will show up here.</div></div></div>';
+    return;
+  }
+
+  // One query for every development's options instead of one per development,
+  // and style images loaded for the merchants involved — without this
+  // getStyleImage() returns null here, since the image cache is otherwise only
+  // ever filled by opening a board, so development photos never appeared.
+  var devIds = S.developments.map(function(d){ return d.id; });
+  var merchIds = Array.from(new Set(S.developments.map(function(d){ return d.merchant_id; })));
+  var optRes = devIds.length
+    ? await db.from('development_options').select('*').in('development_id', devIds).order('sort_order')
+    : { data: [] };
+  (S.developments||[]).forEach(function(d){ _devOptionsCache[d.id] = []; });
+  (optRes.data||[]).forEach(function(o){ (_devOptionsCache[o.development_id] = _devOptionsCache[o.development_id] || []).push(o); });
+  await Promise.all(merchIds.map(function(m){ return loadStyleImages(m).catch(function(){}); }));
+
+  var rows = S.developments.map(function(d) {
+    var opts = _devOptionsCache[d.id] || [];
+    var confirmed = opts.filter(function(o){ return o.status === 'confirmed'; }).length;
+    var photo = getStyleImage(d.merchant_id, d.style);
+    var merch = userById(d.merchant_id);
+    return '<div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:8px;cursor:pointer" onclick="openDevelopmentDetail(\'' + d.id + '\')">'
+      + (photo ? '<img src="'+photo+'" style="width:52px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;border:1px solid var(--line)">' : '<div style="width:52px;height:52px;border-radius:9px;background:#EFECE3;flex-shrink:0"></div>')
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-weight:700;font-size:14px">' + htmlEsc(d.style) + '</div>'
+      + '<div class="sub2">' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="chip warn" style="font-size:9px">Buyer pending approval</span>' : '') + (merch ? ' \u00b7 ' + htmlEsc(merch.name) : '') + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0">'
+      + '<div style="font-size:12.5px;font-weight:600">' + opts.length + ' option' + (opts.length===1?'':'s') + '</div>'
+      + (confirmed ? '<div class="sub2" style="color:var(--green)">' + confirmed + ' confirmed</div>' : '<div class="sub2">Not confirmed yet</div>')
+      + '</div></div>';
+  });
+
+  $('content').innerHTML = addBtn + rows.join('');
+}
+
+function openDevelopmentDetail(devId) {
+  S._devDetailId = devId;
+  renderDevelopmentDetail(devId);
+}
+function backToDevelopmentsList() {
+  S._devDetailId = null;
+  renderDevelopmentsPage();
+}
+
+async function renderDevelopmentDetail(devId) {
+  var d = S.developments.find(function(x){ return x.id === devId; });
+  if (!d) { S._devDetailId = null; return renderDevelopmentsPage(); }
+  var canEdit = can('edit', d.merchant_id);
+  $('page-title').textContent = d.style;
+  $('page-sub').innerHTML = '<a href="#" onclick="event.preventDefault();backToDevelopmentsList()" style="color:var(--accent)">&larr; Developments</a> \u00b7 ' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="chip warn" style="font-size:10px;margin-left:6px">Buyer pending admin approval</span>' : '');
+  $('stamp').innerHTML = ''; $('act-row').innerHTML = canEdit ? '<button class="btn sm danger" onclick="deleteDevelopment(\'' + d.id + '\')">&#x1F5D1; Delete style</button>' : '';
+
+  $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading options\u2026</div>';
+  var opts = await loadDevOptions(devId);
+  // One query for all rounds across all options, not one per option. Style
+  // images loaded here too, so the photo shows even when this page is opened
+  // directly without visiting the merchant's board first.
+  var optIds = opts.map(function(o){ return o.id; });
+  _devSamplesCache = {};
+  opts.forEach(function(o){ _devSamplesCache[o.id] = []; });
+  if (optIds.length) {
+    var sampRes = await db.from('development_samples').select('*').in('development_option_id', optIds).order('round');
+    (sampRes.data||[]).forEach(function(s){ (_devSamplesCache[s.development_option_id] = _devSamplesCache[s.development_option_id] || []).push(s); });
+  }
+  try { await loadStyleImages(d.merchant_id); } catch(e) {}
+
+  var photo = getStyleImage(d.merchant_id, d.style);
+  var head = '<div class="card" style="display:flex;gap:16px;align-items:center;margin-bottom:14px">'
+    + (photo ? '<img src="'+photo+'" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--line)">' : '')
+    + '<div><div style="font-weight:700;font-size:15px">' + htmlEsc(d.style) + '</div><div class="sub2">' + htmlEsc(d.buyer||'') + (d.season?' \u00b7 '+htmlEsc(d.season):'') + '</div></div>'
+    + '</div>';
+
+  function field(o, key, type, placeholder) {
+    var val = o[key]!=null ? o[key] : '';
+    if (!canEdit) return '<span style="font-size:12.5px">' + (htmlEsc(String(val))||'\u2014') + '</span>';
+    var esc = String(val).replace(/"/g,'&quot;');
+    return '<input type="'+type+'" value="'+esc+'" placeholder="'+(placeholder||'')+'" onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.value)" style="width:100%;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px">';
+  }
+  function checkboxField(o, key) {
+    var checked = o[key] ? 'checked' : '';
+    return canEdit
+      ? '<input type="checkbox" '+checked+' onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.checked)">'
+      : (o[key] ? 'Yes' : 'No');
+  }
+
+  var optionCards = opts.map(function(o) {
+    var samples = _devSamplesCache[o.id] || [];
+    var latest = samples[samples.length-1];
+    var sampleLabel = !latest ? 'Not sent yet'
+      : latest.approved_on ? 'Approved'
+      : latest.rejected_on ? 'Rejected (Round '+latest.round+')'
+      : latest.sent_to_buyer_on ? 'With buyer, awaiting decision'
+      : latest.sent_to_sampling_on ? 'In sampling section'
+      : 'Round '+latest.round;
+    var sampleClass = !latest ? 'not-sent' : latest.approved_on ? 'approved' : latest.rejected_on ? 'rejected' : 'submitted';
+    var isConfirmed = o.status === 'confirmed';
+    return '<div class="card" style="margin-bottom:10px;' + (isConfirmed ? 'opacity:.6' : '') + '">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      + '<div style="font-weight:700;font-size:13px">' + htmlEsc(o.option_label) + (isConfirmed ? ' <span class="chip ok" style="margin-left:6px">Confirmed</span>' : '') + '</div>'
+      + '<div style="display:flex;gap:6px">'
+      + (isConfirmed && o.confirmed_order_ids ? '<button class="btn sm" onclick="viewConfirmedDevOrders(\''+o.id+'\')">View order(s)</button>' : '')
+      + (!isConfirmed && canEdit && !d.buyer_pending ? '<button class="btn sm pri" onclick="confirmDevelopmentOptionToOrder(\''+o.id+'\')">Confirm Order</button>' : '')
+      + (!isConfirmed && d.buyer_pending ? '<button class="btn sm" disabled title="Waiting on admin to approve the new buyer" style="opacity:.5;cursor:not-allowed">Confirm Order</button>' : '')
+      + (canEdit ? '<button class="btn sm danger" onclick="deleteDevOption(\''+o.id+'\')">&#x1F5D1;</button>' : '')
+      + '</div></div>'
+      + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px 12px">'
+      + '<div><label class="dv-lbl">Composition</label>' + field(o,'composition','text','e.g. 100% Cotton') + '</div>'
+      + '<div><label class="dv-lbl">Gauge</label>' + field(o,'gauge','text','e.g. 12GG') + '</div>'
+      + '<div><label class="dv-lbl">Avg Weight</label>' + field(o,'avg_weight','number') + '</div>'
+      + '<div><label class="dv-lbl">Colour</label>' + field(o,'colour','text') + '</div>'
+      + '<div><label class="dv-lbl">Quantity</label>' + field(o,'qty','number') + '</div>'
+      + '<div><label class="dv-lbl">Approx Ship Date</label>' + field(o,'approx_ship_date','date') + '</div>'
+      + '<div><label class="dv-lbl">Negotiable Price (FOB)</label>' + field(o,'negotiable_price','number') + '</div>'
+      + '<div><label class="dv-lbl">Attachment Needed</label>' + checkboxField(o,'attachment_needed') + '</div>'
+      + '</div>'
+      + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px">'
+      + '<label class="dv-lbl" style="margin:0">Development Sample</label>'
+      + '<button class="apv-chip ' + sampleClass + '" style="width:auto;display:inline-block;padding:4px 10px" onclick="openDevSampleModal(\''+o.id+'\')">' + sampleLabel + '</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  var addOptionBtn = canEdit ? '<button class="btn sm" onclick="addDevOption(\''+devId+'\')">+ Add Option</button>' : '';
+
+  $('content').innerHTML = head + optionCards + addOptionBtn;
+}
+
+async function openNewDevelopmentModal() {
+  $('devnew-style').value = '';
+  $('devnew-photo-input').value = '';
+  var prev = $('devnew-photo-preview'); if (prev) { prev.src=''; prev.style.display='none'; }
+  var ph = $('devnew-photo-placeholder'); if (ph) ph.style.display = 'block';
+  try { await loadBuyers(); await loadBuyerAssignments(); } catch(e) {}
+  var mid = S.user.role === 'merchant' ? S.user.id : null;
+  var merchSel = $('devnew-merchant');
+  if (S.user.role === 'merchant') {
+    merchSel.style.display = 'none';
+  } else {
+    merchSel.style.display = '';
+    // Scoped exactly like the boards: a JM only sees the merchants assigned to
+    // them, not every merchant in the company. Without this a JM could create a
+    // development against a merchant they have no business touching.
+    var r = S.user.role;
+    var merchList = S.users.filter(function(u){
+      if (u.role !== 'merchant') return false;
+      if (r === 'admin') return true;
+      if (r === 'jm') return (S.myJMMerchants||[]).includes(u.id);
+      return false;
+    });
+    merchSel.innerHTML = merchList.map(function(u){ return '<option value="'+u.id+'">'+htmlEsc(u.name)+'</option>'; }).join('');
+    mid = merchSel.value;
+  }
+  var buyerSel = $('devnew-buyer');
+  var myB = getBuyersForMerchant(mid);
+  buyerSel.innerHTML = '<option value="">-- Select buyer --</option>' + myB.map(function(b){ return '<option value="'+b.id+'">'+htmlEsc(b.name)+'</option>'; }).join('') + '<option value="__new__">+ Add a new buyer\u2026</option>';
+  $('devnew-new-buyer-wrap').style.display = 'none';
+  $('devnew-new-buyer-name').value = '';
+  openModal('ov-new-development');
+}
+function onDevNewBuyerChange(sel) {
+  $('devnew-new-buyer-wrap').style.display = sel.value === '__new__' ? 'block' : 'none';
+}
+function onDevNewMerchantChange(sel) {
+  var buyerSel = $('devnew-buyer');
+  var myB = getBuyersForMerchant(sel.value);
+  buyerSel.innerHTML = '<option value="">-- Select buyer --</option>' + myB.map(function(b){ return '<option value="'+b.id+'">'+htmlEsc(b.name)+'</option>'; }).join('') + '<option value="__new__">+ Add a new buyer\u2026</option>';
+  $('devnew-new-buyer-wrap').style.display = 'none';
+}
+function handleDevPhotoPreview(input) {
+  if (!input.files || !input.files[0]) return;
+  var prev = $('devnew-photo-preview'); prev.src = URL.createObjectURL(input.files[0]); prev.style.display='block';
+  var ph = $('devnew-photo-placeholder'); if (ph) ph.style.display='none';
+}
+async function saveNewDevelopment() {
+  var style = $('devnew-style').value.trim().toUpperCase();
+  var merchSel = $('devnew-merchant');
+  var mid = merchSel.style.display === 'none' ? S.user.id : merchSel.value;
+  var buyerSelVal = $('devnew-buyer').value;
+  var isNewBuyer = buyerSelVal === '__new__';
+  var newBuyerName = isNewBuyer ? $('devnew-new-buyer-name').value.trim() : '';
+  if (!style || !mid || (!buyerSelVal) || (isNewBuyer && !newBuyerName)) { toast('Style, merchant and buyer are required', 'err'); return; }
+  // The merchant id comes from a form control, so it must be validated, not
+  // trusted: it has to be a real merchant, and one this user may act for.
+  // Without this a JM could file a development against their own user id (or
+  // any merchant), producing a row nobody can see or manage.
+  var targetMerchant = S.users.find(function(u){ return u.id === mid && u.role === 'merchant'; });
+  if (!targetMerchant) { toast('Pick a valid merchandiser', 'err'); return; }
+  if (!can('edit', mid)) { toast('You don\u2019t have permission to create a development for that merchandiser', 'err'); return; }
+  var buyerObj = isNewBuyer ? null : S.buyers.find(function(b){ return b.id === buyerSelVal; });
+
+  var res = await db.from('developments').insert({
+    merchant_id: mid, style: style,
+    buyer_id: isNewBuyer ? null : buyerSelVal,
+    buyer: isNewBuyer ? newBuyerName : (buyerObj ? buyerObj.name : ''),
+    buyer_pending: isNewBuyer,
+    created_by: S.user.name
+  }).select().single();
+  if (res.error || !res.data) { toast('Error creating development', 'err'); return; }
+  var devId = res.data.id;
+
+  if (isNewBuyer) {
+    // Reuse an existing pending request for the same buyer name + merchant
+    // rather than stacking up duplicates the admin has to approve one by one.
+    var existingReq = await db.from('buyer_requests').select('*')
+      .eq('merchant_id', mid).eq('status', 'pending').eq('requested_name', newBuyerName).maybeSingle();
+    var reqId = existingReq.data ? existingReq.data.id : null;
+    if (!reqId) {
+      var reqRes = await db.from('buyer_requests').insert({
+        requested_name: newBuyerName, merchant_id: mid, development_id: devId,
+        requested_by: S.user.name
+      }).select().single();
+      if (!reqRes.error && reqRes.data) reqId = reqRes.data.id;
+    }
+    if (reqId) await db.from('developments').update({ buyer_request_id: reqId }).eq('id', devId);
+  }
+
+  var imgFile = $('devnew-photo-input');
+  if (imgFile && imgFile.files && imgFile.files[0]) {
+    try { await uploadStyleImage(mid, style, imgFile.files[0]); } catch(e) { console.error('dev photo upload failed:', e); }
+  }
+  await db.from('development_options').insert({ development_id: devId, option_label: 'Option 1', sort_order: 0, created_by: S.user.name });
+  closeModal('ov-new-development');
+  S.developmentsLoaded = false;
+  await loadDevelopments();
+  if (isNewBuyer) toast('Development created \u2014 buyer request sent to admin', 'ok-t');
+  openDevelopmentDetail(devId);
+}
+
+// Resolves which merchant a development option belongs to, so every write below
+// can be permission-checked the same way a board edit is. Returns null if it
+// can't be determined, and callers treat that as "deny" rather than "allow".
+// NOTE: on a cache miss this looks the option up for real. An earlier version
+// guessed using whichever development happened to be open, which let a merchant
+// with their own page open write to another merchant's options.
+async function devMerchantForOption(optionId) {
+  for (var devId in _devOptionsCache) {
+    if ((_devOptionsCache[devId]||[]).some(function(o){ return o.id === optionId; })) {
+      var d = S.developments.find(function(x){ return x.id === devId; });
+      if (d) return d.merchant_id;
+    }
+  }
+  var res = await db.from('development_options').select('development_id').eq('id', optionId).maybeSingle();
+  if (!res.data) return null;
+  var known = S.developments.find(function(x){ return x.id === res.data.development_id; });
+  if (known) return known.merchant_id;
+  var dres = await db.from('developments').select('merchant_id').eq('id', res.data.development_id).maybeSingle();
+  return dres.data ? dres.data.merchant_id : null;
+}
+
+async function saveDevOptionField(optionId, key, value) {
+  var mid = await devMerchantForOption(optionId);
+  if (!mid || !can('edit', mid)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var payload = {};
+  payload[key] = value === '' ? null : value;
+  const { error } = await db.from('development_options').update(payload).eq('id', optionId);
+  if (error) { toast('Error saving', 'err'); return; }
+  Object.keys(_devOptionsCache).forEach(function(devId){
+    (_devOptionsCache[devId]||[]).forEach(function(o){ if (o.id===optionId) o[key] = payload[key]; });
+  });
+}
+
+async function addDevOption(devId) {
+  var d = S.developments.find(function(x){ return x.id === devId; });
+  if (!d || !can('edit', d.merchant_id)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  var opts = _devOptionsCache[devId] || [];
+  // Label from the highest existing number, not the count — otherwise deleting a
+  // middle option then adding one produces a duplicate label.
+  var maxN = 0;
+  opts.forEach(function(o){ var m = /(\d+)\s*$/.exec(o.option_label||''); if (m) maxN = Math.max(maxN, parseInt(m[1],10)); });
+  var res = await db.from('development_options').insert({
+    development_id: devId, option_label: 'Option ' + (maxN+1), sort_order: opts.length, created_by: S.user.name
+  }).select().single();
+  if (res.error) { toast('Error adding option', 'err'); return; }
+  renderDevelopmentDetail(devId);
+}
+
+async function deleteDevOption(optionId) {
+  var mid = await devMerchantForOption(optionId);
+  if (!mid || !can('edit', mid)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (!confirm('Remove this option? This cannot be undone.')) return;
+  await db.from('development_options').delete().eq('id', optionId);
+  // Drop it from the caches too, so nothing downstream reasons about a row
+  // that no longer exists.
+  Object.keys(_devOptionsCache).forEach(function(dId){
+    _devOptionsCache[dId] = (_devOptionsCache[dId]||[]).filter(function(o){ return o.id !== optionId; });
+  });
+  delete _devSamplesCache[optionId];
+  renderDevelopmentDetail(S._devDetailId);
+}
+
+async function deleteDevelopment(devId) {
+  var d = S.developments.find(function(x){ return x.id===devId; });
+  if (!d || !can('edit', d.merchant_id)) { toast('You don\u2019t have permission to do this', 'err'); return; }
+  if (!confirm('Delete the entire "' + d.style + '" development, including all its options and sample history? This cannot be undone.')) return;
+  await db.from('developments').delete().eq('id', devId);
+  (_devOptionsCache[devId]||[]).forEach(function(o){ delete _devSamplesCache[o.id]; });
+  delete _devOptionsCache[devId];
+  S.developmentsLoaded = false;
+  S._devDetailId = null;
+  await loadDevelopments();
+  renderDevelopmentsPage();
+}
+
+function viewConfirmedDevOrders(optionId) {
+  var ids = [];
+  Object.keys(_devOptionsCache).forEach(function(devId){
+    (_devOptionsCache[devId]||[]).forEach(function(o){
+      if (o.id !== optionId || !o.confirmed_order_ids) return;
+      // jsonb can come back either as a real array or as a JSON string
+      // depending on how it was written — handle both rather than assuming.
+      var raw = o.confirmed_order_ids;
+      if (Array.isArray(raw)) { ids = raw; return; }
+      try { var parsed = JSON.parse(raw); if (Array.isArray(parsed)) ids = parsed; } catch(e) {}
+    });
+  });
+  if (!ids.length) return;
+  toast(ids.length + ' order(s) linked \u2014 find them on the live board by style');
+}
+
+// ─── DEVELOPMENT SAMPLE ROUNDS ───
+var _devSampleOptionId = null;
+async function openDevSampleModal(optionId) {
+  // Sample rounds carry buyer comments — scope them the same way the board is.
+  var mid = await devMerchantForOption(optionId);
+  if (!mid || !can('view_board', mid)) { toast('You don\u2019t have access to that', 'err'); return; }
+  _devSampleOptionId = optionId;
+  var samples = (await db.from('development_samples').select('*').eq('development_option_id', optionId).order('round')).data || [];
+  _devSamplesCache[optionId] = samples;
+  renderDevSampleModal();
+  openModal('ov-dev-sample');
+}
+function renderDevSampleModal() {
+  var samples = _devSamplesCache[_devSampleOptionId] || [];
+  var latest = samples[samples.length-1];
+  var today0 = todayStr();
+  var history = samples.map(function(s){
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px">'
+      + '<strong>Round ' + s.round + '</strong>'
+      + (s.sent_to_sampling_on ? ' \u00b7 Sent to sampling ' + short(s.sent_to_sampling_on) : '')
+      + (s.sent_to_buyer_on ? ' \u00b7 Sent to buyer ' + short(s.sent_to_buyer_on) : '')
+      + (s.approved_on ? ' \u00b7 <span style="color:var(--green)">Approved ' + short(s.approved_on) + '</span>' : '')
+      + (s.rejected_on ? ' \u00b7 <span style="color:var(--red)">Rejected ' + short(s.rejected_on) + '</span>' : '')
+      + (s.buyer_comment ? '<div style="margin-top:4px;color:var(--muted);font-style:italic">\u201c' + htmlEsc(s.buyer_comment) + '\u201d</div>' : '')
+      + '</div>';
+  }).join('');
+  var actions = '';
+  if (!latest || latest.approved_on || latest.rejected_on) {
+    // Fresh round, starting with the internal hand-off to the sampling section
+    actions = '<div class="f"><label>Sent to Sampling Section \u2014 date</label><input type="date" id="dsm-sampling-date" value="'+today0+'"></div>'
+      + '<button class="btn pri" style="margin-top:8px" onclick="devSampleSentToSampling()">Record</button>';
+  } else if (!latest.sent_to_buyer_on) {
+    actions = '<div class="f"><label>Sample Sent to Buyer \u2014 date</label><input type="date" id="dsm-buyer-date" value="'+today0+'"></div>'
+      + '<button class="btn pri" style="margin-top:8px" onclick="devSampleSentToBuyer()">Record</button>';
+  } else {
+    actions = '<div class="f"><label>Buyer comments</label><textarea id="dsm-comment" rows="3" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7" placeholder="What did the buyer say about this sample?"></textarea></div>'
+      + '<div class="f" style="margin-top:8px"><label>Decision date</label><input type="date" id="dsm-decision-date" value="'+today0+'"></div>'
+      + '<div style="display:flex;gap:8px;margin-top:8px">'
+      + '<button class="btn" style="color:var(--green);border-color:var(--green)" onclick="devSampleDecide(true)">Approve</button>'
+      + '<button class="btn" style="color:var(--red);border-color:var(--red)" onclick="devSampleDecide(false)">Reject \u2014 needs resend</button>'
+      + '</div>';
+  }
+  $('dsm-body').innerHTML = (history || '<div class="sub2" style="margin-bottom:8px">No rounds yet.</div>') + '<div style="margin-top:10px">' + actions + '</div>';
+}
+async function devSampleSentToSampling() {
+  var date = $('dsm-sampling-date').value; if (!date) return;
+  var samples = _devSamplesCache[_devSampleOptionId] || [];
+  var latest = samples[samples.length-1];
+  // A new round may only start when the previous one is actually finished.
+  // Previously this was enforced only by which buttons the UI chose to draw.
+  if (latest && !latest.approved_on && !latest.rejected_on) { toast('Finish the current round first', 'err'); return; }
+  if (latest && latest.approved_on) { toast('This sample is already approved', 'err'); return; }
+  var round = (samples.length ? samples[samples.length-1].round : 0) + 1;
+  await db.from('development_samples').insert({ development_option_id: _devSampleOptionId, round: round, sent_to_sampling_on: date, created_by: S.user.name });
+  await openDevSampleModal(_devSampleOptionId);
+  if (S._devDetailId) renderDevelopmentDetail(S._devDetailId);
+}
+async function devSampleSentToBuyer() {
+  var date = $('dsm-buyer-date').value; if (!date) return;
+  var samples = _devSamplesCache[_devSampleOptionId] || [];
+  var latest = samples[samples.length-1];
+  if (!latest) return;
+  if (!latest.sent_to_sampling_on) { toast('Record the sampling section date first', 'err'); return; }
+  if (latest.sent_to_buyer_on) { toast('Already sent to the buyer', 'err'); return; }
+  if (latest.approved_on || latest.rejected_on) { toast('This round is already closed', 'err'); return; }
+  await db.from('development_samples').update({ sent_to_buyer_on: date }).eq('id', latest.id);
+  await openDevSampleModal(_devSampleOptionId);
+  if (S._devDetailId) renderDevelopmentDetail(S._devDetailId);
+}
+async function devSampleDecide(approved) {
+  var date = $('dsm-decision-date').value; if (!date) return;
+  var comment = ($('dsm-comment') && $('dsm-comment').value.trim()) || null;
+  var samples = _devSamplesCache[_devSampleOptionId] || [];
+  var latest = samples[samples.length-1];
+  if (!latest) return;
+  // The buyer can't have decided on a sample they were never sent.
+  if (!latest.sent_to_buyer_on) { toast('Record the send-to-buyer date first', 'err'); return; }
+  if (latest.approved_on || latest.rejected_on) { toast('This round already has a decision', 'err'); return; }
+  var payload = approved ? { approved_on: date } : { rejected_on: date };
+  payload.buyer_comment = comment;
+  await db.from('development_samples').update(payload).eq('id', latest.id);
+  await openDevSampleModal(_devSampleOptionId);
+  if (S._devDetailId) renderDevelopmentDetail(S._devDetailId);
+}
+function closeDevSampleModal() { closeModal('ov-dev-sample'); }
+
+// ─── CONFIRM A DEVELOPMENT OPTION INTO A REAL ORDER ───
+// Deliberately reuses the exact same New Order modal (multi-PO, TNA dates,
+// attachment, everything) rather than building a second, smaller form —
+// confirming an order is just creating an order, prefilled.
+var _confirmingDevOptionId = null;
+async function confirmDevelopmentOptionToOrder(optionId) {
+  var d = null, o = null;
+  for (var devId in _devOptionsCache) {
+    var found = (_devOptionsCache[devId]||[]).find(function(x){ return x.id === optionId; });
+    if (found) { o = found; d = S.developments.find(function(x){ return x.id === devId; }); break; }
+  }
+  if (!o || !d) { toast('Could not find that development option', 'err'); return; }
+
+  await openOrder(d.merchant_id);
+
+  $('o_style').value = d.style;
+  if (d.season) $('o_season').value = d.season;
+  if (o.gauge) $('o_gauge').value = o.gauge;
+  if (o.qty) $('o_qty').value = o.qty;
+  if (o.negotiable_price) $('o_fob').value = o.negotiable_price;
+  if (o.avg_weight) $('o_avg_weight').value = o.avg_weight;
+  var buyerSel = $('o_buyer'); if (buyerSel && d.buyer_id) buyerSel.value = d.buyer_id;
+  calcTotal();
+
+  if (o.colour) { _orderColors = String(o.colour).split(',').map(function(s){return s.trim();}).filter(Boolean); renderColourTags(); }
+  if (o.composition) { _orderComps = String(o.composition).split(',').map(function(s){return s.trim();}).filter(Boolean); renderCompTags(); }
+  if (o.attachment_needed) {
+    var yesRadio = document.querySelector('input[name="o_has_attach"][value="yes"]');
+    if (yesRadio) { yesRadio.checked = true; $('o_attach_picker').style.display = 'block'; }
+  }
+
+  var existingImg = getStyleImage(d.merchant_id, d.style);
+  var prev = $('order-img-preview'), ph = $('order-img-placeholder');
+  if (existingImg && prev) { prev.src = existingImg; prev.style.display = 'block'; if (ph) ph.style.display = 'none'; }
+
+  document.querySelector('#ov-order h3').textContent = 'Confirm Order \u2014 ' + d.style;
+  $('ord-sub').textContent = 'From development: ' + o.option_label;
+  _confirmingDevOptionId = optionId;
+}
+
+async function finalizeDevConfirm(optionId, orderIds) {
+  await db.from('development_options').update({
+    status: 'confirmed', confirmed_order_ids: JSON.stringify(orderIds),
+    confirmed_at: new Date().toISOString(), confirmed_by: S.user.name
+  }).eq('id', optionId);
+  Object.keys(_devOptionsCache).forEach(function(devId){
+    (_devOptionsCache[devId]||[]).forEach(function(o){ if (o.id===optionId) { o.status='confirmed'; o.confirmed_order_ids=JSON.stringify(orderIds); } });
+  });
+}
 
 // ─── UNSHIP ORDER ───
 var _unshipOrdId = null;
@@ -8048,6 +8628,7 @@ function renderRail() {
   html+=ni('laying-goods','&#x1F4E6;','Laying Goods',lgc,lgc>0);
   html+=ni('shipped','&#x2705;','Shipped',S.archive.length);
   html+=ni('trash','&#x1F5D1;','Trash',S.trash.length);
+  html+=ni('developments','&#x1F9EA;','Developments',S.developments.length);
   // Unified Inbox — Messages (everyone), plus Requests and Alerts, whichever
   // this role actually has access to. One nav item, one combined badge.
   var unreadMsgs = getMyThreads().filter(function(t2){ return t2.unread; }).length;
@@ -8982,15 +9563,32 @@ function getMerchantForBuyer(buyerId) {
 }
 
 // === BUYER ASSIGNMENT MODULE ===
+var _pendingBuyerRequests = [];
 async function openBuyerAssign() {
   $('ba-body').innerHTML = '<div class="loading"><span class="spin"></span> Loading...</div>';
   openModal('ov-buyer-assign');
   await loadBuyers();
   await loadBuyerAssignments();
+  var reqRes = await db.from('buyer_requests').select('*').eq('status', 'pending').order('created_at');
+  _pendingBuyerRequests = reqRes.data || [];
   renderBuyerAssign();
 }
 
 function renderBuyerAssign() {
+  var canApprove = S.user.role === 'admin' || S.user.role === 'management';
+  var pendingHtml = '';
+  if (_pendingBuyerRequests.length) {
+    pendingHtml = '<div class="ba-unassigned-pool" style="border-color:#F6D860;margin-bottom:14px">'
+      + '<div style="font-size:11px;font-weight:800;color:#92400E;letter-spacing:.08em;text-transform:uppercase;margin-bottom:9px">New Buyer Requests \u2014 ' + _pendingBuyerRequests.length + ' pending</div>'
+      + _pendingBuyerRequests.map(function(r) {
+          var merch = userById(r.merchant_id);
+          return '<div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #FDE68A;border-radius:8px;padding:9px 12px;margin-bottom:6px">'
+            + '<div><strong style="font-size:13px">' + htmlEsc(r.requested_name) + '</strong><div class="sub2">Requested by ' + htmlEsc(r.requested_by||'') + (merch?' for '+htmlEsc(merch.name):'') + ' \u00b7 ' + short(r.created_at.slice(0,10)) + '</div></div>'
+            + (canApprove ? '<div style="display:flex;gap:6px"><button class="btn sm pri" onclick="baApproveBuyerRequest(\''+r.id+'\')">Approve</button><button class="btn sm danger" onclick="baRejectBuyerRequest(\''+r.id+'\')">Reject</button></div>' : '<span class="sub2">Awaiting admin review</span>')
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
   var merchants = S.users.filter(function(u){ return u.role === 'merchant'; })
     .sort(function(a,b){ return a.name.localeCompare(b.name); });
   var unassigned = S.buyers.filter(function(b){ return !S.buyerAssignments[b.id]; });
@@ -9066,7 +9664,7 @@ function renderBuyerAssign() {
   html += '<div id="ba-err" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>';
   html += '</div>';
 
-  $('ba-body').innerHTML = html;
+  $('ba-body').innerHTML = pendingHtml + html;
 }
 
 async function baAddBuyer() {
@@ -9083,6 +9681,68 @@ async function baAddBuyer() {
   S.buyers.push(data);
   $('ba-new-name').value='';
   toast(name + ' added to buyers');
+  renderBuyerAssign();
+}
+
+// A request approved here creates the buyer, assigns it straight to the
+// merchant who asked for it (so nothing further is needed before they can
+// confirm the order that's waiting on it), and links it back to the
+// development record. Default column visibility needs no extra step — a
+// buyer with no buyer_field_visibility rows already falls back to the
+// standard defaults everywhere getBuyerFieldConfig is used.
+async function baApproveBuyerRequest(reqId) {
+  // Explicit check — approving creates a buyer and assigns it, so it must not
+  // rely on the button merely being hidden, nor on _pendingBuyerRequests
+  // happening to be empty for non-admins.
+  if (S.user.role !== 'admin' && S.user.role !== 'management') { toast('Only admin can approve buyer requests', 'err'); return; }
+  var req = _pendingBuyerRequests.find(function(r){ return r.id === reqId; });
+  if (!req) return;
+  var buyerId;
+  var existing = S.buyers.find(function(b){ return b.name.toLowerCase() === req.requested_name.toLowerCase(); });
+  if (existing) {
+    buyerId = existing.id;
+  } else {
+    var res = await db.from('buyers').insert({ name: req.requested_name }).select().single();
+    if (res.error || !res.data) { toast('Error creating buyer', 'err'); return; }
+    buyerId = res.data.id;
+    S.buyers.push(res.data);
+  }
+  await db.from('buyer_assignments').upsert({ buyer_id: buyerId, merchant_id: req.merchant_id });
+  S.buyerAssignments[buyerId] = req.merchant_id;
+
+  // Several developments from the same merchant may be waiting on this same
+  // buyer name (each created its own development row even though they share one
+  // request). Resolve all of them, and close out any sibling pending requests,
+  // so nothing is left stranded as permanently "pending" after approval.
+  var siblings = _pendingBuyerRequests.filter(function(r){
+    return r.merchant_id === req.merchant_id
+      && String(r.requested_name).toLowerCase() === String(req.requested_name).toLowerCase();
+  });
+  if (siblings.indexOf(req) === -1) siblings.push(req);
+
+  await db.from('developments').update({
+    buyer_id: buyerId, buyer: req.requested_name, buyer_pending: false, buyer_request_id: null
+  }).eq('merchant_id', req.merchant_id).eq('buyer_pending', true).eq('buyer', req.requested_name);
+  S.developments.forEach(function(d){
+    if (d.merchant_id === req.merchant_id && d.buyer_pending && d.buyer === req.requested_name) {
+      d.buyer_id = buyerId; d.buyer_pending = false; d.buyer_request_id = null;
+    }
+  });
+
+  for (var i = 0; i < siblings.length; i++) {
+    await db.from('buyer_requests').update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: S.user.name, resulting_buyer_id: buyerId }).eq('id', siblings[i].id);
+  }
+  var sibIds = siblings.map(function(r){ return r.id; });
+  _pendingBuyerRequests = _pendingBuyerRequests.filter(function(r){ return sibIds.indexOf(r.id) === -1; });
+  toast(req.requested_name + ' approved and assigned', 'ok-t');
+  renderBuyerAssign();
+}
+async function baRejectBuyerRequest(reqId) {
+  if (S.user.role !== 'admin' && S.user.role !== 'management') { toast('Only admin can reject buyer requests', 'err'); return; }
+  if (!confirm('Reject this buyer request? The merchant will need to submit it again if they still want this buyer.')) return;
+  await db.from('buyer_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: S.user.name }).eq('id', reqId);
+  _pendingBuyerRequests = _pendingBuyerRequests.filter(function(r){ return r.id !== reqId; });
+  toast('Buyer request rejected');
   renderBuyerAssign();
 }
 
