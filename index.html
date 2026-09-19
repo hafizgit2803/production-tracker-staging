@@ -641,6 +641,48 @@ button.apv-chip{font-family:inherit}
 .days-left-chip.warn{background:var(--orange);color:#fff;box-shadow:0 1px 3px rgba(192,86,33,.3)}
 .days-left-chip.ok{background:var(--green-soft);color:var(--green)}
 .dv-lbl{display:block;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px}
+
+/* ── Developments module ── */
+.dev-head-card{display:flex;gap:18px;align-items:center;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(20,18,15,.04)}
+.dev-head-photo{width:72px;height:72px;border-radius:12px;object-fit:cover;border:1px solid var(--line);flex-shrink:0}
+.dev-head-photo-ph{width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,#EFECE3,#E5E0D3);
+  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;color:#B5AFA0}
+.dev-head-title{font-family:Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-.2px;color:var(--ink)}
+.dev-head-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+.dev-list-card{display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:9px;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;transition:box-shadow .15s,transform .15s}
+.dev-list-card:hover{box-shadow:0 4px 14px rgba(20,18,15,.08);transform:translateY(-1px);border-color:#D8D2C4}
+
+.dev-opt-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:12px;
+  overflow:hidden;box-shadow:0 1px 3px rgba(20,18,15,.04);position:relative}
+.dev-opt-card.confirmed{border-color:var(--green);background:linear-gradient(180deg,var(--green-soft) 0%,var(--panel) 60px)}
+.dev-opt-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line)}
+.dev-opt-card.confirmed .dev-opt-hdr{border-bottom-color:rgba(47,122,79,.18)}
+.dev-opt-title{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+.dev-opt-body{padding:16px 18px 18px}
+.dev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 16px}
+@media (max-width:900px){.dev-grid{grid-template-columns:repeat(2,1fr)}}
+.dev-field-input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;
+  background:#FCFBF7;font-size:13px;color:var(--ink);box-sizing:border-box;transition:border-color .15s,box-shadow .15s;font-family:inherit}
+.dev-field-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.dev-field-input::placeholder{color:#B5AFA0}
+.dev-field-readonly{font-size:13px;color:var(--ink);padding:8px 0;font-weight:600}
+.dev-checkbox-row{display:flex;align-items:center;gap:8px;padding-top:8px}
+.dev-checkbox-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.dev-sample-row{display:flex;align-items:center;gap:10px;padding:12px 18px;background:#FBFAF6;border-top:1px solid var(--line)}
+.dev-opt-card.confirmed .dev-sample-row{border-top-color:rgba(47,122,79,.18)}
+.dev-add-card{width:100%;padding:14px;border:2px dashed var(--line);border-radius:12px;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.dev-add-card:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.dev-confirmed-tag{display:inline-flex;align-items:center;gap:4px;background:var(--green);color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.dev-pending-tag{display:inline-flex;align-items:center;gap:4px;background:var(--orange);color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.dev-icon-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:8px;border:1.5px solid var(--red-soft);background:var(--red-soft);color:var(--red);cursor:pointer;transition:all .15s}
+.dev-icon-btn:hover{background:var(--red);color:#fff}
 .acc-tna-banner{margin-bottom:14px;padding:10px 14px;border-radius:9px;background:var(--accent-soft);
   color:var(--accent);font-size:15px;font-weight:800;font-family:var(--mono);line-height:1.4;
   text-align:center;border:1.5px solid #E8CFC2;box-sizing:border-box;letter-spacing:.2px}
@@ -1293,7 +1335,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:16</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-09-17:17</p>
   </div>
 </div>
 
@@ -1333,7 +1375,7 @@ table.dyn-board thead th.stk-dyn{z-index:35}
     </div>
     <div class="content" id="content"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div>
   </main>
-  <div id="ver-stamp">Version:26-09-17:16</div>
+  <div id="ver-stamp">Version:26-09-17:17</div>
 </div>
 
 
@@ -7222,7 +7264,7 @@ async function renderDevelopmentsPage() {
   // and HOD can't edit orders, so letting them create a development they'd then
   // be locked out of editing would just be confusing.
   var canAdd = S.user.role === 'admin' || S.user.role === 'merchant' || S.user.role === 'jm';
-  var addBtn = canAdd ? '<button class="btn pri" onclick="openNewDevelopmentModal()" style="margin-bottom:14px">+ New Development</button>' : '';
+  var addBtn = canAdd ? '<button class="btn pri" onclick="openNewDevelopmentModal()" style="margin-bottom:16px;padding:9px 16px;font-weight:600">+ New Development</button>' : '';
 
   if (!S.developments.length) {
     $('content').innerHTML = '<div class="card">' + addBtn + '<div class="empty"><h4>No developments yet</h4><div>Styles you\u2019re developing before they become confirmed orders will show up here.</div></div></div>';
@@ -7247,15 +7289,15 @@ async function renderDevelopmentsPage() {
     var confirmed = opts.filter(function(o){ return o.status === 'confirmed'; }).length;
     var photo = getStyleImage(d.merchant_id, d.style);
     var merch = userById(d.merchant_id);
-    return '<div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:8px;cursor:pointer" onclick="openDevelopmentDetail(\'' + d.id + '\')">'
-      + (photo ? '<img src="'+photo+'" style="width:52px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;border:1px solid var(--line)">' : '<div style="width:52px;height:52px;border-radius:9px;background:#EFECE3;flex-shrink:0"></div>')
+    return '<div class="dev-list-card" onclick="openDevelopmentDetail(\'' + d.id + '\')">'
+      + (photo ? '<img src="'+photo+'" class="dev-head-photo" style="width:52px;height:52px;border-radius:10px">' : '<div class="dev-head-photo-ph" style="width:52px;height:52px;border-radius:10px;font-size:20px">&#x1F9F6;</div>')
       + '<div style="flex:1;min-width:0">'
-      + '<div style="font-weight:700;font-size:14px">' + htmlEsc(d.style) + '</div>'
-      + '<div class="sub2">' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="chip warn" style="font-size:9px">Buyer pending approval</span>' : '') + (merch ? ' \u00b7 ' + htmlEsc(merch.name) : '') + '</div>'
+      + '<div style="font-weight:700;font-size:14.5px;font-family:Georgia,serif">' + htmlEsc(d.style) + '</div>'
+      + '<div class="sub2" style="margin-top:2px">' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="dev-pending-tag" style="margin-left:4px">Pending</span>' : '') + (merch ? ' \u00b7 ' + htmlEsc(merch.name) : '') + '</div>'
       + '</div>'
       + '<div style="text-align:right;flex-shrink:0">'
-      + '<div style="font-size:12.5px;font-weight:600">' + opts.length + ' option' + (opts.length===1?'':'s') + '</div>'
-      + (confirmed ? '<div class="sub2" style="color:var(--green)">' + confirmed + ' confirmed</div>' : '<div class="sub2">Not confirmed yet</div>')
+      + '<div style="font-size:12.5px;font-weight:700">' + opts.length + ' option' + (opts.length===1?'':'s') + '</div>'
+      + (confirmed ? '<div class="sub2" style="color:var(--green);font-weight:600">' + confirmed + ' confirmed</div>' : '<div class="sub2">Not confirmed yet</div>')
       + '</div></div>';
   });
 
@@ -7276,7 +7318,7 @@ async function renderDevelopmentDetail(devId) {
   if (!d) { S._devDetailId = null; return renderDevelopmentsPage(); }
   var canEdit = can('edit', d.merchant_id);
   $('page-title').textContent = d.style;
-  $('page-sub').innerHTML = '<a href="#" onclick="event.preventDefault();backToDevelopmentsList()" style="color:var(--accent)">&larr; Developments</a> \u00b7 ' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="chip warn" style="font-size:10px;margin-left:6px">Buyer pending admin approval</span>' : '');
+  $('page-sub').innerHTML = '<a href="#" onclick="event.preventDefault();backToDevelopmentsList()" style="color:var(--accent)">&larr; Developments</a> \u00b7 ' + htmlEsc(d.buyer||'') + (d.buyer_pending ? ' <span class="dev-pending-tag" style="margin-left:6px">Pending approval</span>' : '');
   $('stamp').innerHTML = ''; $('act-row').innerHTML = canEdit ? '<button class="btn sm danger" onclick="deleteDevelopment(\'' + d.id + '\')">&#x1F5D1; Delete style</button>' : '';
 
   $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading options\u2026</div>';
@@ -7294,22 +7336,22 @@ async function renderDevelopmentDetail(devId) {
   try { await loadStyleImages(d.merchant_id); } catch(e) {}
 
   var photo = getStyleImage(d.merchant_id, d.style);
-  var head = '<div class="card" style="display:flex;gap:16px;align-items:center;margin-bottom:14px">'
-    + (photo ? '<img src="'+photo+'" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--line)">' : '')
-    + '<div><div style="font-weight:700;font-size:15px">' + htmlEsc(d.style) + '</div><div class="sub2">' + htmlEsc(d.buyer||'') + (d.season?' \u00b7 '+htmlEsc(d.season):'') + '</div></div>'
+  var head = '<div class="dev-head-card">'
+    + (photo ? '<img src="'+photo+'" class="dev-head-photo">' : '<div class="dev-head-photo-ph">&#x1F9F6;</div>')
+    + '<div><div class="dev-head-title">' + htmlEsc(d.style) + '</div><div class="dev-head-sub">' + htmlEsc(d.buyer||'') + (d.season?' \u00b7 '+htmlEsc(d.season):'') + (d.buyer_pending ? ' <span class="dev-pending-tag" style="margin-left:6px">Buyer pending approval</span>' : '') + '</div></div>'
     + '</div>';
 
   function field(o, key, type, placeholder) {
     var val = o[key]!=null ? o[key] : '';
-    if (!canEdit) return '<span style="font-size:12.5px">' + (htmlEsc(String(val))||'\u2014') + '</span>';
+    if (!canEdit) return '<div class="dev-field-readonly">' + (htmlEsc(String(val))||'\u2014') + '</div>';
     var esc = String(val).replace(/"/g,'&quot;');
-    return '<input type="'+type+'" value="'+esc+'" placeholder="'+(placeholder||'')+'" onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.value)" style="width:100%;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:#FCFBF7;font-size:12.5px">';
+    return '<input type="'+type+'" class="dev-field-input" value="'+esc+'" placeholder="'+(placeholder||'')+'" onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.value)">';
   }
   function checkboxField(o, key) {
     var checked = o[key] ? 'checked' : '';
     return canEdit
-      ? '<input type="checkbox" '+checked+' onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.checked)">'
-      : (o[key] ? 'Yes' : 'No');
+      ? '<div class="dev-checkbox-row"><input type="checkbox" '+checked+' onchange="saveDevOptionField(\''+o.id+'\',\''+key+'\',this.checked)"><span style="font-size:12.5px;color:var(--muted)">'+(o[key]?'Yes':'No')+'</span></div>'
+      : '<div class="dev-field-readonly">' + (o[key] ? 'Yes' : 'No') + '</div>';
   }
 
   var optionCards = opts.map(function(o) {
@@ -7323,16 +7365,16 @@ async function renderDevelopmentDetail(devId) {
       : 'Round '+latest.round;
     var sampleClass = !latest ? 'not-sent' : latest.approved_on ? 'approved' : latest.rejected_on ? 'rejected' : 'submitted';
     var isConfirmed = o.status === 'confirmed';
-    return '<div class="card" style="margin-bottom:10px;' + (isConfirmed ? 'opacity:.6' : '') + '">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
-      + '<div style="font-weight:700;font-size:13px">' + htmlEsc(o.option_label) + (isConfirmed ? ' <span class="chip ok" style="margin-left:6px">Confirmed</span>' : '') + '</div>'
-      + '<div style="display:flex;gap:6px">'
+    return '<div class="dev-opt-card' + (isConfirmed?' confirmed':'') + '">'
+      + '<div class="dev-opt-hdr">'
+      + '<div class="dev-opt-title">' + htmlEsc(o.option_label) + (isConfirmed ? ' <span class="dev-confirmed-tag">&#x2713; Confirmed</span>' : '') + '</div>'
+      + '<div style="display:flex;gap:8px;align-items:center">'
       + (isConfirmed && o.confirmed_order_ids ? '<button class="btn sm" onclick="viewConfirmedDevOrders(\''+o.id+'\')">View order(s)</button>' : '')
-      + (!isConfirmed && canEdit && !d.buyer_pending ? '<button class="btn sm pri" onclick="confirmDevelopmentOptionToOrder(\''+o.id+'\')">Confirm Order</button>' : '')
+      + (!isConfirmed && canEdit && !d.buyer_pending ? '<button class="btn sm pri" onclick="confirmDevelopmentOptionToOrder(\''+o.id+'\')" style="font-weight:600">Confirm Order</button>' : '')
       + (!isConfirmed && d.buyer_pending ? '<button class="btn sm" disabled title="Waiting on admin to approve the new buyer" style="opacity:.5;cursor:not-allowed">Confirm Order</button>' : '')
-      + (canEdit ? '<button class="btn sm danger" onclick="deleteDevOption(\''+o.id+'\')">&#x1F5D1;</button>' : '')
+      + (canEdit ? '<button class="dev-icon-btn" onclick="deleteDevOption(\''+o.id+'\')" title="Remove this option">&#x1F5D1;</button>' : '')
       + '</div></div>'
-      + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px 12px">'
+      + '<div class="dev-opt-body"><div class="dev-grid">'
       + '<div><label class="dv-lbl">Composition</label>' + field(o,'composition','text','e.g. 100% Cotton') + '</div>'
       + '<div><label class="dv-lbl">Gauge</label>' + field(o,'gauge','text','e.g. 12GG') + '</div>'
       + '<div><label class="dv-lbl">Avg Weight</label>' + field(o,'avg_weight','number') + '</div>'
@@ -7341,15 +7383,15 @@ async function renderDevelopmentDetail(devId) {
       + '<div><label class="dv-lbl">Approx Ship Date</label>' + field(o,'approx_ship_date','date') + '</div>'
       + '<div><label class="dv-lbl">Negotiable Price (FOB)</label>' + field(o,'negotiable_price','number') + '</div>'
       + '<div><label class="dv-lbl">Attachment Needed</label>' + checkboxField(o,'attachment_needed') + '</div>'
-      + '</div>'
-      + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px">'
+      + '</div></div>'
+      + '<div class="dev-sample-row">'
       + '<label class="dv-lbl" style="margin:0">Development Sample</label>'
-      + '<button class="apv-chip ' + sampleClass + '" style="width:auto;display:inline-block;padding:4px 10px" onclick="openDevSampleModal(\''+o.id+'\')">' + sampleLabel + '</button>'
+      + '<button class="apv-chip ' + sampleClass + '" style="width:auto;display:inline-block;padding:5px 12px;border-radius:20px" onclick="openDevSampleModal(\''+o.id+'\')">' + sampleLabel + '</button>'
       + '</div>'
       + '</div>';
   }).join('');
 
-  var addOptionBtn = canEdit ? '<button class="btn sm" onclick="addDevOption(\''+devId+'\')">+ Add Option</button>' : '';
+  var addOptionBtn = canEdit ? '<button class="dev-add-card" onclick="addDevOption(\''+devId+'\')">+ Add Option</button>' : '';
 
   $('content').innerHTML = head + optionCards + addOptionBtn;
 }
@@ -8607,6 +8649,7 @@ function renderRail() {
     return '<button class="ni '+on+'" onclick="setView(\'jm_'+j.id+'\')" style="color:#DB2777"><span class="av" style="font-size:11px;background:#FCE7F3;color:#DB2777">'+initials(j.name)+'</span><span class="nm">'+j.name+'</span></button>';
   }
   var html=ni('dashboard','&#x2302;','Dashboard');
+  html+=ni('developments','&#x1F9EA;','Developments',S.developments.length);
   if(seeAll){
     var sw=S.users.filter(function(u2){return u2.role==='merchant'&&u2.division!=='knit';});
     var kn=S.users.filter(function(u2){return u2.role==='merchant'&&u2.division==='knit';});
@@ -8627,8 +8670,6 @@ function renderRail() {
   var lgc=(S.layingGoods||[]).length;
   html+=ni('laying-goods','&#x1F4E6;','Laying Goods',lgc,lgc>0);
   html+=ni('shipped','&#x2705;','Shipped',S.archive.length);
-  html+=ni('trash','&#x1F5D1;','Trash',S.trash.length);
-  html+=ni('developments','&#x1F9EA;','Developments',S.developments.length);
   // Unified Inbox — Messages (everyone), plus Requests and Alerts, whichever
   // this role actually has access to. One nav item, one combined badge.
   var unreadMsgs = getMyThreads().filter(function(t2){ return t2.unread; }).length;
@@ -8642,6 +8683,9 @@ function renderRail() {
       : visReqs.filter(function(r2){return r2.status!=='pending'&&!r2.merchant_seen;}).length;
   }
   html+=ni('inbox','&#x1F4EC;','Inbox',inboxBadge,inboxBadge>0);
+  // Trash always renders last among the regular nav items, deliberately — any
+  // new section added above must stay above this line, not below it.
+  html+=ni('trash','&#x1F5D1;','Trash',S.trash.length);
   if(isAdmin){
     html+='<div class="rail-sep"></div>';
     html+='<button class="ni'+(S.view==='admin'?' on':'')+'" onclick="setView(\'admin\')"><span class="av" style="font-size:12px">&#x2699;</span><span class="nm">Admin</span></button>';
