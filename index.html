@@ -551,7 +551,7 @@ table.tna-t td.sty{font-weight:600}
   -webkit-backdrop-filter:blur(20px) saturate(190%);
   border:1px solid rgba(255,255,255,.55);
   box-shadow:0 10px 34px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.6);
-  color:#1F1F1F;font-size:11.5px;font-weight:500;line-height:1.45;text-align:left}
+  color:#1F1F1F;font-size:11.5px;font-weight:500;line-height:1.45;text-align:left;white-space:pre-line}
 #floating-tip.show{opacity:1;transform:translateY(0) scale(1) translateZ(0)}
 [data-theme="dark"] #floating-tip{
   background:rgba(40,38,38,.62);border-color:rgba(255,255,255,.12);color:#F2F0EB;
@@ -561,16 +561,6 @@ table.tna-t td.sty{font-weight:600}
    (backdrop-filter blur + will-change), which made every row's chip its own
    GPU layer re-blurring whatever sat behind it on every scroll: one per order,
    so big boards lagged. The glass look stays in the Notes modal itself. */
-.notes-chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:4px 10px;
-  border-radius:14px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;color:var(--muted);
-  background:#F6F4EE;border:1px solid #E6E1D6;
-  transition:border-color .12s ease,background .12s ease}
-.notes-chip:hover{border-color:#D4CCBC;background:#FBFAF6}
-.notes-chip.has-val{color:var(--accent);background:#F7E8E0;border-color:#E8CFC2}
-[data-theme="dark"] .notes-chip{background:#2E2C2A;border-color:#45413B;color:var(--muted)}
-[data-theme="dark"] .notes-chip.has-val{background:#3F3029;color:#E8B4A0;border-color:#5A4335}
-
 /* Order notes modal */
 .notes-textarea{width:100%;min-height:320px;box-sizing:border-box;padding:14px 16px;
   border:1px solid rgba(255,255,255,.65);border-radius:14px;color:var(--ink);
@@ -1538,6 +1528,18 @@ tbody tr.late td.stk-dyn{background-color:#FDECEA!important}
   cursor:pointer;vertical-align:middle;transition:transform .15s ease,box-shadow .15s ease;line-height:1}
 .repeat-badge:hover{transform:scale(1.18);box-shadow:0 2px 8px rgba(201,100,66,.35)}
 [data-theme="dark"] .repeat-badge{background:#3A2C24;border-color:#5A4335}
+/* Notes badge next to the style number — the order's notes one click away,
+   however far the board is scrolled. Yellow like a sticky note when there are
+   notes; when there are none it only appears on the row under the mouse. */
+.note-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;box-sizing:border-box;
+  background:#FFFFFF;border:1.5px solid #E0B43A;box-shadow:0 0 0 2px #FFF1C7;font-size:11px;margin-left:6px;cursor:pointer;vertical-align:middle;line-height:1;
+  transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease}
+.note-badge:hover{transform:scale(1.18);box-shadow:0 2px 8px rgba(183,121,31,.35)}
+.note-badge.nb-empty{background:transparent;border:1px dashed #CFC6B4;box-shadow:none;opacity:0;filter:grayscale(1)}
+tr:hover .note-badge.nb-empty,.note-badge.nb-empty:focus{opacity:.75}
+@media (hover:none){.note-badge.nb-empty{opacity:.45}}
+[data-theme="dark"] .note-badge{background:#2E2C2A;border-color:#C9A13A;box-shadow:0 0 0 2px #3A3220}
+[data-theme="dark"] .note-badge.nb-empty{background:transparent;border-color:#55504A}
 .rh-card{background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:12px;padding:14px 16px}
 .rh-card + .rh-card{margin-top:10px}
 .rh-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -1635,7 +1637,7 @@ table.dyn-board .cf-chip{display:flex;width:100%;justify-content:center;height:2
 table.dyn-board .prod-floor-chip{height:24px;padding:0 8px;border-radius:7px;font-size:10.5px;border-width:1px;box-shadow:none}
 table.dyn-board .prod-floor-chip .pf-dot{width:6px;height:6px}
 /* action chips (+ Note, + Photo): same 24px height, rounded */
-table.dyn-board .notes-chip,table.dyn-board .photo-add-pill{height:24px;box-sizing:border-box;padding:0 10px;font-size:10px;border-radius:12px}
+table.dyn-board .photo-add-pill{height:24px;box-sizing:border-box;padding:0 10px;font-size:10px;border-radius:12px}
 table.dyn-board .photo-add-pill{padding:0 6px;font-size:9.5px;max-width:100%;justify-content:center}
 table.dyn-board .days-left-chip{line-height:16px}
 /* row actions: one size for all six buttons */
@@ -1766,7 +1768,7 @@ td.col-ship{min-width:118px}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-10-10:20</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-10-11:24</p>
   </div>
 </div>
 
@@ -1808,7 +1810,7 @@ td.col-ship{min-width:118px}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">Version:26-10-10:20</div>
+  <div id="ver-stamp">Version:26-10-11:24</div>
 </div>
 
 
@@ -3092,10 +3094,10 @@ function isMerchantBoardView() {
     S.users.some(function(u){ return u.id === S.view; });
 }
 // Ctrl/Cmd+P: print only what's relevant, never the whole app shell.
-//   report preview open  → print the report itself
-//   any window open      → print just that window
-//   on a merchant board  → the Production Status Report (grouped by buyer)
-//   anywhere else        → the page content (print CSS strips the chrome)
+//   report preview open  -> print the report itself
+//   any window open      -> print just that window
+//   on a merchant board  -> the Production Status Report (grouped by buyer)
+//   anywhere else        -> the page content (print CSS strips the chrome)
 document.addEventListener('keydown', function(e){
   if (!(e.ctrlKey || e.metaKey) || e.altKey || (e.key !== 'p' && e.key !== 'P')) return;
   var top = topOpenOverlay();
@@ -3307,10 +3309,10 @@ function buildMaterialReportHtml(meta, rows) {
   function d(x){ if (!x) return '—'; var p = String(x).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0].slice(2) : short(x); }
   function n(x){ return Number(x||0).toLocaleString('en-US'); }
   function bar(pct, state){ return '<span class="bar"><i class="' + state + '" style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></span>'; }
-  // One short line: "TNA 08/10 ✓ 06/10" / "TNA 08/10 overdue" / "No TNA"
+  // One short line: "TNA 08/10 (tick) 06/10" / "TNA 08/10 overdue" / "No TNA"
   function tnaBit(plan, actual, late, narrow){
     if (!plan && !actual) return '<span class="tna muted">No TNA</span>';
-    return '<span class="tna' + (late ? ' late' : '') + '">TNA ' + d(plan) + (actual ? ' <span class="act">✓' + (narrow ? '' : ' ' + d(actual)) + '</span>' : (late && !narrow ? ' <b>overdue</b>' : '')) + '</span>';
+    return '<span class="tna' + (late ? ' late' : '') + '">TNA ' + d(plan) + (actual ? ' <span class="act">\u2713' + (narrow ? '' : ' ' + d(actual)) + '</span>' : (late && !narrow ? ' <b>overdue</b>' : '')) + '</span>';
   }
   var unit = meta.unit, matLabel = meta.materialLabel;
   var ST = { late: ['Behind TNA','late'], progress: ['In progress','prog'], done: ['Complete','done'], none: ['Not booked','none'] };
@@ -3370,7 +3372,7 @@ function buildMaterialReportHtml(meta, rows) {
             ? '<span class="nobook">Not booked</span>'
             : '<div class="l1"><span class="num">' + n(y.received) + ' / ' + n(y.booked) + ' ' + unit + '</span><span class="pct">' + y.pct + '%</span>' + shr + '</div>'
               + bar(y.pct, y.late ? 'late' : y.state === 'done' ? 'done' : 'prog') + etaBit(y.eta))
-        + (y.checks && y.state !== 'none' ? '<div class="lf">' + [['linking','Linking'],['finishing','Finishing']].map(function(it){ var c = y.checks[it[0]]; return '<span class="' + (c ? 'y' : (y.state === 'done' ? 'w' : 'n')) + '">' + it[1] + ' ' + (c ? '✓ ' + d(c.received_on) : '✕') + '</span>'; }).join(' ') + '</div>' : '')
+        + (y.checks && y.state !== 'none' ? '<div class="lf">' + [['linking','Linking'],['finishing','Finishing']].map(function(it){ var c = y.checks[it[0]]; return '<span class="' + (c ? 'y' : (y.state === 'done' ? 'w' : 'n')) + '">' + it[1] + ' ' + (c ? '\u2713 ' + d(c.received_on) : '\u2715') + '</span>'; }).join(' ') + '</div>' : '')
         + '</td>'
         + '<td class="c-sup">' + (supTxt || '<span class="muted">\u2014</span>') + '</td>'
         + '<td class="c-acc">' + accCell(r.acc.sewing) + '</td>'
@@ -3525,7 +3527,7 @@ async function openMaterialStatusReport(uid) {
   }
 }
 
-// ─── WEEKLY MEETING REPORT (merchant ↔ management) ───
+// ─── WEEKLY MEETING REPORT (merchant <-> management) ───
 // One A4-landscape table: every live (and optionally Laying Goods) order of a
 // merchant, with what's in, what isn't and when it's expected, approvals,
 // production and TNA — plus a status the app works out and a blank Remarks
@@ -3580,7 +3582,7 @@ async function runMeetingReport(includeLaying) {
   }
 }
 
-// Pure: orders + raw data → one row per order (no database access here).
+// Pure: orders + raw data -> one row per order (no database access here).
 function buildMeetingRows(orders, D, division, today) {
   function up(x){ return String(x || '').toUpperCase(); }
   function dd(d){ if (!d) return null; return Math.round((new Date(d + 'T00:00:00') - new Date(today + 'T00:00:00')) / 86400000); }
@@ -3672,7 +3674,7 @@ function buildMeetingRows(orders, D, division, today) {
       var own = D.ap.filter(function(a){ return a.order_id === o.id && a.type === type; });
       var ser = SHAREABLE_APV.indexOf(type) !== -1 ? pickSharedSeries(own, D.sh.filter(function(a){ return a.type === type && up(a.shared_style) === st; }), modeFor(o, type)) : own.sort(function(a,b){ return (a.round||0)-(b.round||0); });
       var l = ser[ser.length - 1];
-      if (l && l.approved_on) return { label: label, text: '✓ ' + short(l.approved_on), state: 'ok' };
+      if (l && l.approved_on) return { label: label, text: '\u2713 ' + short(l.approved_on), state: 'ok' };
       if (l && l.rejected_on) { risk.push(label + ' rejected'); return { label: label, text: 'rejected R' + l.round + ' ' + short(l.rejected_on), state: 'bad' }; }
       if (l && l.submitted_on) return { label: label, text: 'submitted ' + short(l.submitted_on), state: 'open' };
       return { label: label, text: 'not submitted', state: 'none' };
@@ -3723,10 +3725,10 @@ function buildMeetingReportHtml(meta, rows) {
     var y = r.yarn, yCell;
     if (r.laying) yCell = '<span class="muted">Production done</span>';
     else if (y.none) yCell = '<span class="red">Not booked</span>';
-    else yCell = '<div><b class="' + (y.done ? 'grn' : '') + '">' + fmt(y.recd) + ' / ' + fmt(y.booked) + ' ' + unit + '</b>' + (y.done ? ' ✓' : '') + '</div>'
+    else yCell = '<div><b class="' + (y.done ? 'grn' : '') + '">' + fmt(y.recd) + ' / ' + fmt(y.booked) + ' ' + unit + '</b>' + (y.done ? ' \u2713' : '') + '</div>'
       + y.open.slice(0, 3).map(function(x){ return '<div class="sm">' + E(x.supplier || 'Booking') + ' ' + fmt(x.recd) + '/' + fmt(x.qty) + ' · ' + (x.eta ? '<span class="' + (x.overdue ? 'red' : '') + '">expected ' + d(x.eta) + (x.overdue ? ' overdue' : '') + '</span>' : '<span class="muted">expected date not given</span>') + (x.note ? ' <i>(' + E(x.note) + ')</i>' : '') + '</div>'; }).join('')
       + (y.open.length > 3 ? '<div class="sm muted">+' + (y.open.length - 3) + ' more bookings</div>' : '');
-    if (y.link != null && !r.laying) yCell += '<div class="sm">Linking ' + (y.link ? '<span class="grn">✓</span>' : '<span class="red">✕</span>') + ' · Finishing ' + (y.fin ? '<span class="grn">✓</span>' : '<span class="red">✕</span>') + '</div>';
+    if (y.link != null && !r.laying) yCell += '<div class="sm">Linking ' + (y.link ? '<span class="grn">\u2713</span>' : '<span class="red">\u2715</span>') + ' · Finishing ' + (y.fin ? '<span class="grn">\u2713</span>' : '<span class="red">\u2715</span>') + '</div>';
     function catList(list, fn) { var out = ''; ['sewing','packing'].forEach(function(c){ var l = list.filter(function(a){ return a.cat === c; }); if (l.length) out += '<div><span class="cat">' + (c === 'sewing' ? 'Sew' + 'ing' : 'Packing') + ':</span> ' + l.map(fn).join(', ') + '</div>'; }); return out; }
     var inCell = r.laying ? '<span class="muted">\u2014</span>' : (catList(r.accIn, function(a){ return E(a.item); }) || '<span class="muted">\u2014</span>');
     var outCell = catList(r.accOut, function(a){
@@ -3830,6 +3832,7 @@ function showFloatingTip(el) {
   var text = el.getAttribute('data-tip');
   if (!text) return;
   tip.textContent = text;
+  tip.style.maxWidth = el.hasAttribute('data-tip-wide') ? '300px' : ''; // note previews get a little more room
   tip.classList.remove('show'); // reset so width recalculates before measuring
   var rect = el.getBoundingClientRect();
   var tipRect = tip.getBoundingClientRect();
@@ -4116,7 +4119,7 @@ async function loadDashOrders() {
   // order counts, quantities and FOB value on the dashboard.
   // Laying Goods orders are loaded too: they're packed but NOT shipped, so their
   // pieces and value still count on the dashboard until they move to Shipped.
-  if (S.user.role === 'commercial') { S.orders = []; S.dashLaying = []; await loadAlerts(); return; } // works from Laying Goods; live orders aren't needed
+  if (S.user.role === 'commercial') { S.orders = []; S.dashLaying = []; await loadCommSoon(); await loadAlerts(); return; } // only live orders shipping in the next 14 days
   let q = db.from('orders').select(DASH_COLS)
     .or('stage.eq.live,stage.eq.laying,stage.is.null').order('ship_date', { ascending: true });
   if (S.user.role === 'merchant') q = q.eq('merchant_id', S.user.id);
@@ -5431,13 +5434,13 @@ function updateFloatingScrollbar() {
   var bar = document.getElementById('float-hscroll');
   var c = document.getElementById('content');
   if (!bar || !c) return;
-  // Bar dragged → move the table.
+  // Bar dragged -> move the table.
   // Each side only writes when the two differ, so the echo from the other side
   // is a no-op and they can't ping-pong.
   bar.addEventListener('scroll', function(){
     if (_fhsTarget && Math.abs(_fhsTarget.scrollLeft - bar.scrollLeft) > 1) _fhsTarget.scrollLeft = bar.scrollLeft;
   });
-  // Any scroll (page up/down, or a table moved by trackpad / Shift+wheel) →
+  // Any scroll (page up/down, or a table moved by trackpad / Shift+wheel) ->
   // re-pick the table and keep the bar's thumb in step with it.
   document.addEventListener('scroll', function(e){
     if (e.target === bar) return;
@@ -5630,9 +5633,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     const dlSpan = dl==null ? '\u2014'
       : '<span class="days-left-chip ' + (dl<0?'crit':dl<=5?'warn':'ok') + '">' + dl + 'd</span>';
 
-    const notesText = notesAsText(o.remarks).trim(); // older notes are stored as a list — show the readable text, never the raw data
-    const notesPreviewRaw = notesText ? notesText.replace(/\u2022\s*/g,'').split('\n')[0].slice(0,28) : '';
-    const remCell = '<button class="notes-chip' + (notesText?' has-val':'') + '" onclick="event.stopPropagation();openOrderNotesModal(\'' + o.id + '\')" title="' + htmlEsc(notesText || 'Click to add notes') + '">' + (notesText ? '&#x1F4DD; ' + htmlEsc(notesPreviewRaw) + (notesText.length>28?'\u2026':'') : '+ Note') + '</button>';
 
     // Build cell HTML keyed by column key — every cell carries width + frozen positioning
     var cellsByKey = {};
@@ -5644,7 +5644,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
-    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order — view history">&#x1F501;</span>' : '') + '<div class="sub2" style="margin-left:10px;font-size:8.5px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + '</div>', 'cursor:pointer;');
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + o.style + '</span>' + '<div class="sub2" style="margin-left:10px;font-size:8.5px;display:flex;align-items:center;gap:0;min-height:18px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order \u2014 view history">&#x1F501;</span>' : '') + noteBadge(o) + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:12px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '<span class="muted-dash">\u2014</span>')), 'text-align:center;');
@@ -5708,7 +5708,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       }).join('');
     }
 
-    if (itemByKey['_notes']) cellsByKey['_notes'] = singleTd('_notes', '', remCell);
 
     customFieldItems.forEach(function(f) {
       var it = itemByKey[f.key];
@@ -5766,7 +5765,6 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       topRow += '<th class="grp apv-grp-end' + fClass + '" style="width:' + (VSTEPS.length*92) + 'px;min-width:' + (VSTEPS.length*92) + 'px;max-width:' + (VSTEPS.length*92) + 'px;' + fStyle + '" colspan="' + VSTEPS.length + '">' + (lbl||'Production') + '</th>';
       bottomRow += VSTEPS.map(function(s, sidx){return '<th class="grp' + (sidx===VSTEPS.length-1?' apv-grp-end':'') + '" style="width:92px;min-width:92px;max-width:92px;font-size:9px">'+s.n+'</th>';}).join('');
     }
-    else if (key === '_notes') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2"><span class="th-tip" data-tip="Free-form notes for this order \u2014 click any cell in this column to open and type, like a small text document. Saves automatically." onmouseenter="showFloatingTip(this)" onmouseleave="hideFloatingTip()">' + (lbl||'Notes') + '</span></th>';
     else {
       var mf = getFieldByKey(key);
       var mfWrapCls = (mf && mf.wrap) ? ' wrap2' : '';
@@ -5847,7 +5845,7 @@ function renderArchive() {
       + '<td>' + E(o.buyer||'—') + '</td><td>' + E(o.house||'—') + '</td>'
       + '<td class="num">' + fmt(o.qty||0) + '</td>'
       + '<td class="num">' + fmt(sq) + (shortQ ? '<div><span class="chip warn" style="font-size:10px">Short ' + fmt(shortQ) + '</span></div>' : '') + '</td>'
-      + '<td class="num">' + money(sq * (o.fob||0)) + (shortQ ? '<div style="font-size:10px;color:var(--red)">−' + money(shortQ * (o.fob||0)) + '</div>' : '') + '</td>'
+      + '<td class="num">' + money(sq * (o.fob||0)) + (shortQ ? '<div style="font-size:10px;color:var(--red)">\u2212' + money(shortQ * (o.fob||0)) + '</div>' : '') + '</td>'
       + '<td>' + short(plan) + '</td>'
       + '<td>' + short(o.shipped_on) + (late ? '<div><span class="chip bad" style="font-size:10px">' + late + 'd late</span></div>' : '') + '</td>'
       + '<td>' + (o.shipment_mode === 'air' ? '<span class="mode-chip air">Air</span>' : '<span class="mode-chip sea">Sea</span>') + '</td>'
@@ -6638,6 +6636,19 @@ function canEditOrderNotes(o) {
   if (r === 'management' || r === 'hod') return true;
   if (r === 'manager') return !!(S.myAssignments && S.myAssignments.indexOf(o.merchant_id) !== -1);
   return false;
+}
+// Notepad badge next to the style number: yellow when the order has notes
+// (hover shows them), dashed and only on the hovered row when it has none
+// (click to add). The icon is an HTML entity, never a pasted emoji.
+function noteBadge(o) {
+  var t = notesAsText(o.remarks).trim(), edit = canEditOrderNotes(o);
+  if (!t && !edit) return '';
+  var lines = t.split('\n'), tip = t ? lines.slice(0, 8).join('\n') : 'Add a note';
+  if (t && (lines.length > 8 || tip.length > 320)) tip = tip.slice(0, 320).replace(/\s+\S*$/, '') + '…';
+  return '<span class="note-badge no-copy' + (t ? '' : ' nb-empty') + '" role="button" tabindex="0" aria-label="' + (t ? 'Notes' : 'Add a note') + '"'
+    + ' onclick="event.stopPropagation();hideFloatingTip();openOrderNotesModal(\'' + o.id + '\')"'
+    + ' onkeydown="if(event.key===\'Enter\'){event.stopPropagation();openOrderNotesModal(\'' + o.id + '\')}"'
+    + ' data-tip="' + htmlEsc(tip) + '" data-tip-wide onmouseenter="showFloatingTip(this)" onmouseleave="hideFloatingTip()">&#x1F5D2;&#xFE0F;</span>';
 }
 function openOrderNotesModal(orderId) {
   var o = findOrderAnywhere(orderId);
@@ -7829,7 +7840,7 @@ async function openMaterialModal(ordId, division) {
   // (style-wide) booking still counts toward every PO underneath it — see
   // the query in renderMaterialModalBody — but a new booking made here gets
   // tagged to this PO specifically, not merged into the shared pool.
-  // Where a NEW booking goes follows the buyer's setting (Admin → Buyer
+  // Where a NEW booking goes follows the buyer's setting (Admin -> Buyer
   // settings). What's SHOWN is always the shared bookings plus this PO's own.
   var isPoWise = isPoMode(o, 'yarn');
   _yarnPoNumber = isPoWise ? (o.po_number || null) : null;
@@ -8224,7 +8235,7 @@ async function recomputeYarnActual(merchantId, style, poNumber) {
   // No PO given: work out every order of the style on its own (shared
   // bookings + that order's own PO bookings) — the same rule the board pill
   // uses. Lumping them together stamped a PO "done" while its own PO booking
-  // was still outstanding, once a buyer had been switched PO-wise → style-wise.
+  // was still outstanding, once a buyer had been switched PO-wise -> style-wise.
   if (!poNumber) {
     var sameStyle = (S.boardCache[merchantId] || []).filter(function(o){ return (o.style||'').toUpperCase() === upper; });
     for (var k = 0; k < sameStyle.length; k++) await recomputeYarnActualFor(merchantId, upper, sameStyle[k]);
@@ -8417,9 +8428,9 @@ function renderApvModal() {
           var isOk=!!r.approved_on, isRj=!!r.rejected_on;
           var dot = isOk?'var(--green)':isRj?'var(--red)':'var(--amber)';
           var badge = isOk
-            ? '<span style="background:var(--green-soft);color:var(--green);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">✓ Approved</span>'
+            ? '<span style="background:var(--green-soft);color:var(--green);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">\u2713 Approved</span>'
             : isRj
-            ? '<span style="background:var(--red-soft);color:var(--red);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">✗ Rejected</span>'
+            ? '<span style="background:var(--red-soft);color:var(--red);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">\u2717 Rejected</span>'
             : '<span style="background:var(--amber-soft);color:var(--amber);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">Awaiting</span>';
           return '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F0EDE4">'
             + '<div style="width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0;margin-top:5px"></div>'
@@ -8452,8 +8463,8 @@ function renderApvModal() {
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px">'
       +'<div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px">Round '+(latest?latest.round:1)+' — What was the outcome?</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-      +'<button class="apv-outcome-btn approve" onclick="apvPickDate(\'approve\')">✓ Approved</button>'
-      +'<button class="apv-outcome-btn reject" onclick="apvPickDate(\'reject\')">✗ Rejected</button>'
+      +'<button class="apv-outcome-btn approve" onclick="apvPickDate(\'approve\')">\u2713 Approved</button>'
+      +'<button class="apv-outcome-btn reject" onclick="apvPickDate(\'reject\')">\u2717 Rejected</button>'
       +'</div></div>';
   } else if (S_apv.step==='pick-approve') {
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px">'
@@ -8468,7 +8479,7 @@ function renderApvModal() {
   } else if (S_apv.step==='done') {
     var ar=S_apv.rounds.filter(function(r){return r.approved_on;}).slice(-1)[0];
     actionHTML='<div style="border-top:1px solid var(--line);padding-top:14px;text-align:center;padding-bottom:6px">'
-      +'<div style="width:44px;height:44px;border-radius:50%;background:var(--green-soft);border:2px solid #4ADE80;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;color:var(--green)">✓</div>'
+      +'<div style="width:44px;height:44px;border-radius:50%;background:var(--green-soft);border:2px solid #4ADE80;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;color:var(--green)">\u2713</div>'
       +'<div style="font-size:16px;font-weight:600;color:var(--green);margin-bottom:4px">Approved</div>'
       +'<div style="font-size:12.5px;color:var(--muted)">'+short(ar?ar.approved_on:'')+'  ·  Round '+(ar?ar.round:'')+'</div></div>';
     if (canAct) footHTML='<button class="btn" onclick="apvUndoLatest()" style="color:var(--red)">&#x21A9; Undo approval</button><button class="btn pri" onclick="closeModal(\'ov-apv-flow\')">Done</button>';
@@ -9134,7 +9145,7 @@ async function openOrderChecklist(ordId) {
   function row(it) {
     var col = it.done ? '#2F7A4F' : it.urgent ? '#C0392B' : '#191817';
     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #E5E2D9' + (it.done ? ';opacity:.78' : '') + '">'
-      + '<div style="font-weight:' + (it.done ? 500 : 650) + ';font-size:13px;color:' + (it.done ? '#5f5c56' : '#191817') + '">' + (it.done ? '<span style="color:#2F7A4F;font-weight:800;margin-right:6px">✓</span>' : '<span style="display:inline-block;width:9px;height:9px;border:1.5px solid ' + (it.urgent ? '#C0392B' : '#A0A09A') + ';border-radius:2px;margin-right:8px;vertical-align:-1px"></span>') + htmlEsc(it.name) + '</div>'
+      + '<div style="font-weight:' + (it.done ? 500 : 650) + ';font-size:13px;color:' + (it.done ? '#5f5c56' : '#191817') + '">' + (it.done ? '<span style="color:#2F7A4F;font-weight:800;margin-right:6px">\u2713</span>' : '<span style="display:inline-block;width:9px;height:9px;border:1.5px solid ' + (it.urgent ? '#C0392B' : '#A0A09A') + ';border-radius:2px;margin-right:8px;vertical-align:-1px"></span>') + htmlEsc(it.name) + '</div>'
       + '<div style="font-size:12px;font-family:var(--mono);text-align:right;color:' + col + (it.urgent ? ';font-weight:700' : '') + '">' + (it.done ? 'Completed · ' : '') + htmlEsc(it.status) + '</div></div>';
   }
   var bodyHtml = '<div style="display:flex;gap:10px;margin-bottom:4px">'
@@ -9344,7 +9355,7 @@ function buildAlertCardsHTML() {
       const apvLabel = APV_TYPE_CONFIG[apvLateType].label;
       return '<div class="alert-card pp_late"><div class="alert-icon">&#x23F0;</div><div class="alert-body"><div class="alert-title">' + htmlEsc(( a.style||'' ).toUpperCase()) + ' \u00b7 ' + htmlEsc(a.buyer||'') + (merchPP?' \u00b7 '+htmlEsc(merchPP.name):'') + '</div><div class="alert-detail">' + apvLabel + ' approval came in <strong>' + a.days_late + ' day' + (a.days_late>1?'s':'') + ' late</strong> vs TNA plan</div></div>' + actionButtons(a.id) + '</div>';
     }
-    const icon = a.alert_type === 'late' ? '⏰' : '⚠️';
+    const icon = a.alert_type === 'late' ? '\u23F0' : '\u26A0\uFE0F';
     const merch2 = S.users.find(function(u){return u.id===a.merchant_id;});
     let detail = '';
     if (a.alert_type === 'short' || a.alert_type === 'both') detail += '<strong>' + fmt(a.short_qty) + ' pcs short</strong> — value lost: ' + money(a.value_lost) + ' ';
@@ -9629,8 +9640,8 @@ async function recomputeAccessoryActualFor(merchantId, upper, category, order) {
   await setMilestoneActual(order.id, milesKey, completedOn);
 }
 
-// ─── ACCESSORY MODAL — three columns: Checklist (left) → Booking (middle,
-// per selected item) → Inhouse (right, per selected booking). ───
+// ─── ACCESSORY MODAL — three columns: Checklist (left) -> Booking (middle,
+// per selected item) -> Inhouse (right, per selected booking). ───
 async function openAccessoryModal(ordId, merchantId, style, category) {
   _accOrderId = ordId; _accMerchantId = merchantId; _accStyle = (style || '').toUpperCase();
   _accCategory = category || 'sewing';
@@ -9817,7 +9828,7 @@ async function addChecklistItem() {
   await renderAccessoryModalBody();
 }
 // The checklist decides what "all in" means, so adding or removing an item
-// changes the board pill (e.g. 2/2 → 2/3) and can un-complete / complete the
+// changes the board pill (e.g. 2/2 -> 2/3) and can un-complete / complete the
 // Sewing or Packing Item Inhouse TNA date. Refresh both straight away.
 async function afterChecklistChange() {
   try {
@@ -10877,7 +10888,7 @@ function renderAdminPage() {
   '<div class="adm-card">'
   + '<div class="adm-card-head"><div><h3 class="adm-h3">Assignments &amp; tools</h3><div class="adm-sub">Who works with whom, and how each buyer’s board looks</div></div></div>'
   + '<div class="adm-tools">'
-  + tool('&#x1F517;', 'Managers ↔ merchants', 'Which merchants each manager oversees', 'openMerchantAssign()')
+  + tool('&#x1F517;', 'Managers \u2194 merchants', 'Which merchants each manager oversees', 'openMerchantAssign()')
   + tool('&#x1F9D1;&#x200D;&#x1F4BC;', 'Junior merchandisers', 'Link each JM to the merchants they support', 'openJMAssign()')
   + tool('&#x1F6CD;', 'Buyers', 'Assign buyers to merchants, approve new-buyer requests', 'openBuyerAssign()')
   + tool('&#x1F39B;', 'Buyer settings', 'Style-wise or PO-wise per buyer: bookings and approvals', 'openBuyerSettings()')
@@ -10971,7 +10982,7 @@ function renderAdminList() {
       + '<td><span class="adm-role r-' + m.role + '">' + roleLabel(m.role) + '</span></td>'
       + '<td class="adm-muted">' + (m.division ? htmlEsc(m.division.charAt(0).toUpperCase() + m.division.slice(1)) : '—') + '</td>'
       + '<td>' + adminPasswordCell(m) + '</td>'
-      // Style / PO-wise is now set per buyer (Admin → Buyer settings), not per merchant.
+      // Style / PO-wise is now set per buyer (Admin -> Buyer settings), not per merchant.
       + '<td class="adm-act"><button class="btn sm' + (isEdit?' pri':'') + '" data-uid="' + m.id + '" onclick="editUser(this.dataset.uid)">' + (isEdit?'Close':'Edit') + '</button>'
       +   '<button class="btn sm danger" data-uid="' + m.id + '" onclick="deleteUser(this.dataset.uid)">Delete</button></td>'
       + '</tr>';
@@ -11652,24 +11663,24 @@ function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const next = isDark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  $('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  $('theme-btn').textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
   localStorage.setItem('pt_theme', next);
 }
 
 function toggleSidebar() {
   const shell = $('app');
   const collapsed = shell.classList.toggle('sb-off');
-  $('sb-toggle').textContent = collapsed ? '▶' : '◀';
+  $('sb-toggle').textContent = collapsed ? '\u25B6' : '\u25C0';
   localStorage.setItem('pt_sb', collapsed ? '0' : '1');
 }
 
 function applyPrefs() {
   const theme = localStorage.getItem('pt_theme') || 'light';
   document.documentElement.setAttribute('data-theme', theme);
-  if ($('theme-btn')) $('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+  if ($('theme-btn')) $('theme-btn').textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
   if (localStorage.getItem('pt_sb') === '0') {
     $('app').classList.add('sb-off');
-    $('sb-toggle').textContent = '▶';
+    $('sb-toggle').textContent = '\u25B6';
   }
 }
 
@@ -11829,6 +11840,8 @@ function renderRail() {
   var html=ni('dashboard','&#x2302;','Dashboard');
   if (r === 'commercial') {
     var lgc0=(S.layingGoods||[]).length, ab=(S.alerts||[]).filter(function(a){return !a.dismissed;}).length + getMyThreads().filter(function(t2){ return t2.unread; }).length;
+    var hot0 = commSoonNotBooked().length;
+    html=ni('dashboard','&#x2302;','Dashboard',hot0,hot0>0);
     html+='<div class="rail-sep"></div>'+ni('laying-goods','&#x1F4E6;','Laying Goods',lgc0,lgc0>0)+ni('shipped','&#x2705;','Shipped',S.archive.length)+ni('inbox','&#x1F4EC;','Inbox',ab,ab>0);
     var rt0 = rb.scrollTop; rb.innerHTML = html; rb.scrollTop = rt0; return;
   }
@@ -12468,7 +12481,7 @@ function lgTable(orders,showM){
     var customCells = buildFieldDataCells(customFields, o.id, canAct);
     return '<tr id="row-'+o.id+'">'
       +'<td style="text-align:center">'+styleThumbHtml(o)+'</td>'
-      +'<td class="sty">'+o.style+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+o.po_number+'</div>':'')+'</td>'
+      +'<td class="sty">'+o.style+noteBadge(o)+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+o.po_number+'</div>':'')+'</td>'
       +'<td>'+(o.buyer||'--')+'</td>'
       +'<td class="num">'+fmt(o.packing_list_qty||o.qty)+shortH+'</td>'
       +'<td class="num">'+((o.fob||0).toFixed(2))+'</td>'
@@ -12743,7 +12756,7 @@ function getStyleImage(merchantId,style){
 // ─── IMAGE LIGHTBOX WITH ZOOM ───
 // One lightbox for every photo in the app (board, Development, Laying Goods,
 // Shipped). Zoom: scroll wheel or pinch (centred on the cursor/fingers),
-// double-click to zoom in / back to fit, − / + / Fit buttons, keys + − 0 Esc.
+// double-click to zoom in / back to fit, - / + / Fit buttons, keys + - 0 Esc.
 // Drag to move around once zoomed in.
 function openImageModal(url, style, merchantId) {
   var ex = document.getElementById('img-lightbox'); if (ex && ex._close) ex._close(); else if (ex) ex.remove();
@@ -12754,7 +12767,7 @@ function openImageModal(url, style, merchantId) {
   lb.innerHTML = '<div class="lb-top">'
     + '<div class="lb-title"></div>'
     + '<div class="lb-zoom">'
-    + '<button type="button" class="lb-zbtn" id="lb-out" title="Zoom out (−)">−</button>'
+    + '<button type="button" class="lb-zbtn" id="lb-out" title="Zoom out (\u2212)">\u2212</button>'
     + '<span class="lb-pct" id="lb-pct">100%</span>'
     + '<button type="button" class="lb-zbtn" id="lb-in" title="Zoom in (+)">+</button>'
     + '<button type="button" class="lb-zbtn lb-fit" id="lb-fit" title="Fit to screen (0)">Fit</button>'
@@ -13118,7 +13131,7 @@ async function runTransferBuyer(assignOnly) {
     if (ids.length) await step('Orders', function(){ return db.from('orders').update({ merchant_id: C, updated_at: now, updated_by: S.user.name }).in('id', ids).eq('merchant_id', A); });
   }
   await step('Buyer assignment', function(){ return db.from('buyer_assignments').upsert({ buyer_id: B, merchant_id: C }); });
-  if (!errs.length || assignOnly) ids.forEach(function(id){ logActivity(id, 'Transferred', bname + ': ' + fromN + ' → ' + toN); });
+  if (!errs.length || assignOnly) ids.forEach(function(id){ logActivity(id, 'Transferred', bname + ': ' + fromN + ' \u2192 ' + toN); });
   _tb.busy = false;
   S.buyerAssignments[B] = C; S.boardCache = {}; S.layingLoaded = false; S.archiveLoaded = false; S.developmentsLoaded = false;
   await loadDashOrders(); renderRail();
@@ -13183,9 +13196,9 @@ function isPoMode(o, kind) { return modeFor(o, kind) === 'po' && !!(o && o.po_nu
 // ─── CARRY APPROVAL STATUS ACROSS A STYLE/PO SWITCH ───
 // Switching never deletes or rewrites history. It ADDS one round so the new
 // mode starts from where things were left off:
-//  • PO → Style: per style (and colour), the most advanced PO round becomes the
+//  • PO -> Style: per style (and colour), the most advanced PO round becomes the
 //    style's shared round — one PO approved means the whole style is approved.
-//  • Style → PO: the style's latest shared round is copied to each PO, so every
+//  • Style -> PO: the style's latest shared round is copied to each PO, so every
 //    PO starts from the style result.
 // A copy is only added where the target is behind (nothing newer already there).
 // Round numbers continue from the highest already used. Copies are ordinary
@@ -13193,7 +13206,7 @@ function isPoMode(o, kind) { return modeFor(o, kind) === 'po' && !!(o && o.po_nu
 function apvActDate(r) { return [r.sent_to_supplier_on, r.submitted_on, r.approved_on, r.rejected_on].filter(Boolean).sort().slice(-1)[0] || String(r.created_at||'').slice(0,10); }
 function apvRank(r) { return !r ? 0 : r.approved_on ? 4 : r.rejected_on ? 1 : r.submitted_on ? 3 : r.sent_to_supplier_on ? 2 : 0; }
 function apvLatest(list) { return list.slice().sort(function(a,b){ return (a.round||0)-(b.round||0) || apvActDate(a).localeCompare(apvActDate(b)); }).slice(-1)[0] || null; }
-function apvBest(list) { // most advanced; ties → most recent
+function apvBest(list) { // most advanced; ties \u2192 most recent
   return list.slice().sort(function(a,b){ return apvRank(a)-apvRank(b) || apvActDate(a).localeCompare(apvActDate(b)); }).slice(-1)[0] || null;
 }
 function apvSame(a, b) { return a && b && apvRank(a) === apvRank(b) && apvActDate(a) === apvActDate(b); }
@@ -13317,7 +13330,7 @@ async function setBuyerTerms(buyerId) {
   if (r.error) { toast('Not saved: ' + r.error.message, 'err'); return; }
   S.buyerSettings[buyerId] = Object.assign({}, S.buyerSettings[buyerId] || {}, row);
   var b = (S.buyers || []).find(function(x){ return x.id === buyerId; });
-  toast((b ? b.name : 'Buyer') + ': default terms → ' + payTermsLabel(k, days), 'ok-t');
+  toast((b ? b.name : 'Buyer') + ': default terms \u2192 ' + payTermsLabel(k, days), 'ok-t');
   renderBuyerSettings();
 }
 async function setBuyerMode(buyerId, kind, mode) {
@@ -13355,7 +13368,7 @@ async function setBuyerMode(buyerId, kind, mode) {
   if (mid) delete S.boardCache[mid]; // board pills re-read with the new setting next time it's opened
   var b = (S.buyers||[]).find(function(x){ return x.id === buyerId; });
   var kl = (MODE_KINDS.find(function(k){ return k.k === kind; })||{}).label || kind;
-  toast((b ? b.name : 'Buyer') + ': ' + kl + ' → ' + (mode === 'po' ? 'PO-wise' : 'Style-wise') + (carried ? ' · ' + carried + ' status(es) carried across' : ''), 'ok-t');
+  toast((b ? b.name : 'Buyer') + ': ' + kl + ' \u2192 ' + (mode === 'po' ? 'PO-wise' : 'Style-wise') + (carried ? ' · ' + carried + ' status(es) carried across' : ''), 'ok-t');
   renderBuyerSettings();
   S.boardCache = {}; // boards recompute with the new setting on next view
 }
@@ -13632,7 +13645,6 @@ var FIXED_BLOCKS = [
   { key:'_accessories', name:'Accessories',  width:112,  mandatory:false },
   { key:'_approvals',   name:'Approvals (group)',   width:432, mandatory:false, isGroup:true },
   { key:'_production',  name:'Production (group)',  width:null, mandatory:false, isGroup:true },
-  { key:'_notes',       name:'Notes',        width:100, wrap:true, mandatory:false },
 ];
 
 
@@ -14222,6 +14234,7 @@ function findOrderAnywhere(orderId) {
   });
   if (!found) found = (S.layingGoods||[]).find(function(x){ return x.id===orderId; });
   if (!found) found = (S.archive||[]).find(function(x){ return x.id===orderId; });
+  if (!found) found = (S.commSoon||[]).find(function(x){ return x.id===orderId; });
   return found;
 }
 
@@ -14874,7 +14887,7 @@ function yarnChecksBoardLine(sum, totalBk, totalRc) {
   var l = !!c.linking, f = !!c.finishing;
   var cls = (l && f) ? 'ok' : (totalRc >= totalBk ? 'warn' : '');
   var tip = YARN_CHECK_ITEMS.map(function(it){ var r = c[it.k]; return it.n + ': ' + (r ? 'inhouse ' + short(r.received_on) : 'not inhouse'); }).join(' · ');
-  // One line each, full names — "Linking yarn ✓" / "Finishing yarn ✕".
+  // One line each, full names — "Linking yarn (tick)" / "Finishing yarn (cross)".
   return '<div class="cell-info" title="' + htmlEsc(tip) + '">' + YARN_CHECK_ITEMS.map(function(it){ return '<div class="ci-line ' + (c[it.k] ? 'ci-ok' : (cls === 'warn' ? 'ci-soon' : '')) + '">' + it.n + ' ' + (c[it.k] ? '\u2713' : '\u2715') + '</div>'; }).join('') + '</div>';
 }
 async function renderYarnChecksCard() {
@@ -14919,8 +14932,8 @@ async function setYarnCheckDate(id, val) {
   if (r.error) showSaveError('Not saved.\n\n' + r.error.message);
   await afterYarnCheckChange();
 }
-// Style/PO switch: PO → Style — if any PO has it ticked, the style gets it
-// (latest date). Style → PO — every PO without its own tick takes the
+// Style/PO switch: PO -> Style — if any PO has it ticked, the style gets it
+// (latest date). Style -> PO — every PO without its own tick takes the
 // style's. Only ADDS rows; history stays.
 async function carryYarnChecksOnSwitch(buyerId, mid, toMode) {
   if (S.yarnChecksMissing) return 0;
@@ -14998,7 +15011,7 @@ async function saveEta(kind, id) {
   var r = await db.from(kind === 'yarn' ? 'yarn_bookings' : 'accessory_bookings').update({ expected_on: dv, expected_note: nv }).eq('id', id);
   if (r.error) { if (!etaMissingError(r.error)) showSaveError('Expected date NOT saved.\n\nDatabase said:\n' + r.error.message); return; }
   var b = _etaBookings[id], was = b && b.expected_on;
-  if (b && was && dv && was !== dv) logActivityForStyle(kind, mid, 'Expected inhouse date changed', (kind === 'yarn' ? 'Yarn' : 'Accessory') + ' booking' + (b.supplier ? ' (' + b.supplier + ')' : '') + ': ' + short(was) + ' → ' + short(dv) + (nv ? ' · ' + nv : ''));
+  if (b && was && dv && was !== dv) logActivityForStyle(kind, mid, 'Expected inhouse date changed', (kind === 'yarn' ? 'Yarn' : 'Accessory') + ' booking' + (b.supplier ? ' (' + b.supplier + ')' : '') + ': ' + short(was) + ' \u2192 ' + short(dv) + (nv ? ' · ' + nv : ''));
   toast('Expected date saved', 'ok-t');
   if (S.boardCache[mid]) await reloadSummaries(mid);
   if (isMerchantBoardView()) renderBoard(S.view);
@@ -15030,9 +15043,9 @@ function readEtaFields(prefix, patch, existing) {
 // ═══════════════════════════════════════════════════════════════════════════
 // ─── COMMERCIAL: payment terms, shipment & payment tracking per PO ───
 // From Laying Goods onwards each PO (one invoice = one PO) carries one record:
-// booking → AOS (approval of shipment from the buyer) → ex-factory (the
-// merchant's "Ship") → stuffing → vessel → invoice → BL (one BL may cover
-// several POs) → documents → payments. Kept by the commercial team and the
+// booking -> AOS (approval of shipment from the buyer) -> ex-factory (the
+// merchant's "Ship") -> stuffing -> vessel -> invoice -> BL (one BL may cover
+// several POs) -> documents -> payments. Kept by the commercial team and the
 // order's merchant; viewed by manager, HOD, audit and management.
 // Needs commercial-migration.sql; until then the column says so and nothing
 // else changes.
@@ -15097,7 +15110,7 @@ function commercialState(o, rec, pays) {
   var st = { value: value, received: received, deducted: deducted, outstanding: outstanding, due: due, dDue: dDue, terms: effectiveTerms(o, rec) };
   var paid = value > 0 && outstanding <= 0.5 && (received > 0 || deducted > 0);
   st.payKey = paid ? 'paid' : (received > 0 ? 'part' : (rec.bl_date || (st.terms.terms === 'tt_advance' && due) ? 'due' : 'none'));
-  if (paid) { st.label = 'Paid ✓'; st.cls = 'approved'; st.sub = lastPay; st.step = 'paid'; return st; }
+  if (paid) { st.label = 'Paid \u2713'; st.cls = 'approved'; st.sub = lastPay; st.step = 'paid'; return st; }
   if (rec.bl_date || (st.terms.terms === 'tt_advance' && received > 0)) {
     st.step = 'bl';
     if (dDue != null && dDue < 0) { st.label = 'Overdue ' + (-dDue) + ' day' + (dDue === -1 ? '' : 's'); st.cls = 'rejected'; }
@@ -15112,7 +15125,7 @@ function commercialState(o, rec, pays) {
     return st;
   }
   // still in Laying Goods
-  if (rec.aos_on) { st.step = 'aos'; st.label = 'AOS ✓'; st.cls = 'approved'; return st; }
+  if (rec.aos_on) { st.step = 'aos'; st.label = 'AOS \u2713'; st.cls = 'approved'; return st; }
   if (rec.booking_no || rec.cutoff_date || rec.forwarder) {
     st.step = 'booked'; st.label = 'Booked'; st.cls = 'submitted';
     if (rec.cutoff_date && daysTo(rec.cutoff_date) < 0 && !rec.stuffing_date) { st.label = 'Cut-off passed'; st.cls = 'rejected'; }
@@ -15182,7 +15195,7 @@ function commercialPill(o) {
   var tl = payTermsLabel(st.terms.terms, st.terms.days, true);
   var termsLine = '<div class="ci-line' + (tl ? '' : ' ci-none') + '"><span class="ci-k">Terms</span>' + (tl || 'not set') + '</div>';
   var lines = [];
-  if (st.step === 'paid') lines.push(termsLine, infoLine('Paid', st.sub, { done: true, doneText: ' ✓' }));
+  if (st.step === 'paid') lines.push(termsLine, infoLine('Paid', st.sub, { done: true, doneText: ' \u2713' }));
   else if (st.step === 'bl') {
     lines.push(st.received > 0 ? '<div class="ci-line"><span class="ci-k">Balance</span>' + money(Math.max(0, st.outstanding)) + '</div>' : termsLine);
     lines.push(st.due ? infoLine('Due', st.due) : infoLine('BL', rec && rec.bl_date, { done: true }));
@@ -15190,7 +15203,7 @@ function commercialPill(o) {
     lines.push(termsLine, infoLine('Ex-factory', o.shipped_on, { done: true }));
   } else {
     lines.push(termsLine);
-    if (rec && rec.aos_on) lines.push(infoLine('AOS', rec.aos_on, { done: true, doneText: ' ✓' }));
+    if (rec && rec.aos_on) lines.push(infoLine('AOS', rec.aos_on, { done: true, doneText: ' \u2713' }));
     else if (rec && rec.cutoff_date && !rec.stuffing_date) lines.push(infoLine('Cut-off', rec.cutoff_date));
     else lines.push('<div class="ci-line ci-none"><span class="ci-k">AOS</span>pending</div>');
   }
@@ -15207,7 +15220,7 @@ async function openCommercial(orderId) {
   _cm = { id: orderId, draft: {}, x: {}, pays: [], blOthers: {} };
   $('cm-title').textContent = 'Shipment — ' + (o.style || '') + (o.po_number ? ' / PO ' + o.po_number : '');
   var m = userById(o.merchant_id);
-  $('cm-sub').textContent = [o.buyer, m ? m.name : null, fmt(o.packing_list_qty != null ? o.packing_list_qty : o.qty) + ' pcs', o.stage === 'shipped' ? 'Shipped' : 'Laying Goods'].filter(Boolean).join(' · ');
+  $('cm-sub').textContent = [o.buyer, m ? m.name : null, fmt(o.packing_list_qty != null ? o.packing_list_qty : o.qty) + ' pcs', o.stage === 'shipped' ? 'Shipped' : o.stage === 'laying' ? 'Laying Goods' : 'Live order' + (o.ship_date ? ' · ships ' + short(o.ship_date) : '')].filter(Boolean).join(' · ');
   $('cm-body').innerHTML = '<div class="exp-loading">Loading…</div>';
   openModal('ov-commercial');
   await loadCommercialFor([orderId], true);
@@ -15262,7 +15275,7 @@ function renderCommercialModal(keepFocus) {
   }
   function fld(label, html) { return '<div class="f"><label>' + label + '</label>' + html + '</div>'; }
   function sec(title, done, inner, hint) {
-    return '<div class="cm-sec"><div class="cm-sec-h"><span>' + title + '</span>' + (done ? '<span class="chip ok">✓ ' + done + '</span>' : '<span class="chip run">Pending</span>') + '</div>'
+    return '<div class="cm-sec"><div class="cm-sec-h"><span>' + title + '</span>' + (done ? '<span class="chip ok">\u2713 ' + done + '</span>' : '<span class="chip run">Pending</span>') + '</div>'
       + (hint ? '<div class="cm-hint">' + hint + '</div>' : '') + '<div class="yarn-form-grid">' + inner + '</div></div>';
   }
   var fv = function(k){ return getFieldValue(o.id, k) || ''; };
@@ -15291,7 +15304,7 @@ function renderCommercialModal(keepFocus) {
   var s4 = sec('Invoice', merged.invoice_no ? merged.invoice_no : '',
       fld('Invoice number', inp('invoice_no')) + fld('Invoice date', inp('invoice_date', 'date'))
     + fld('Invoice value', inp('invoice_value', 'number', String(calcVal), ' step="0.01" data-live="1"')) + fld('Currency', inp('currency', '', 'USD')),
-    'Left blank, the value is ' + (o.shipped_qty != null ? 'shipped qty' : 'packing list qty') + ' × FOB = ' + money(calcVal) + '.');
+    'Left blank, the value is ' + (o.shipped_qty != null ? 'shipped qty' : o.packing_list_qty != null ? 'packing list qty' : 'order qty') + ' × FOB = ' + money(calcVal) + '.');
   // 5. BL + terms + due date
   var t = calc.t, def = calc.def;
   var termsSel = '<select id="cm-payment_terms" data-f="payment_terms" data-live="1" onchange="cmSet(this)"' + dis + '>' + payTermsOptions(cmVal('payment_terms', rec) || '', (function(b){ return b.from === 'order' ? 'Same as the order' : b.from === 'buyer' ? 'Same as the buyer default' : '— not set —'; })(effectiveTerms(o, {}))) + '</select>';
@@ -15444,6 +15457,7 @@ async function openCommercialFromAlert(orderId) {
   openCommercial(orderId);
 }
 function refreshCommercialViews() {
+  if (S.user && S.user.role === 'commercial') renderRail(); // "not booked" count on Dashboard
   if (S.view === 'laying-goods') renderLayingGoods();
   else if (S.view === 'shipped' || S.view === 'archive') renderArchive();
   else if (S.view === 'dashboard') renderDashboard();
@@ -15470,7 +15484,7 @@ function queueCommercialRefresh(payload) {
 
 // ─── dashboard section (management, HOD, audit, manager, admin, commercial, merchant) ───
 function commercialDashboardHtml() {
-  if (S.commercialMissing) return S.user.role === 'commercial' || S.user.role === 'admin' ? '<div class="card"><div class="m-b">Shipment & payment tracking needs <b>commercial-migration.sql</b> to be run in Supabase.</div></div>' : '';
+  if (S.commercialMissing) return S.user.role === 'commercial' || S.user.role === 'admin' ? '<div class="card"><div class="m-b">Shipment & payment tracking needs <b>commercial-migration.sql</b> to be run in Supabase.</div></div>' + (S.user.role === 'commercial' ? commercialSoonHtml() : '') : '';
   var lay = S.layingGoods || [], shp = S.archive || [];
   var cut60 = addDaysISO(todayStr(), -60);
   function rowOf(o){ return S.comm.rows[o.id]; }
@@ -15526,13 +15540,23 @@ function commercialDashboardHtml() {
   var actHtml = acts.length ? '<div class="card"><div class="card-h"><h3>Shipment & payment — needs action</h3><span class="note">Click a row to open its shipment</span></div><div class="scroller"><table><thead><tr><th>Buyer</th><th>Style / PO</th><th>Merchant</th><th>What</th></tr></thead><tbody>'
     + acts.slice(0, 20).map(function(a){ var m = userById(a.o.merchant_id); return '<tr style="cursor:pointer" onclick="openCommercial(\'' + a.o.id + '\')"' + (a.w < 0 ? ' class="late"' : '') + '><td>' + htmlEsc(a.o.buyer || '') + '</td><td class="sty">' + htmlEsc(a.o.style || '') + (a.o.po_number ? ' / ' + htmlEsc(a.o.po_number) : '') + '</td><td>' + htmlEsc(m ? m.name : '') + '</td><td>' + htmlEsc(a.t) + '</td></tr>'; }).join('')
     + '</tbody></table></div>' + (acts.length > 20 ? '<div class="m-b adm-muted">and ' + (acts.length - 20) + ' more</div>' : '') + '</div>' : '';
-  return '<div class="dash-sec-h">Shipment &amp; payments</div>' + tiles + actHtml + aging;
+  return '<div class="dash-sec-h">Shipment &amp; payments</div>' + tiles + actHtml + (S.user.role === 'commercial' ? commercialSoonHtml() : '') + aging;
 }
 // Makes sure Laying Goods, Shipped and the open commercial records are loaded for the dashboard.
 async function ensureCommercialDashData() {
   if (S.commercialMissing || S._commDashBusy) return;
-  if (S._commOpenLoadedAt && Date.now() - S._commOpenLoadedAt < 3 * 60 * 1000 && S.layingLoaded && S.archiveLoaded) return;
-  // never retry more than once a minute (a failed load must not loop render → load → render)
+  if (S._commOpenLoadedAt && Date.now() - S._commOpenLoadedAt < 3 * 60 * 1000 && S.layingLoaded && S.archiveLoaded) {
+    // fresh — only fetch records for orders that just appeared (e.g. a ship date moved into the 14 days)
+    var missing = (S.commSoon || []).concat(S.layingGoods || []).map(function(o){ return o.id; }).filter(function(id){ return !S.comm.have[id]; });
+    if (!missing.length || (S._commMissTried && Date.now() - S._commMissTried < 60 * 1000)) return;
+    S._commMissTried = Date.now(); S._commDashBusy = true;
+    try { await loadCommercialFor(missing); } catch (e) { console.error('commercial records:', e); }
+    S._commDashBusy = false;
+    if (S.view === 'dashboard') renderDashboard();
+    if (S.user.role === 'commercial') renderRail();
+    return;
+  }
+  // never retry more than once a minute (a failed load must not loop render -> load -> render)
   if (S._commDashTried && Date.now() - S._commDashTried < 60 * 1000) return;
   S._commDashTried = Date.now();
   S._commDashBusy = true;
@@ -15542,11 +15566,58 @@ async function ensureCommercialDashData() {
     await loadOpenCommercial();
     // Laying Goods + everything shipped in the last 60 days (for "BL pending")
     var cut60 = addDaysISO(todayStr(), -60);
-    await loadCommercialFor((S.layingGoods || []).map(function(o){ return o.id; })
+    await loadCommercialFor((S.layingGoods || []).concat(S.commSoon || []).map(function(o){ return o.id; })
       .concat((S.archive || []).filter(function(o){ return (o.shipped_on || '') >= cut60; }).map(function(o){ return o.id; })));
   } catch (e) { console.error('commercial dashboard data:', e); }
   S._commDashBusy = false;
   if (S.view === 'dashboard') renderDashboard();
+  if (S.user.role === 'commercial') renderRail();
+}
+// ─── Shipping soon (commercial): live orders shipping in the next 14 days ───
+// Lets the team book, ask the buyer for AOS and plan before the goods are
+// packed. The record they start here is the same one used once the order
+// reaches Laying Goods. The last 7 days are highlighted.
+var COMM_SOON_DAYS = 14, COMM_SOON_HOT = 7, COMM_SOON_LATE = 30;
+async function loadCommSoon() {
+  var res = await db.from('orders').select(DASH_COLS + ',buyer_id' + (S.commercialMissing === false ? ',payment_terms,payment_days' : ''))
+    .or('stage.eq.live,stage.is.null')
+    .gte('ship_date', addDaysISO(todayStr(), -COMM_SOON_LATE))   // still live after the ship date (up to a month late)
+    .lte('ship_date', addDaysISO(todayStr(), COMM_SOON_DAYS))
+    .order('ship_date', { ascending: true });
+  if (res.error) { console.error('shipping soon:', res.error); S.commSoon = S.commSoon || []; return; }
+  S.commSoon = autolinkBuyerId(res.data || []);
+}
+function commBooked(o) { var r = S.comm.rows[o.id]; return !!(r && (r.booking_no || r.forwarder || r.cutoff_date)); }
+// within 7 days (or late) and nobody has booked it yet — the Dashboard count
+function commSoonNotBooked() {
+  return (S.commSoon || []).filter(function(o){ var d = daysTo(o.ship_date); return d != null && d <= COMM_SOON_HOT && (S.commercialMissing || S.comm.have[o.id]) && !commBooked(o); });
+}
+function commercialSoonHtml() {
+  var list = (S.commSoon || []).slice().sort(function(a, b){ return String(a.ship_date || '').localeCompare(String(b.ship_date || '')); });
+  var hot = list.filter(function(o){ return daysTo(o.ship_date) <= COMM_SOON_HOT; }).length;
+  var nb = commSoonNotBooked().length;
+  var head = '<div class="card-h"><h3>Shipping soon — next ' + COMM_SOON_DAYS + ' days</h3><span class="note">' + list.length + ' order' + (list.length === 1 ? '' : 's') + (hot ? ' · ' + hot + ' within ' + COMM_SOON_HOT + ' days' : '') + (nb ? ' · <b style="color:var(--red)">' + nb + ' not booked</b>' : '') + ' · click a row to start booking / AOS</span></div>';
+  if (!list.length) return '<div class="card">' + head + '<div class="empty"><h4>Nothing ships in the next ' + COMM_SOON_DAYS + ' days</h4><div>Live orders appear here ' + COMM_SOON_DAYS + ' days before their ship date.</div></div></div>';
+  var rows = list.map(function(o){
+    var d = daysTo(o.ship_date), m = userById(o.merchant_id), qty = o.qty || 0, packed = o.prod_packing || 0;
+    var pct = qty ? Math.min(100, Math.round(packed / qty * 100)) : 0;
+    var when = d < 0 ? '<span class="eta-late">' + (-d) + ' day' + (d === -1 ? '' : 's') + ' late</span>' : d === 0 ? '<b>today</b>' : 'in ' + d + ' day' + (d === 1 ? '' : 's');
+    var t = effectiveTerms(o, S.comm.rows[o.id]), tl = payTermsLabel(t.terms, t.days, true);
+    var insp = o.act_insp ? '\u2713 ' + short(o.act_insp) : (o.plan_insp ? short(o.plan_insp) : '—');
+    var chip = S.commercialMissing ? '—' : (function(){ var st = commercialState(o, S.comm.rows[o.id], S.comm.pays[o.id]); return '<span class="apv-chip ' + st.cls + '" style="width:auto;padding:2px 9px;font-size:11px">' + st.label + '</span>'; })();
+    return '<tr class="' + (d < 0 ? 'late' : d <= COMM_SOON_HOT ? 'r10' : '') + '" style="cursor:pointer" onclick="openCommercial(\'' + o.id + '\')">'
+      + '<td><b>' + short(o.ship_date) + '</b><div class="sub2">' + when + '</div></td>'
+      + '<td>' + htmlEsc(o.buyer || '') + '</td>'
+      + '<td class="sty">' + htmlEsc(o.style || '') + (o.po_number ? '<div class="sub2">PO ' + htmlEsc(o.po_number) + '</div>' : '') + '</td>'
+      + '<td>' + htmlEsc(m ? m.name : '') + '</td>'
+      + '<td class="num">' + fmt(qty) + '</td>'
+      + '<td class="num">' + money(qty * (o.fob || 0)) + '</td>'
+      + '<td class="num">' + fmt(packed) + '<div class="sub2">' + pct + '%</div></td>'
+      + '<td>' + insp + '</td>'
+      + '<td>' + (tl || '<span class="adm-muted">not set</span>') + '</td>'
+      + '<td>' + chip + '</td></tr>';
+  }).join('');
+  return '<div class="card">' + head + '<div class="scroller"><table><thead><tr><th>Ship date</th><th>Buyer</th><th>Style / PO</th><th>Merchant</th><th class="num">Qty</th><th class="num">Value</th><th class="num">Packed</th><th>Final inspection</th><th>Terms</th><th>Shipment</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
 }
 // Commercial users get their own dashboard: alerts + the section above.
 function renderCommercialDashboard() {
@@ -15557,7 +15628,7 @@ function renderCommercialDashboard() {
   $('content').innerHTML = alertHtml + commercialDashboardHtml();
   ensureCommercialDashData();
 }
-// New in Laying Goods → tell the commercial team.
+// New in Laying Goods -> tell the commercial team.
 function notifyReadyForShipment(o, plQty) {
   db.from('shipment_alerts').insert({ order_id: o.id, style: o.style, buyer: o.buyer, merchant_id: o.merchant_id, alert_type: 'ready_for_shipment',
     detail: (o.po_number ? 'PO ' + o.po_number + ' · ' : '') + fmt(plQty || o.qty || 0) + ' pcs' + (o.ship_date ? ' · ship ' + short(o.ship_date) : '') })
