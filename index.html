@@ -1768,7 +1768,7 @@ td.col-ship{min-width:118px}
     <button class="btn pri" style="width:100%;padding:11px;font-size:15px;margin-top:4px" onclick="doLogin()">Sign in</button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-10-11:24</p>
+    <p style="font-size:12px;font-weight:600;color:var(--muted);text-align:center;margin-top:10px">Version:26-10-11:25</p>
   </div>
 </div>
 
@@ -1810,7 +1810,7 @@ td.col-ship{min-width:118px}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">Version:26-10-11:24</div>
+  <div id="ver-stamp">Version:26-10-11:25</div>
 </div>
 
 
@@ -11920,27 +11920,36 @@ async function loadMessages() {
 
 // One row per thread — the two participants are fixed (whoever the root message
 // was between), so "the other person" is always well-defined even after replies.
+// One conversation per person: every message between me and someone sits in
+// a single dialogue, however many times either side pressed "Send Message".
+// (Each message still keeps its own thread_id in the database; an action item
+// is still tracked on the message that raised it.)
 function getMyThreads() {
-  var byThread = {};
+  var byPerson = {};
   S.messages.forEach(function(m) {
-    if (!byThread[m.thread_id]) byThread[m.thread_id] = [];
-    byThread[m.thread_id].push(m);
+    var other = m.sender_id === S.user.id ? m.recipient_id : m.sender_id;
+    if (!other) return;
+    (byPerson[other] = byPerson[other] || []).push(m);
   });
-  var threads = Object.keys(byThread).map(function(tid) {
-    var msgs = byThread[tid].slice().sort(function(a,b){ return (a.created_at||'') < (b.created_at||'') ? -1 : 1; });
+  var threads = Object.keys(byPerson).map(function(otherId) {
+    var msgs = byPerson[otherId].slice().sort(function(a,b){ return (a.created_at||'') < (b.created_at||'') ? -1 : 1; });
     var last = msgs[msgs.length - 1];
-    var root = msgs[0];
-    var otherId = last.sender_id === S.user.id ? last.recipient_id : last.sender_id;
-    var otherName = last.sender_id === S.user.id ? last.recipient_name : last.sender_name;
+    var u = S.users.find(function(x){ return x.id === otherId; });
+    var named = msgs.slice().reverse().find(function(m){ return m.sender_id === otherId ? m.sender_name : m.recipient_name; });
+    var otherName = u ? u.name : (named ? (named.sender_id === otherId ? named.sender_name : named.recipient_name) : '');
     var unread = msgs.some(function(m){ return m.recipient_id === S.user.id && !m.read_at; });
-    return {
-      thread_id: tid, messages: msgs, last: last, otherId: otherId, otherName: otherName, unread: unread,
-      actionStatus: root.action_status || null,
-      requesterId: root.sender_id // whoever raised the action item is the one who can later resolve it
-    };
+    // action items raised in this conversation (oldest first)
+    var actions = msgs.filter(function(m){ return !!m.action_status; });
+    var st = actions.some(function(a){ return a.action_status === 'open'; }) ? 'open'
+      : actions.some(function(a){ return a.action_status === 'done'; }) ? 'done'
+      : actions.length ? 'resolved' : null;
+    return { thread_id: 'u:' + otherId, messages: msgs, last: last, otherId: otherId, otherName: otherName, unread: unread, actions: actions, actionStatus: st };
   });
   threads.sort(function(a,b){ return (a.last.created_at||'') < (b.last.created_at||'') ? 1 : -1; });
   return threads;
+}
+function convoOfMessage(msgId) {
+  return getMyThreads().find(function(t){ return t.messages.some(function(m){ return m.id === msgId; }); });
 }
 
 // ─── INBOX PAGE (Messages / Requests / Alerts, unified) ───
@@ -12023,27 +12032,23 @@ function openMessageThread(threadId) {
 }
 function renderMessageThreadBody(thread) {
   var canReply = S.user.role !== 'audit';
-  var actionBarHtml = '';
-  if (thread.actionStatus) {
-    var isRequester = thread.requesterId === S.user.id;
-    if (thread.actionStatus === 'open') {
-      actionBarHtml = '<div class="mt-action-bar open"><span>&#x1F4CC; <strong>Action needed</strong></span>'
-        + (!isRequester ? '<button class="btn sm pri" onclick="markMessageActionDone(\'' + thread.thread_id + '\')">&#x2713; Mark as Done</button>' : '<span style="color:var(--muted)">Waiting on ' + htmlEsc(thread.otherName||'them') + '</span>')
-        + '</div>';
-    } else if (thread.actionStatus === 'done') {
-      actionBarHtml = '<div class="mt-action-bar done"><span>&#x2713; <strong>Marked done</strong> \u2014 awaiting confirmation</span>'
-        + (isRequester ? '<button class="btn sm pri" onclick="resolveMessageAction(\'' + thread.thread_id + '\')">Resolve</button>' : '')
-        + '</div>';
-    } else if (thread.actionStatus === 'resolved') {
-      actionBarHtml = '<div class="mt-action-bar resolved"><span style="color:var(--muted)">&#x2713; Resolved</span></div>';
-    }
-  }
+  var actionBarHtml = (thread.actions || []).filter(function(a){ return a.action_status !== 'resolved'; }).map(function(a){
+    var isRequester = a.sender_id === S.user.id;
+    var what = htmlEsc(a.subject || (a.body || '').slice(0, 50) + ((a.body || '').length > 50 ? '…' : ''));
+    if (a.action_status === 'open') return '<div class="mt-action-bar open"><span>&#x1F4CC; <strong>Action needed:</strong> ' + what + '</span>'
+      + (!isRequester && canReply ? '<button class="btn sm pri" onclick="markMessageActionDone(\'' + a.id + '\')">&#x2713; Mark as Done</button>' : '<span style="color:var(--muted)">Waiting on ' + htmlEsc(isRequester ? (thread.otherName||'them') : (a.sender_name || 'them')) + '</span>')
+      + '</div>';
+    return '<div class="mt-action-bar done"><span>&#x2713; <strong>Marked done:</strong> ' + what + ' — awaiting confirmation</span>'
+      + (isRequester ? '<button class="btn sm pri" onclick="resolveMessageAction(\'' + a.id + '\')">Resolve</button>' : '')
+      + '</div>';
+  }).join('');
   $('mt-body').innerHTML = actionBarHtml + '<div style="padding:14px 16px">' + thread.messages.map(function(m, i) {
     var mine = m.sender_id === S.user.id;
     return '<div class="mt-msg' + (mine ? ' mine' : '') + '">'
-      + (m.subject && i === 0 ? '<div class="mt-msg-subject">' + htmlEsc(m.subject) + '</div>' : '')
+      + (m.subject ? '<div class="mt-msg-subject">' + htmlEsc(m.subject) + '</div>' : '')
+      + (m.action_status ? '<div class="mt-msg-subject" style="font-size:10.5px;color:var(--muted)">' + (m.action_status === 'resolved' ? '&#x2713; Action item — resolved' : m.action_status === 'done' ? 'Action item — marked done' : '&#x1F4CC; Action item') + '</div>' : '')
       + '<div class="mt-msg-body">' + htmlEsc(m.body).replace(/\n/g,'<br>') + '</div>'
-      + '<div class="mt-msg-time">' + (mine ? '' : (htmlEsc(m.sender_name||'') + ' \u00b7 ')) + short((m.created_at||'').slice(0,10)) + '</div>'
+      + '<div class="mt-msg-time">' + (mine ? '' : (htmlEsc(m.sender_name||'') + ' \u00b7 ')) + short((m.created_at||'').slice(0,10)) + (m.created_at && m.created_at.length > 10 ? ' ' + new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '') + '</div>'
       + '</div>';
   }).join('') + '</div>';
   var replyRow = $('mt-reply-row');
@@ -12051,32 +12056,32 @@ function renderMessageThreadBody(thread) {
   var bodyEl = $('mt-body');
   if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
 }
-async function markMessageActionDone(threadId) {
-  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (!t) { toast('You don\u2019t have permission to do this', 'err'); return; }
-  if (t.requesterId === S.user.id) { toast('Only the recipient can mark this done', 'err'); return; }
-  await db.from('messages').update({ action_status: 'done' }).eq('id', threadId);
-  await loadMessages();
-  renderRail();
-  var t2 = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (t2) renderMessageThreadBody(t2);
-  if (S.view === 'inbox') renderInboxTabBody();
+async function markMessageActionDone(msgId) {
+  var t = convoOfMessage(msgId), a = t && t.messages.find(function(m){ return m.id === msgId; });
+  if (!a || !a.action_status) { toast('You don’t have permission to do this', 'err'); return; }
+  if (a.sender_id === S.user.id) { toast('Only the recipient can mark this done', 'err'); return; }
+  await db.from('messages').update({ action_status: 'done' }).eq('id', msgId);
+  await afterActionChange(t.thread_id);
   toast('Marked as done', 'ok-t');
 }
-async function resolveMessageAction(threadId) {
-  var t = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (!t) { toast('You don\u2019t have permission to do this', 'err'); return; }
-  if (t.requesterId !== S.user.id) { toast('Only the person who raised this can resolve it', 'err'); return; }
-  await db.from('messages').update({ action_status: 'resolved' }).eq('id', threadId);
-  await loadMessages();
-  renderRail();
-  var t2 = getMyThreads().find(function(x){ return x.thread_id === threadId; });
-  if (t2) renderMessageThreadBody(t2);
-  if (S.view === 'inbox') renderInboxTabBody();
+async function resolveMessageAction(msgId) {
+  var t = convoOfMessage(msgId), a = t && t.messages.find(function(m){ return m.id === msgId; });
+  if (!a || !a.action_status) { toast('You don’t have permission to do this', 'err'); return; }
+  if (a.sender_id !== S.user.id) { toast('Only the person who raised this can resolve it', 'err'); return; }
+  await db.from('messages').update({ action_status: 'resolved' }).eq('id', msgId);
+  await afterActionChange(t.thread_id);
   toast('Resolved', 'ok-t');
 }
+async function afterActionChange(convoId) {
+  await loadMessages();
+  renderRail();
+  var t2 = getMyThreads().find(function(x){ return x.thread_id === convoId; });
+  if (t2) renderMessageThreadBody(t2);
+  if (S.view === 'inbox') renderInboxTabBody();
+}
 async function markThreadRead(threadId) {
-  var unreadIds = S.messages.filter(function(m){ return m.thread_id===threadId && m.recipient_id===S.user.id && !m.read_at; }).map(function(m){ return m.id; });
+  var convo = getMyThreads().find(function(t){ return t.thread_id === threadId; });
+  var unreadIds = (convo ? convo.messages : []).filter(function(m){ return m.recipient_id===S.user.id && !m.read_at; }).map(function(m){ return m.id; });
   if (!unreadIds.length) return;
   var now = new Date().toISOString();
   unreadIds.forEach(function(id){ var m = S.messages.find(function(x){ return x.id===id; }); if (m) m.read_at = now; });
@@ -12096,7 +12101,7 @@ async function sendThreadReply() {
   var newId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
   input.value = '';
   var res = await db.from('messages').insert({
-    id: newId, thread_id: threadId, parent_id: thread.last.id,
+    id: newId, thread_id: thread.last.thread_id || newId, parent_id: thread.last.id,
     sender_id: S.user.id, sender_name: S.user.name,
     recipient_id: recipientId, recipient_name: recipient ? recipient.name : '',
     body: body, created_at: new Date().toISOString()
