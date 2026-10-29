@@ -2629,7 +2629,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.10.29.2</p>
+    <p class="login-ver">STAGING V.2026.10.29.3</p>
   </div></div>
 </div>
 
@@ -2671,7 +2671,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.10.29.2</div>
+  <div id="ver-stamp">STAGING V.2026.10.29.3</div>
 </div>
 
 
@@ -20405,6 +20405,9 @@ function renderBackupCard() {
 var _recov = { mode: null, file: null, zip: null, busy: false };
 async function checkRecoveryNeeded() {
   try {
+    // v13: with the security rules on, the users table is closed before sign-in, so ask the sign-in function instead
+    var n = await db.rpc('erp_login_names');
+    if (!n.error) return n.data && n.data.length ? null : 'empty';
     var r = await db.from('users').select('id').limit(1);
     if (r.error && isTableMissing(r.error)) return 'schema';
     if (!r.error && (!r.data || !r.data.length)) return 'empty';
