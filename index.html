@@ -268,6 +268,10 @@ table.rq-items input{width:100%;padding:5px 7px;border:1px solid var(--line);bor
 .rq-tallies{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .rq-tally{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:4px 12px;font-size:12.5px;color:var(--ink)}
 .rq-tally b{margin-left:4px}.rq-tally.on{background:var(--accent);border-color:var(--accent);color:#fff}
+/* Sign-in (v12) */
+.adm-login-cell{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.adm-login{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.adm-login.ok{background:#EAF3EA;color:#2F6A35}.adm-login.warn{background:#FBF0DC;color:#8A5A00}.adm-login.off{background:#F3E3E3;color:#8A2E2E}
 /* Profit & Loss */
 .pnl-tiles{display:grid;grid-template-columns:repeat(3,1fr) 1.15fr 1.3fr;gap:12px;margin-bottom:10px}
 .pnl-t{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
@@ -2602,7 +2606,7 @@ table.wo-t-buy td{vertical-align:top}
     <div><div class="lp-since">SINCE 2001</div><p class="lp-quote">Crafted in<br>Bangladesh,<br>delivered worldwide!</p></div>
     <div class="lp-cos">M.T. Sweaters Limited<br>Banga Fashion Limited<br>Banga Knitwear Limited</div>
   </div>
-  <div class="lr"><div class="login-card">
+  <div class="lr"><div class="login-card"><div id="login-card-main">
     <h1 class="login-title">Shahana One</h1>
     <p class="login-sub">Factory operations &middot; sign in</p>
     <div class="f"><label for="l_name">Your name</label>
@@ -2614,7 +2618,18 @@ table.wo-t-buy td{vertical-align:top}
     <button class="btn pri" onclick="doLogin()">Sign in <span class="arr">&rarr;</span></button>
     <p class="login-hint">Forgot password? Contact Admin.</p>
     <div class="maint-note" id="maint-login-note">&#x1F6A7; System maintenance in progress &mdash; login temporarily restricted.</div>
-    <p class="login-ver">STAGING &middot; V.2026.10.29.1</p>
+    </div>
+    <div id="login-card-set" style="display:none" onkeydown="if(event.key==='Enter'){event.preventDefault();doSetPassword();}">
+      <h1 class="login-title" id="ls_hello">Welcome</h1>
+      <p class="login-sub">First time here: choose your own password</p>
+      <div class="f"><label for="ls_new">New password</label><div class="pwd-wrap"><input type="password" id="ls_new" placeholder="At least 8 characters" autocomplete="new-password"></div></div>
+      <div class="f"><label for="ls_rep">Repeat new password</label><div class="pwd-wrap"><input type="password" id="ls_rep" autocomplete="new-password"></div></div>
+      <div class="form-err" id="ls_err" style="display:none"></div>
+      <div id="ls_spin" style="display:none;text-align:center;padding:4px"><span class="spin"></span></div>
+      <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
+      <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
+    </div>
+    <p class="login-ver">STAGING V.2026.10.29.2</p>
   </div></div>
 </div>
 
@@ -2656,7 +2671,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.10.29.1</div>
+  <div id="ver-stamp">STAGING V.2026.10.29.2</div>
 </div>
 
 
@@ -3595,7 +3610,8 @@ const SB_URL = 'https://fpnnmdvhxqyafeuabdfk.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwbm5tZHZoeHF5YWZldWFiZGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxOTk4MTYsImV4cCI6MjEwODc3NTgxNn0.nBvjZvdF9h4octYDp6O31W9a31SJWysAsX9siKZS-Vc';
 
 const { createClient } = supabase;
-const db = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 10 } } });
+const db = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 10 } },
+  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }); // one sign-in per tab (v12)
 
 // ─── Constants ───
 const STEPS = [
@@ -4857,10 +4873,10 @@ async function init() {
     // BEFORE anyone authenticates, so selecting '*' here published every user's
     // id, role and password hash (and any not-yet-migrated plaintext password)
     // to anyone who simply opened the login page.
-    const { data, error } = await db.from('users').select('name').order('name');
+    const data = await loginNames(); const error = null; S.loginNames = data; // names only, never passwords (v12)
     if (data && data.length) {
       $('l_name').innerHTML = '<option value="">— Select your name —</option>' +
-        data.map(u => `<option value="${htmlEsc(u.name)}">${htmlEsc(u.name)}</option>`).join('');
+        data.map(u => `<option value="${htmlEsc(u.id)}">${htmlEsc(u.name)}</option>`).join('');
     } else {
       // an empty or brand-new database: offer to set it up from a backup
       var _rm = await checkRecoveryNeeded();
@@ -4879,72 +4895,37 @@ async function init() {
   // logging in on one tab silently switched the identity of every OTHER open
   // tab the next time each one re-read it. sessionStorage is per-tab, so each
   // tab keeps its own logged-in user independently.
-  const saved = sessionStorage.getItem('pt_uid');
-  if (saved) {
-    try {
-      const { data } = await db.from('users').select('*').eq('id', saved).single();
-      if (data) {
-        if (MAINTENANCE_MODE && data.role !== 'admin') {
-          $('login-wrap').style.display = 'flex';
-          return;
-        }
-        S.user = data; await startApp(); return;
-      }
-    } catch(e) {}
-  }
+  try {
+    const { data: sess } = await db.auth.getSession(); // a sign-in kept by this tab (Supabase Auth, v12)
+    if (sess && sess.session && sess.session.user && await afterSignIn(sess.session.user.id, false)) return;
+  } catch(e) {}
   // Show login
   if (MAINTENANCE_MODE) { var mn=$('maint-login-note'); if(mn) mn.style.display='block'; }
   $('login-wrap').style.display = 'flex';
 }
 
 async function doLogin() {
-  const name = $('l_name').value.trim();
+  const uid = $('l_name').value;
   const pwd = $('l_pwd').value;
-  $('l_err').style.display = 'none';
-  if (!name) { $('l_err').textContent = 'Please select your name.'; $('l_err').style.display = 'block'; return; }
-  if (!pwd) { $('l_err').textContent = 'Please enter your password.'; $('l_err').style.display = 'block'; return; }
-  $('l_spin').style.display = 'block';
+  loginErr('');
+  if (!uid) { loginErr('Please select your name.'); return; }
+  if (!pwd) { loginErr('Please enter your password.'); return; }
+  loginBusy(true);
   try {
-    // Passwords are stored SHA-256 hashed (resetPwd / saveEditUser / saveMyProfile /
-    // changeMgmtPwd all hash before writing), so the typed password must be hashed
-    // to compare. Older accounts may still hold a raw password — those are matched
-    // on a second pass and transparently migrated to a hash on successful login,
-    // so the legacy rows drain away without anyone being locked out.
-    const hashedPwd = await hashPassword(pwd);
-    let { data } = await db.from('users').select('*').eq('name', name).eq('password', hashedPwd).maybeSingle();
-    if (!data) {
-      const legacy = await db.from('users').select('*').eq('name', name).eq('password', pwd).maybeSingle();
-      if (legacy.data) {
-        data = legacy.data;
-        try {
-          await db.from('users').update({ password: hashedPwd }).eq('id', data.id);
-          data.password = hashedPwd;
-        } catch (e) { /* migration is best-effort — never block a valid login */ }
-      }
-    }
-    if (data) {
-      recordReadablePassword(data.id, pwd); // keeps the admin's readable copy current (fills in older accounts)
-      if (MAINTENANCE_MODE && data.role !== 'admin') {
-        $('l_err').textContent = '&#x1F6A7; ' + MAINTENANCE_MSG;
-        $('l_err').style.display = 'block';
-        $('l_spin').style.display = 'none';
-        return;
-      }
-      S.user = data;
-      sessionStorage.setItem('pt_uid', data.id);
-      await startApp();
-    } else {
-      $('l_err').style.display = 'block';
-    }
+    // Supabase checks the password; the app never sees or stores it
+    const r = await db.auth.signInWithPassword({ email: loginEmailOf(uid), password: pwd });
+    if (r.error) loginErr(r.error.status === 429 || /rate|too many/i.test(r.error.message || '') ? 'Too many tries. Wait a minute, then try again.' : 'Wrong password. Forgot it? Ask Admin for a temporary one.');
+    else await afterSignIn(r.data.user.id, true);
   } catch(e) {
-    $('l_err').textContent = 'Connection error. Check your internet.';
-    $('l_err').style.display = 'block';
+    loginErr('Connection error. Check your internet.');
   }
-  $('l_spin').style.display = 'none';
+  loginBusy(false);
 }
 
-function doLogout() {
+async function doLogout() {
   sessionStorage.removeItem('pt_uid');
+  try { if (S.viewAs) await db.rpc('erp_view_as_end'); } catch(e) {}
+  try { await db.auth.signOut(); } catch(e) {}
   if (S.channel) db.removeChannel(S.channel);
   if (S.channelExtra) db.removeChannel(S.channelExtra);
   if (S.channelComm) db.removeChannel(S.channelComm);
@@ -5847,6 +5828,7 @@ function render() {
   if (typeof S.view === 'string' && S.view.indexOf('rq:') === 0) { rqRender(S.view); return; }
   if (bpIsView(S.view)) { bpRender(S.view); return; }
   if (pnlIsView(S.view)) { if (pnlCanView()) pnlRender(S.view); else setView('dashboard'); return; }
+  if (loginLogIsView(S.view)) { loginLogRender(); return; }
   if (S.view === 'dashboard') renderDashboard();
   else if (S.view === 'shipped' || S.view === 'archive') renderShippedPage();
   else if (S.view === 'trash') renderTrashPage();
@@ -5892,6 +5874,13 @@ function setView(v) {
     renderRail();
     bpRender(v);
     return;
+  }
+  if (loginLogIsView(v)) {
+    if (!loginLogCanView()) { toast('You don\u2019t have access to this page'); return; }
+    S.view = v; try { costShow(false); } catch (e) {}
+    var _lc = document.getElementById('content'); if (_lc) delete _lc.dataset.page;
+    try { sessionStorage.setItem('pt_last_view', v); } catch(e) {}
+    renderRail(); loginLogRender(); return;
   }
   if (pnlIsView(v)) {
     if (!pnlCanView()) { toast('You don\u2019t have access to this page'); return; }
@@ -6224,7 +6213,7 @@ async function renderBoard(uid, skipDataReload) {
     // Many save handlers finish with renderBoard(S.view). On a page that isn't
     // a board (Laying Goods, Inbox, Trash…) that used to bounce the user to the
     // Dashboard. Only a board whose merchant no longer exists redirects now.
-    if (typeof uid === 'string' && (/^(dashboard|shipped|archive|trash|developments|requests|my-requests|inbox|laying-goods|admin)$/.test(uid) || uid.indexOf('jm_') === 0 || pnlIsView(uid))) return;
+    if (typeof uid === 'string' && (/^(dashboard|shipped|archive|trash|developments|requests|my-requests|inbox|laying-goods|admin)$/.test(uid) || uid.indexOf('jm_') === 0 || pnlIsView(uid) || loginLogIsView(uid))) return;
     setView('dashboard'); return;
   }
 
@@ -13447,49 +13436,6 @@ async function refreshPage() {
 
 // ─── ADMIN PAGE (full page, not modal) ───
 // ─── ADMIN PAGE — REDESIGNED ───
-// ─── READABLE PASSWORDS FOR ADMIN ───
-// The login password stays hashed in users.password (that's what login checks).
-// So the admin can see each person's actual password, a readable copy is kept
-// in a SEPARATE table, user_password_view, that only the Admin page reads — it
-// is never part of the user list every browser loads. It is written whenever a
-// password is set (add user, edit user, own profile) and when someone logs in,
-// so older accounts fill in the next time that person signs in.
-function recordReadablePassword(userId, plain) {
-  if (!userId || !plain) return;
-  db.from('user_password_view').upsert({ user_id: userId, password: plain, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-    .then(function(r){ if (r && r.error) console.warn('Readable password not saved (run user-password-view-migration.sql):', r.error.message); });
-}
-var _pwView = null, _pwViewMissing = false;
-async function loadReadablePasswords() {
-  try {
-    var r = await db.from('user_password_view').select('user_id,password');
-    _pwView = {}; _pwViewMissing = !!r.error;
-    (r.data || []).forEach(function(x){ _pwView[x.user_id] = x.password; });
-  } catch (e) { _pwView = {}; _pwViewMissing = true; }
-}
-function readablePasswordOf(u) {
-  if (!u) return null;
-  if (_pwView && _pwView[u.id]) return _pwView[u.id];
-  if (u.password && !isHashed(u.password)) return u.password; // older account still stored readable
-  return null;
-}
-// One consistent password cell: dots + eye (click to show / hide), or a clear
-// "not recorded yet" when only the hash exists.
-function adminPasswordCell(u, idSuffix) {
-  var pw = readablePasswordOf(u);
-  if (!pw) return '<span class="adm-pw-none" title="Only the encrypted form is stored for this account. It fills in automatically the next time they log in, or set a new password with Edit.">Not recorded yet</span>';
-  var id = 'pwv-' + (idSuffix || u.id);
-  return '<span class="adm-pw"><span class="adm-pw-val" id="' + id + '" data-pw="' + htmlEsc(pw) + '" data-shown="0">••••••••</span>'
-    + '<button type="button" class="adm-pw-eye" title="Show / hide" onclick="toggleAdminPw(\'' + id + '\', this)">&#x1F441;</button></span>';
-}
-function toggleAdminPw(id, btn) {
-  var el = $(id); if (!el) return;
-  var shown = el.dataset.shown === '1';
-  el.textContent = shown ? '••••••••' : el.dataset.pw;
-  el.dataset.shown = shown ? '0' : '1';
-  el.classList.toggle('on', !shown);
-}
-
 function renderAdminPage() {
   $('crumb').textContent = 'Admin';
   $('page-title').textContent = 'Admin Panel';
@@ -13521,11 +13467,11 @@ function renderAdminPage() {
 
   // ── My Account ─────────────────────────────────────────────────────────
   + '<div class="adm-card">'
-  + '<div class="adm-card-head"><div><h3 class="adm-h3">My account</h3><div class="adm-sub">Your display name and password</div></div></div>'
+  + '<div class="adm-card-head"><div><h3 class="adm-h3">My account</h3><div class="adm-sub">Your display name, and a new password if you want one (nobody can read passwords, not even Admin)</div></div></div>'
   + '<div class="adm-form" style="grid-template-columns:1.2fr 1fr 1fr 150px">'
   + '<div class="adm-field"><label class="adm-lbl">Display name</label><input id="admin-own-name" ' + inp + ' value="' + htmlEsc(S.user.name||'') + '"></div>'
-  + '<div class="adm-field"><label class="adm-lbl">Current password</label><div class="adm-static" id="admin-cur-pw-cell">' + adminPasswordCell(S.user, 'me') + '</div></div>'
-  + '<div class="adm-field"><label class="adm-lbl">New password</label><div class="pwd-wrap"><input id="admin-own-pwd" type="password" ' + inp + ' placeholder="Leave blank to keep">' + eye('admin-own-pwd') + '</div></div>'
+  + '<div class="adm-field"><label class="adm-lbl">New password</label><div class="pwd-wrap"><input id="admin-own-pwd" type="password" ' + inp + ' placeholder="Leave blank to keep" autocomplete="new-password">' + eye('admin-own-pwd') + '</div></div>'
+  + '<div class="adm-field"><label class="adm-lbl">Repeat new password</label><div class="pwd-wrap"><input id="admin-own-pwd2" type="password" ' + inp + ' autocomplete="new-password" onkeydown="if(event.key===\'Enter\')saveMyProfile()">' + eye('admin-own-pwd2') + '</div></div>'
   + '<div class="adm-field"><label class="adm-lbl">&nbsp;</label><button class="btn pri adm-save-btn" onclick="saveMyProfile()">Save changes</button></div>'
   + '</div>'
   + '<div id="admin-own-err" class="adm-err" style="display:none"></div>'
@@ -13539,11 +13485,10 @@ function renderAdminPage() {
 
   // ── Add User ───────────────────────────────────────────────────────────
   + '<div class="adm-card">'
-  + '<div class="adm-card-head"><div><h3 class="adm-h3">Add user</h3><div class="adm-sub">New accounts can log in straight away with the password you set</div></div></div>'
-  + '<div class="adm-form" style="grid-template-columns:1.2fr 1.2fr 1fr 170px 130px 150px">'
+  + '<div class="adm-card-head"><div><h3 class="adm-h3">Add user</h3><div class="adm-sub">You get a temporary password to give them; they choose their own at the first sign-in</div></div></div>'
+  + '<div class="adm-form" style="grid-template-columns:1.2fr 1.2fr 170px 130px 150px">'
   + '<div class="adm-field"><label class="adm-lbl">Name</label><input id="a_name" ' + inp + ' placeholder="Full name"></div>'
   + '<div class="adm-field"><label class="adm-lbl">Designation</label><input id="a_designation" ' + inp + ' placeholder="e.g. Senior Merchandiser"></div>'
-  + '<div class="adm-field"><label class="adm-lbl">Password</label><div class="pwd-wrap"><input id="a_pwd" type="password" ' + inp + ' placeholder="Set password">' + eye('a_pwd') + '</div></div>'
   + '<div class="adm-field"><label class="adm-lbl">Role</label>'
   + '<select id="a_type" ' + sel + ' onchange="handleProfileType()">'
   + '<option value="merchant">Merchant</option><option value="jm">Junior Merchandiser</option><option value="manager">Manager</option>'
@@ -13575,12 +13520,8 @@ function renderAdminPage() {
   renderCompaniesCard();
   rqRenderAdminCard().catch(function(e){ console.error('rqRenderAdminCard:', e); });
   handleProfileType();
-  // Readable passwords load separately (admin only), then the list redraws.
-  loadReadablePasswords().then(function(){
-    if (S.view !== 'admin') return;
-    renderAdminList();
-    var me = $('admin-cur-pw-cell'); if (me) me.innerHTML = adminPasswordCell(S.user, 'me');
-  });
+  // Sign-in status loads separately (admin only), then the list redraws.
+  loadLoginStates().then(function(){ if (S.view === 'admin') renderAdminList(); });
 }
 
 function renderAdminList() {
@@ -13594,7 +13535,7 @@ function renderAdminList() {
   var avColors = { management:'#7C3AED', cao:'#4338CA', hod:'#D97706', manager:'#059669', audit:'#0284C7', agm:'#0E7490', jm:'#DB2777', merchant:'#6B7280', dept:'#0F766E', accounts:'#C2552F' };
   if (!SIG.allLoaded && !SIG.missing && !SIG._triedAll) { SIG._triedAll = true; sigNeedAll().then(function(){ if ($('admin-list')) renderAdminList(); if (S.user) sigRedraw(S.user.id); }); }
   var sub = $('adm-users-sub');
-  if (sub) sub.textContent = staff.length + ' accounts' + (_pwViewMissing ? ' · readable passwords need the database update (user-password-view-migration.sql)' : '');
+  if (sub) sub.textContent = staff.length + ' accounts';
   if (!staff.length) { $('admin-list').innerHTML = '<div class="empty" style="padding:18px">No users yet.</div>'; return; }
 
   function modeToggle(m, field, setter) {
@@ -13616,7 +13557,7 @@ function renderAdminList() {
       +   '<span><b>' + htmlEsc(m.name) + '</b>' + (m.title ? '<small>' + htmlEsc(m.title) + '</small>' : '') + '</span></div></td>'
       + '<td><span class="adm-role r-' + m.role + '">' + roleLabel(m.role) + '</span></td>'
       + '<td class="adm-muted">' + (m.role === 'dept' ? htmlEsc((rqDept(m.division) || { n: 'No department' }).n) : m.role === 'accounts' ? (m.division === 'head' ? 'Accounts head' : 'Accounts staff') : m.division ? htmlEsc(m.division.charAt(0).toUpperCase() + m.division.slice(1)) : '—') + '</td>'
-      + '<td>' + adminPasswordCell(m) + '</td>'
+      + '<td>' + adminLoginCell(m) + '</td>'
       + '<td>' + sigListCell(m.id) + '</td>'
       // Style / PO-wise is now set per buyer (Admin -> Buyer settings), not per merchant.
       + '<td class="adm-act"><button class="btn sm' + (isEdit?' pri':'') + '" data-uid="' + m.id + '" onclick="editUser(this.dataset.uid)">' + (isEdit?'Close':'Edit') + '</button>'
@@ -13626,8 +13567,6 @@ function renderAdminList() {
       rows += '<tr class="adm-editrow" onkeydown="if(event.key===\'Enter\'&&event.target.tagName===\'INPUT\'&&event.target.type!==\'file\'){event.preventDefault();saveEditUser(\'' + m.id + '\');}"><td colspan="6"><div class="adm-form" style="grid-template-columns:1.2fr 1.2fr 1fr 190px 150px 120px">'
         + '<div class="adm-field"><label class="adm-lbl">Name</label><input id="eu-name-' + m.id + '" class="adm-inp" value="' + htmlEsc(m.name||'') + '"></div>'
         + '<div class="adm-field"><label class="adm-lbl">Designation</label><input id="eu-desig-' + m.id + '" class="adm-inp" value="' + htmlEsc(m.title||'') + '" placeholder="e.g. Senior Merchandiser"></div>'
-        + '<div class="adm-field"><label class="adm-lbl">New password</label><div class="pwd-wrap"><input id="eu-pwd-' + m.id + '" type="password" class="adm-inp" placeholder="Leave blank to keep">'
-        +   '<button class="pwd-eye" type="button" tabindex="-1" onclick="var i=$(\'eu-pwd-' + m.id + '\');i.type=i.type===\'password\'?\'text\':\'password\'">&#x1F441;</button></div></div>'
         + '<div class="adm-field"><label class="adm-lbl">Role</label><select id="eu-role-' + m.id + '" class="adm-sel" onchange="var f=$(\'eu-rqdept-wrap-' + m.id + '\');if(f)f.style.display=this.value===\'dept\'?\'block\':\'none\';var g=$(\'eu-acchead-wrap-' + m.id + '\');if(g)g.style.display=this.value===\'accounts\'?\'block\':\'none\'">'
         + ['merchant','jm','manager','hod','audit','management','commercial','dept','cao','agm','accounts'].map(function(r){ return '<option value="' + r + '"' + (m.role===r?' selected':'') + '>' + roleLabel(r) + '</option>'; }).join('')
         + '</select></div>'
@@ -13638,22 +13577,24 @@ function renderAdminList() {
         + '</div>' + sigEditHtml(m.id) + '</td></tr>';
     }
   });
-  $('admin-list').innerHTML = '<div class="scroller"><table class="adm-users"><thead><tr><th>User</th><th>Role</th><th>Division</th><th>Password</th><th>Signature</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  $('admin-list').innerHTML = '<div class="scroller"><table class="adm-users"><thead><tr><th>User</th><th>Role</th><th>Division</th><th>Sign-in</th><th>Signature</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 
 // ─── SAVE MY OWN PROFILE (admin renames/changes pwd) ───
 async function saveMyProfile() {
   var name = ($('admin-own-name').value || '').trim();
-  var pwd  = ($('admin-own-pwd').value  || '').trim();
+  var pwd  = ($('admin-own-pwd').value  || '');
+  var pwd2 = ($('admin-own-pwd2').value || '');
   var errEl = $('admin-own-err');
   errEl.style.display = 'none';
   if (!name) { errEl.textContent = 'Name cannot be empty'; errEl.style.display = 'block'; return; }
+  if (pwd && pwd !== pwd2) { errEl.textContent = 'The two passwords are not the same'; errEl.style.display = 'block'; return; }
+  if (pwd) { var _pr = await db.rpc('erp_set_my_password', { new_pw: pwd }); if (_pr.error) { errEl.textContent = _pr.error.message; errEl.style.display = 'block'; return; } }
   var update = { name: name };
-  if (pwd) update.password = await hashPassword(pwd);
   const { error } = await db.from('users').update(update).eq('id', S.user.id);
   if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
   S.user.name = name;
-  if (pwd) { S.user.password = update.password; recordReadablePassword(S.user.id, pwd); if (_pwView) _pwView[S.user.id] = pwd; }
+  if (pwd) toast('Your new password is saved', 'ok-t');
   if (!(await sigSavePending(S.user.id))) return;
   await loadUsers();
   renderRail();
@@ -13702,11 +13643,9 @@ async function setAccessoryBookingMode(uid, mode) {
 async function saveEditUser(uid) {
   if (!S.user || S.user.role !== 'admin') { toast('Only admin can change this', 'err'); return; }
   var nameEl = $('eu-name-' + uid);
-  var pwdEl  = $('eu-pwd-'  + uid);
   var roleEl = $('eu-role-' + uid);
   if (!nameEl) return;
   var name = nameEl.value.trim();
-  var pwd  = pwdEl  ? pwdEl.value.trim()  : '';
   var role = roleEl ? roleEl.value : null;
   if (!name) { toast('Name cannot be empty', 'err'); return; }
   var dupUser2 = S.users.find(function(u){ return u.id !== uid && u.name.toLowerCase() === name.toLowerCase(); });
@@ -13714,7 +13653,6 @@ async function saveEditUser(uid) {
   var desigEl = $('eu-desig-' + uid);
   var desig = desigEl ? desigEl.value.trim() : '';
   var update = { name: name, title: desig||null };
-  if (pwd)  { update.password = await hashPassword(pwd); recordReadablePassword(uid, pwd); if (_pwView) _pwView[uid] = pwd; }
   if (role) update.role = role;
   var _prevUser = S.users.find(function(x){ return x.id === uid; });
   if (role === 'dept') { var _rqd = $('eu-rqdept-' + uid); update.division = _rqd ? _rqd.value : null; }
@@ -13747,6 +13685,7 @@ async function deleteUser(uid) {
   var _cnt = u.role === 'merchant' ? await countOrdersOf(uid) : 0;
   var _msg = 'Delete ' + u.name + '? This cannot be undone.' + (_cnt ? '\n\n' + u.name + ' still owns ' + _cnt + ' order(s). They would be left without a merchant (shown as "Unknown merchandiser"). Move them to another merchant first.' : '');
   if (!(await appConfirm(_msg, {title:'Delete user', okText:'Delete', danger:true}))) return;
+  if (!(await adminSetLoginActive(uid, false))) return; // their login stops working first (v12)
   var { error } = await db.from('users').delete().eq('id', uid);
   if (error) { toast('Error deleting user', 'err'); return; }
   toast(u.name + ' deleted');
@@ -14118,25 +14057,23 @@ function renderPrint() {
 async function addMerchant() {
   if (!S.user || S.user.role !== 'admin') { toast('Only admin can change this', 'err'); return; }
   const name = ($('a_name').value||'').trim();
-  const pwd  = ($('a_pwd').value||'').trim();
   const type = $('a_type').value;
   const errEl = $('admin-err');
   errEl.style.display = 'none';
   if (!name) { errEl.textContent='Name is required.'; errEl.style.display='block'; return; }
-  if (!pwd)  { errEl.textContent='Password is required.'; errEl.style.display='block'; return; }
   var dupUser = S.users.find(function(u){ return u.name.toLowerCase() === name.toLowerCase(); });
   if (dupUser) { errEl.textContent = 'A user named "' + dupUser.name + '" already exists.'; errEl.style.display='block'; return; }
   const division = type === 'merchant' && $('a_div') ? $('a_div').value : (type === 'dept' && $('a_rqdept') ? $('a_rqdept').value : (type === 'accounts' && $('a_acchead') ? ($('a_acchead').value || null) : null));
   const designation = ($('a_designation').value||'').trim();
-  const { error } = await db.from('users').insert({ name, role: type, password: await hashPassword(pwd), division, title: designation||null });
+  const { error } = await db.from('users').insert({ name, role: type, division, title: designation||null });
   if (!error) {
-    $('a_name').value=''; $('a_pwd').value=''; if($('a_designation')) $('a_designation').value='';
+    $('a_name').value=''; if($('a_designation')) $('a_designation').value='';
     $('a_type').value='merchant'; handleProfileType();
     toast(name + ' added', 'ok-t');
     await loadUsers();
     var _nu = S.users.find(function(u){ return u.name === name; });
-    if (_nu) { recordReadablePassword(_nu.id, pwd); if (_pwView) _pwView[_nu.id] = pwd; }
     renderAdminList(); renderRail();
+    if (_nu) { await adminShowNewLogin(_nu); await loadLoginStates(); renderAdminList(); }
   } else if (error.code === '23505') {
     errEl.textContent='A user with that name already exists.'; errEl.style.display='block';
   } else if (type === 'dept' && (error.code === '23514' || error.code === '22P02' || /check constraint|enum/i.test(error.message || ''))) {
@@ -14150,25 +14087,6 @@ async function addMerchant() {
   } else {
     errEl.textContent='Error: ' + error.message; errEl.style.display='block';
   }
-}
-
-async function resetPwd(uid) {
-  const inp = $('pw_' + uid);
-  const newPwd = inp ? inp.value.trim() : '';
-  if (!newPwd) { toast('Enter a new password first', 'err'); return; }
-  const hashed = await hashPassword(newPwd);
-  const { error } = await db.from('users').update({ password: hashed }).eq('id', uid);
-  if (!error) { recordReadablePassword(uid, newPwd); inp.value = ''; toast('Password reset', 'ok-t'); }
-  else { toast('Error. Try again.', 'err'); }
-}
-
-async function changeMgmtPwd() {
-  const newPwd = $('mgmt_pwd').value.trim();
-  if (!newPwd) { toast('Enter a new password', 'err'); return; }
-  const hashed2 = await hashPassword(newPwd);
-  const { error } = await db.from('users').update({ password: hashed2 }).eq('id', S.user.id);
-  if (!error) { recordReadablePassword(S.user.id, newPwd); $('mgmt_pwd').value = ''; toast('Management password updated', 'ok-t'); }
-  else { toast('Error. Try again.', 'err'); }
 }
 
 // ─── DASHBOARD PDF ───
@@ -14545,6 +14463,7 @@ function renderRail() {
   // new section added above must stay above this line, not below it.
   html+=ni('trash','&#x1F5D1;','Trash',S.trash.length);
   try { html+=pnlRailHtml(); } catch(e) { console.error('pnlRailHtml:', e); } // Profit & Loss: management, admin, audit (view only)
+  try { html+=loginLogRailHtml(); } catch(e) { console.error('loginLogRailHtml:', e); } // Sign-in log: management, admin, audit (read only)
   try { html+=rqRailHtml(); } catch(e) { console.error('rqRailHtml:', e); } // Requisitions: admin, management, audit only
   try { if (accOn()) html+=accRailHtml(); } catch(e) { console.error('accRailHtml:', e); } // Accounts: admin, management, audit (read only)
   if(isAdmin){
@@ -14575,6 +14494,7 @@ function toggleSection(key){
 // produces the same practical result without needing a scheduled job.
 async function loadMessages() {
   if (!S.user) return;
+  if (S.viewAs) { S.messages = []; return; } // view-as never shows someone else's messages (v12)
   var cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
   try { await db.from('messages').delete().lt('created_at', cutoff); } catch (e) { console.error('message cleanup failed:', e); }
   var res = await db.from('messages').select('*')
@@ -16431,16 +16351,6 @@ async function baRemove(buyerId, merchantId) {
   renderBuyerAssign();
 }
 
-
-// === PASSWORD HASHING ===
-async function hashPassword(plain) {
-  if (!plain) return '';
-  if (/^[0-9a-f]{64}$/.test(plain)) return plain; // already hashed
-  var data = new TextEncoder().encode(plain);
-  var buf  = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-}
-function isHashed(str) { return !!(str && /^[0-9a-f]{64}$/.test(str)); }
 
 // === MASTER FIELD DEFINITIONS (hardcoded) ===
 var WORLD_COUNTRIES_LIST = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Brazil','Bulgaria','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Egypt','Estonia','Finland','France','Germany','Greece','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Latvia','Lebanon','Lithuania','Luxembourg','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Serbia','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Thailand','Tunisia','Turkey','UAE','Ukraine','United Kingdom','United States','Vietnam'];
@@ -29223,6 +29133,255 @@ async function pnlMonthDel(m) {
   if (r.error) { toast(pnlErr(r.error), 'err'); return; }
   PNL.months = PNL.months.filter(function(x){ return x.month !== m; }); accClose();
   if (S.view === 'pnl:oh') pnlRenderOh(); toast('Removed');
+}
+// ─── LOGIN (v12): Supabase sign-in, first-time password, Admin reset, view-as ───
+// Everyone picks their name and types a password, as before. Behind the scenes each person has an internal
+// login name <id>@login.shahana.invalid that is never shown or emailed. Passwords are stored by Supabase in
+// scrambled form only: nobody, including Admin, can read them. Admin issues temporary passwords instead.
+var LOGIN_DOMAIN = '@login.shahana.invalid';
+function loginEmailOf(id) { return String(id || '').toLowerCase() + LOGIN_DOMAIN; }
+var _loginPending = null; // the person who still has to choose their own password
+
+function loginErr(msg) { var e = $('l_err'); if (!e) return; e.textContent = msg; e.style.display = msg ? 'block' : 'none'; }
+function loginBusy(on) { var s = $('l_spin'); if (s) s.style.display = on ? 'block' : 'none'; }
+
+// Names for the sign-in list. Uses the v12 function when present (keeps working once the users table is locked).
+async function loginNames() {
+  try {
+    var r = await db.rpc('erp_login_names');
+    if (!r.error && r.data) return r.data;
+  } catch (e) { }
+  var q = await db.from('users').select('id,name').order('name');
+  return q.data || [];
+}
+
+// After Supabase accepted the password (or a saved session was found): check the login state, then open the app.
+async function afterSignIn(uid, fresh) {
+  var st = await db.rpc('erp_my_login_state');
+  if (st.error) {
+    await db.auth.signOut();
+    loginErr(/erp_my_login_state|function|schema cache/i.test(st.error.message || '') ? 'The database update for the new sign-in (v12) has not been run yet. Ask Admin.' : 'Could not check your account. Try again.');
+    return false;
+  }
+  var s = (st.data && st.data[0]) || { must_change: false, expired: false, active: true };
+  if (!s.active) { await db.auth.signOut(); loginErr('Your login is switched off. Contact Admin.'); return false; }
+  if (s.must_change) {
+    if (s.expired) { await db.auth.signOut(); loginErr('Your temporary password has expired. Ask Admin for a new one.'); return false; }
+    showSetPassword(uid); return false;
+  }
+  // a fresh sign-in always starts as yourself; a reload keeps an active view-as
+  if (fresh && s.viewing) { try { await db.rpc('erp_view_as_end'); } catch (e) { } s.viewing = null; }
+  var me = await db.from('users').select('*').eq('id', uid).maybeSingle();
+  if (!me.data) { await db.auth.signOut(); loginErr('Your account was not found. Contact Admin.'); return false; }
+  if (MAINTENANCE_MODE && me.data.role !== 'admin') { await db.auth.signOut(); loginErr(MAINTENANCE_MSG); return false; }
+  S.realUser = me.data;
+  if (s.viewing) {
+    var t = await db.from('users').select('*').eq('id', s.viewing).maybeSingle();
+    if (t.data) { viewAsEnter(t.data, s.viewing_reason, s.viewing_until); S.user = t.data; }
+    else { try { await db.rpc('erp_view_as_end'); } catch (e) { } S.user = me.data; }
+  } else S.user = me.data;
+  await startApp();
+  return true;
+}
+
+// ── first sign-in: choose your own password ──
+function showSetPassword(uid) {
+  _loginPending = uid;
+  var card = $('login-card-set'), main = $('login-card-main');
+  var u = (S.loginNames || []).find(function (x) { return x.id === uid; });
+  $('ls_hello').textContent = 'Welcome' + (u ? ', ' + String(u.name).split(' ')[0] : '');
+  $('ls_new').value = ''; $('ls_rep').value = ''; $('ls_err').style.display = 'none';
+  main.style.display = 'none'; card.style.display = 'block';
+  setTimeout(function () { $('ls_new').focus(); }, 30);
+}
+async function doSetPassword() {
+  var a = $('ls_new').value, b = $('ls_rep').value, err = $('ls_err');
+  err.style.display = 'none';
+  if (a.length < 8) { err.textContent = 'At least 8 characters, please.'; err.style.display = 'block'; return; }
+  if (a !== b) { err.textContent = 'The two passwords are not the same.'; err.style.display = 'block'; return; }
+  $('ls_spin').style.display = 'block';
+  var r = await db.rpc('erp_set_my_password', { new_pw: a });
+  $('ls_spin').style.display = 'none';
+  if (r.error) { err.textContent = r.error.message || 'Could not save. Try again.'; err.style.display = 'block'; return; }
+  var uid = _loginPending; _loginPending = null;
+  $('login-card-set').style.display = 'none'; $('login-card-main').style.display = 'block';
+  toast('Your password is saved', 'ok-t');
+  await afterSignIn(uid, true);
+}
+function cancelSetPassword() {
+  _loginPending = null; db.auth.signOut();
+  $('login-card-set').style.display = 'none'; $('login-card-main').style.display = 'block';
+  $('l_pwd').value = '';
+}
+
+// ── a popup used by the Admin tools (text only, never HTML from data) ──
+function loginPop(o) {
+  var ov = $('ov-login-pop');
+  if (!ov) {
+    ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ov-login-pop';
+    ov.innerHTML = '<div class="modal slim app-confirm"><div class="m-h"><div><h3 id="lp-title"></h3></div></div>'
+      + '<div class="m-b"><div class="acf-msg" id="lp-msg"></div><div id="lp-extra" style="margin-top:12px"></div><div class="form-err" id="lp-err" style="display:none;margin-top:10px"></div></div>'
+      + '<div class="m-f"><button class="btn" id="lp-cancel">Cancel</button><button class="btn pri" id="lp-ok">OK</button></div></div>';
+    document.body.appendChild(ov);
+  }
+  $('lp-title').textContent = o.title || '';
+  $('lp-msg').textContent = o.message || '';
+  var ex = $('lp-extra'); ex.innerHTML = '';
+  if (o.code) {
+    var c = document.createElement('div');
+    c.style.cssText = 'font-family:var(--mono);font-size:22px;letter-spacing:2px;padding:12px 14px;border:1.5px dashed var(--line);border-radius:10px;text-align:center;user-select:all';
+    c.textContent = o.code; ex.appendChild(c);
+  }
+  if (o.input) {
+    var i = document.createElement('input'); i.id = 'lp-input'; i.type = 'text'; i.placeholder = o.input; i.autocomplete = 'off';
+    i.style.cssText = 'width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px';
+    ex.appendChild(i);
+  }
+  $('lp-err').style.display = 'none';
+  var ok = $('lp-ok'), cancel = $('lp-cancel');
+  ok.textContent = o.okText || 'OK'; cancel.style.display = o.noCancel ? 'none' : '';
+  return new Promise(function (resolve) {
+    function done(v) { ov.classList.remove('open'); document.removeEventListener('keydown', key, true); resolve(v); }
+    function key(e) {
+      if (!ov.classList.contains('open')) return;
+      if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); ok.onclick(); }
+      else if (e.key === 'Escape' && !o.noCancel) { e.preventDefault(); done(null); }
+    }
+    ok.onclick = function () {
+      if (o.input) { var v = ($('lp-input').value || '').trim(); if (v.length < 3) { $('lp-err').textContent = 'Please type a reason.'; $('lp-err').style.display = 'block'; return; } done(v); }
+      else done(true);
+    };
+    cancel.onclick = function () { done(null); };
+    document.addEventListener('keydown', key, true);
+    ov.classList.add('open');
+    setTimeout(function () { var i = $('lp-input'); if (i) i.focus(); else ok.focus(); }, 30);
+  });
+}
+
+// ── Admin: login status per person, temporary passwords, switching off ──
+var _loginStates = null;
+async function loadLoginStates() {
+  var r = await db.from('erp_login_state').select('person_id,must_change,temp_expires_at,active,password_set_at');
+  _loginStates = {};
+  (r.data || []).forEach(function (x) { _loginStates[x.person_id] = x; });
+  return !r.error;
+}
+function adminLoginCell(u) {
+  var s = _loginStates && _loginStates[u.id];
+  var st = !_loginStates ? '<span class="adm-muted">&hellip;</span>'
+    : !s ? '<span class="adm-muted">No login yet</span>'
+    : !s.active ? '<span class="adm-login off">Switched off</span>'
+    : s.must_change ? (s.temp_expires_at && new Date(s.temp_expires_at) < new Date() ? '<span class="adm-login warn">Temporary password expired</span>' : '<span class="adm-login warn">Must choose own password</span>')
+    : '<span class="adm-login ok">Active</span>';
+  var me = S.realUser && S.realUser.id === u.id;
+  return '<div class="adm-login-cell">' + st
+    + '<button class="btn sm" data-uid="' + u.id + '" onclick="adminIssueTempPassword(this.dataset.uid)" title="Make a new temporary password for this person">New temporary password</button>'
+    + (me ? '' : '<button class="btn sm" data-uid="' + u.id + '" onclick="viewAsStart(this.dataset.uid)" title="See the app exactly as this person sees it, read-only">View as</button>')
+    + '</div>';
+}
+async function adminIssueTempPassword(uid) {
+  var u = S.users.find(function (x) { return x.id === uid; }); if (!u) return;
+  var go = await loginPop({ title: 'New temporary password', message: 'Make a new temporary password for ' + u.name + '? Their current password stops working and they are signed out everywhere. They must choose their own password at the next sign-in.', okText: 'Make password' });
+  if (!go) return;
+  var r = await db.rpc('erp_admin_issue_temp_password', { target: uid });
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  await loginPop({ title: 'Temporary password for ' + u.name, message: 'Give this to ' + u.name + ' in person or by phone. It is shown only now and works for 7 days.', code: r.data, okText: 'Done', noCancel: true });
+  await loadLoginStates(); if (S.view === 'admin') renderAdminList();
+}
+async function adminSetLoginActive(uid, on) {
+  var r = await db.rpc('erp_admin_set_active', { target: uid, on_: on });
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return false; }
+  return true;
+}
+
+// ── Admin: the log (Admin, Management and Audit read it) ──
+async function openLoginLog() {
+  var r = await db.from('erp_admin_log').select('at,actor,action,target,reason').order('at', { ascending: false }).limit(300);
+  if (r.error) { toast('The log could not be loaded: ' + r.error.message, 'err'); return; }
+  var nm = function (id) { if (id === 'setup') return 'Setup'; var u = S.users.find(function (x) { return x.id === id; }); return u ? u.name : (id ? 'Removed person' : ''); };
+  var what = { issue_temp_password: 'New temporary password', view_as_start: 'Started view-as', view_as_end: 'Ended view-as', login_off: 'Switched login off', login_on: 'Switched login on', create_login: 'Login created' };
+  var rows = (r.data || []).map(function (x) {
+    return '<tr><td>' + htmlEsc(new Date(x.at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) + '</td><td>' + htmlEsc(nm(x.actor)) + '</td><td>' + htmlEsc(what[x.action] || x.action)
+      + '</td><td>' + htmlEsc(nm(x.target)) + '</td><td>' + htmlEsc(x.reason || '') + '</td></tr>';
+  }).join('');
+  var box = $('admin-login-log');
+  if (box) box.innerHTML = '<div class="scroller"><table class="adm-users"><thead><tr><th>When</th><th>Who</th><th>What</th><th>For</th><th>Reason</th></tr></thead><tbody>'
+    + (rows || '<tr><td colspan="5" class="adm-muted">Nothing yet.</td></tr>') + '</tbody></table></div>';
+}
+
+// ── View as: read-only, 30 minutes, reason required; the database also refuses changes ──
+async function viewAsStart(uid) {
+  var u = S.users.find(function (x) { return x.id === uid; }); if (!u) return;
+  var why = await loginPop({ title: 'View as ' + u.name, message: 'You will see the app exactly as ' + u.name + ' sees it, read-only, for up to 30 minutes. Their private messages stay hidden. This is recorded in the log.', input: 'Reason (required)', okText: 'Start' });
+  if (!why) return;
+  var r = await db.rpc('erp_view_as_start', { target: uid, why: why });
+  if (r.error) { toast('Error: ' + r.error.message, 'err'); return; }
+  location.reload(); // start clean as that person; afterSignIn picks up the view-as
+}
+async function viewAsExit() {
+  try { await db.rpc('erp_view_as_end'); } catch (e) { }
+  location.reload();
+}
+var _viewAsTimer = null;
+function viewAsEnter(target, reason, until) {
+  S.viewAs = { target: target, reason: reason, until: until };
+  viewAsGuard();
+  var bar = document.createElement('div'); bar.id = 'viewas-bar';
+  bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:9999;background:#7a2e0e;color:#fff;font-size:13px;padding:7px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap';
+  var t = document.createElement('span');
+  t.textContent = 'Viewing as ' + target.name + ' · read-only · ' + reason + ' · ends ' + new Date(until).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  var b = document.createElement('button'); b.className = 'btn sm'; b.textContent = 'Exit'; b.onclick = viewAsExit;
+  bar.appendChild(t); bar.appendChild(b); document.body.appendChild(bar);
+  document.body.style.paddingTop = '34px';
+  clearTimeout(_viewAsTimer);
+  _viewAsTimer = setTimeout(viewAsExit, Math.max(1000, new Date(until) - new Date()));
+}
+// Nothing can be saved while viewing as someone: every write is stopped here, before it leaves the browser.
+// (The database refuses them too for every table protected by the new rules.)
+var VIEWAS_READ_RPC = { erp_my_login_state: 1, erp_view_as_end: 1, erp_login_names: 1 };
+function viewAsGuard() {
+  if (db.__viewAsGuarded) return; db.__viewAsGuarded = true;
+  var blocked = function () {
+    toast('Read-only while viewing as ' + S.viewAs.target.name + ': nothing was saved', 'err');
+    var res = { data: null, error: { code: 'VIEW_AS', message: 'Read-only while viewing as someone' }, status: 403 };
+    var chain = new Proxy(function () { }, {
+      get: function (_, k) { if (k === 'then') return function (ok, bad) { return Promise.resolve(res).then(ok, bad); }; return function () { return chain; }; },
+      apply: function () { return chain; }
+    });
+    return chain;
+  };
+  var from = db.from.bind(db);
+  db.from = function (t) {
+    var q = from(t);
+    ['insert', 'update', 'upsert', 'delete'].forEach(function (m) { q[m] = function () { return blocked(); }; });
+    return q;
+  };
+  var rpc = db.rpc.bind(db);
+  db.rpc = function (name, args) { return VIEWAS_READ_RPC[name] ? rpc(name, args) : blocked(); };
+  if (db.storage && db.storage.from) {
+    var sf = db.storage.from.bind(db.storage);
+    db.storage.from = function (b) { var x = sf(b); ['upload', 'remove', 'update', 'move', 'copy'].forEach(function (m) { x[m] = function () { return blocked(); }; }); return x; };
+  }
+}
+
+// ── the sign-in log page (Admin, Management, Audit) ──
+function loginLogCanView() { return !!S.user && ['management', 'admin', 'audit'].indexOf(S.user.role) !== -1; }
+function loginLogIsView(v) { return v === 'signin-log'; }
+function loginLogRailHtml() {
+  if (!loginLogCanView()) return '';
+  return '<button class="ni' + (S.view === 'signin-log' ? ' on' : '') + '" onclick="setView(\'signin-log\')"><span class="av" style="font-size:12px">&#x1F511;</span><span class="nm">Sign-in log</span></button>';
+}
+function loginLogRender() {
+  if (!loginLogCanView()) { setView('dashboard'); return; }
+  rqSetHead('Management', 'Sign-in log', 'Temporary passwords, logins switched on or off, and view-as. Newest first. Nobody can change or delete these rows.', '');
+  $('content').innerHTML = '<div class="adm-card"><div id="admin-login-log"><div class="loading"><span class="spin"></span> Loading&hellip;</div></div></div>';
+  openLoginLog();
+}
+// Admin adds a person: they get a temporary password to hand over
+async function adminShowNewLogin(u) {
+  var r = await db.rpc('erp_admin_issue_temp_password', { target: u.id });
+  if (r.error) { toast('Added, but the login could not be made: ' + r.error.message + '. Use "New temporary password" on the list.', 'err'); return; }
+  await loginPop({ title: 'Temporary password for ' + u.name, message: 'Give this to ' + u.name + ' in person or by phone. It is shown only now and works for 7 days. They choose their own password at the first sign-in.', code: r.data, okText: 'Done', noCancel: true });
 }
 </script>
 </body>
