@@ -2629,7 +2629,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.10.29.4</p>
+    <p class="login-ver">STAGING V.2026.10.31.1</p>
   </div></div>
 </div>
 
@@ -2671,7 +2671,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.10.29.4</div>
+  <div id="ver-stamp">STAGING V.2026.10.31.1</div>
 </div>
 
 
@@ -19061,8 +19061,8 @@ function commercialState(o, rec, pays) {
     return st;
   }
   if (o.stage === 'shipped') {
-    st.step = rec.stuffing_date ? 'stuffed' : 'exfactory';
-    st.label = rec.stuffing_date ? 'Stuffed' : 'BL pending'; st.cls = 'submitted';
+    st.step = cmStuffed(o, rec) ? 'stuffed' : 'exfactory';
+    st.label = cmStuffed(o, rec) ? 'Stuffed' : 'BL pending'; st.cls = 'submitted';
     if (st.terms.terms === 'tt_advance' && dDue != null && dDue < 0) { st.label = 'TT overdue'; st.cls = 'rejected'; }
     return st;
   }
@@ -19136,8 +19136,21 @@ async function probeCommercialSchema() {
 // everything else is the commercial team's. Admin can change anything.
 // Everyone else who can open the file only looks.
 var CM_MERCHANT_FIELDS = ['aos_requested_on', 'aos_on', 'aos_note'];
+// Stuffing comes after ex-factory (the merchant's Ship step): the goods leave the factory first and are stuffed into the
+// container later. So the handover / stuffing date can only be entered once the order is shipped, and an order counts as
+// Stuffed only when that date is on or after the ex-factory date.
+function cmIsShipped(o) { return !!o && (o.stage === 'shipped' || !!o.shipped_on); }
+function cmStuffed(o, rec) {
+  rec = rec || {};
+  if (!o || o.stage !== 'shipped' || !rec.stuffing_date) return false;
+  var exf = o.shipped_on ? String(o.shipped_on).slice(0, 10) : '';
+  return !exf || String(rec.stuffing_date).slice(0, 10) >= exf;
+}
+// a handover date that is earlier than the ex-factory date: kept as entered, but the order is not Stuffed until it is checked
+function cmStuffEarly(o, rec) { return !!o && !!rec && !!rec.stuffing_date && o.stage === 'shipped' && !cmStuffed(o, rec); }
 function cmCanEdit(o, f) {
   if (!S.user || !o) return false;
+  if (f === 'stuffing_date' && !cmIsShipped(o)) return false; // stuffing starts after ex-factory
   if (S.user.role === 'admin') return true;
   var merch = actsAsMerchant(o.merchant_id), comm = S.user.role === 'commercial';
   if (CM_MERCHANT_FIELDS.indexOf(f) !== -1) return merch && !!o.stage && o.stage !== 'live'; // approval comes once the goods are made
@@ -19278,12 +19291,12 @@ function renderCommercialModal(keepFocus) {
     + fld('Net / gross weight (kgs)', '<div style="display:flex;gap:6px">' + xin('cm-x-net', fv('net_weight'), ' step="0.01" placeholder="net"') + xin('cm-x-gross', fv('gross_weight'), ' step="0.01" placeholder="gross"') + '</div>'),
     'Ex-factory is the merchant’s Ship step. Cartons and CBM come from the packing list; merchant or commercial can correct them.', 'cm-s2');
   // 3. Stuffing (handover at the depot)
-  var s3 = sec('Stuffing', merged.stuffing_date ? 'Handed over ' + short(merged.stuffing_date) : '',
+  var s3 = sec('Stuffing', cmStuffed(o, merged) ? 'Handed over ' + short(merged.stuffing_date) : '',
       fld('Handover / stuffing date', inp('stuffing_date', 'date', '', ' data-live="1"')) + (v2 ? fld('Depot', inp('depot', '', 'e.g. SAPL, ISPAHANI')) : '')
     + fld('Container number', inp('container_no')) + fld('Seal number', inp('seal_no'))
     + fld('Port of loading', inp('port', '', 'e.g. Chattogram')) + fld('Vessel / flight', inp('vessel'))
     + fld('ETD', inp('etd', 'date')) + fld('ETA destination', inp('eta', 'date')),
-    'Entering the handover date moves the order to <b>Stuffed</b>.', 'cm-s3');
+    (cmIsShipped(o) ? 'Entering the handover date moves the order to <b>Stuffed</b>.' : 'Stuffing starts after ex-factory. The handover date can be entered once the merchant has moved the order to Shipped.') + (cmStuffEarly(o, merged) ? ' <b style="color:var(--red,#b42318)">The handover date is before the ex-factory date, so the order stays at Ex-factory until it is corrected.</b>' : ''), 'cm-s3');
   // 4. Invoice & export papers
   var calcVal = commercialInvoiceValue(o, {});
   var s4 = sec('Invoice & export papers', merged.invoice_no ? merged.invoice_no : '',
@@ -19460,7 +19473,7 @@ async function saveCommercial() {
         var x = findOrderAnywhere(shareIds[i]); if (!x) continue;
         var xs = { order_id: x.id, bl_no: full.bl_no, updated_at: row.updated_at, updated_by: row.updated_by };
         // copy what this PO has — never blank out what the other PO already has
-        ['bl_date','vessel','etd','eta','container_no','seal_no','stuffing_date','port'].forEach(function(f){ if (full[f]) xs[f] = full[f]; });
+        ['bl_date','vessel','etd','eta','container_no','seal_no','stuffing_date','port'].forEach(function(f){ if (f === 'stuffing_date' && !cmIsShipped(x)) return; if (full[f]) xs[f] = full[f]; });
         var xWas = S.comm.rows[x.id] || {}, xr = Object.assign({}, xWas, xs);
         xs.pay_status = xr.pay_status = commercialState(x, xr, S.comm.pays[x.id]).payKey;
         var rx = await db.from('order_commercial').upsert(xs, { onConflict: 'order_id' });
@@ -20260,7 +20273,7 @@ function cmStageOf(o, rec) {
   if (o.stage !== 'shipped') return o.stage === 'laying' ? 'laying' : 'coming';
   if (rec.bl_date && cmIsDone(o, rec)) return 'paid';  // paid before the B/L (TT in advance) stays until the B/L is in
   if (rec.bl_date) return 'paypend';
-  if (rec.stuffing_date) return 'stuffed';
+  if (cmStuffed(o, rec)) return 'stuffed';
   return 'exf';
 }
 function cmStepStates(o, rec, st) {
@@ -20269,7 +20282,7 @@ function cmStepStates(o, rec, st) {
   return {
     book: rec.aos_on ? 'done' : any(['forwarder', 'booking_no', 'cutoff_date', 'aos_requested_on']) ? 'part' : 'empty',
     exf: (o.stage === 'shipped' || o.shipped_on) ? 'done' : 'empty',
-    stuff: rec.stuffing_date ? 'done' : any(['container_no', 'seal_no', 'port', 'vessel', 'etd', 'eta', 'depot']) ? 'part' : 'empty',
+    stuff: cmStuffed(o, rec) ? 'done' : any(['container_no', 'seal_no', 'port', 'vessel', 'etd', 'eta', 'depot']) ? 'part' : 'empty',
     inv: rec.invoice_no && rec.invoice_date ? 'done' : any(['invoice_no', 'invoice_date', 'invoice_value', 'exp_no', 'sb_no']) ? 'part' : 'empty',
     bl: rec.bl_no && rec.bl_date ? 'done' : any(['bl_no', 'bl_date']) ? 'part' : 'empty',
     docs: (rec.docs_bank_on || rec.docs_buyer_on) && (!rec.discrepancy || rec.discrepancy_cleared_on) ? 'done' : any(['docs_bank_on', 'docs_buyer_on', 'courier_ref', 'discrepancy', 'fdbc_ref']) ? 'part' : 'empty',
@@ -20310,6 +20323,7 @@ function cmNextStep(o, rec, st, steps, stage) {
   }
   if (stage === 'exf') {
     var since = o.shipped_on ? -daysTo(o.shipped_on) : 0;
+    if (cmStuffEarly(o, rec)) return { txt: 'Check the handover date ' + short(rec.stuffing_date) + ': it is before ex-factory ' + short(o.shipped_on), cls: 'late', w: -since };
     return { txt: 'Handover / stuffing to enter' + (since > 0 ? ', ex-factory ' + cmDays(since) + ' ago' : ''), cls: since > 5 ? 'late' : 'soon', w: -since };
   }
   if (stage === 'stuffed') {
@@ -20615,7 +20629,7 @@ async function cmMoveBack(orderId) {
     var r0 = S.comm.rows[orderId] || {}, k0 = commercialState(o, r0, S.comm.pays[orderId]).payKey;
     if (r0.pay_status !== k0) await setPayStatus(orderId, k0);
   } else if (stage === 'paypend' || stage === 'stuffed') {
-    var f = stage === 'paypend' ? 'bl_date' : 'stuffing_date', to = stage === 'paypend' ? (rec.stuffing_date ? 'Stuffed' : 'Ex-factory') : 'Ex-factory';
+    var f = stage === 'paypend' ? 'bl_date' : 'stuffing_date', to = stage === 'paypend' ? (cmStuffed(o, rec) ? 'Stuffed' : 'Ex-factory') : 'Ex-factory';
     if (!(await appConfirm('Move ' + name + ' back to ' + to + '?\n\nThis clears the ' + cmLabel(f) + ' (' + short(rec[f]) + ').', { title: 'Move back', okText: 'Move back', danger: true }))) return;
     var up = { order_id: orderId, updated_at: now, updated_by: S.user.name }; up[f] = null;
     up.pay_status = commercialState(o, Object.assign({}, rec, up), S.comm.pays[orderId]).payKey;
@@ -20784,7 +20798,8 @@ async function setAosApproved(orderId, on) {
 function handOverFieldCell(orderId) {
   // the shipment file only: an old value in the column is not shown, or a date
   // the commercial team cleared (Move back) would still appear here
-  var r = S.comm.rows[orderId] || {}, d = r.stuffing_date;
+  var r = S.comm.rows[orderId] || {}, d = r.stuffing_date, o = findOrderAnywhere(orderId);
+  if (o && !cmIsShipped(o)) d = null; // stuffing starts after ex-factory
   return d ? '<b>' + short(d) + '</b>' : '<span class="cb-sub" title="Entered by the commercial team">\u2014</span>';
 }
 // Back to live: the goods are not ready any more, so the approval of shipment
@@ -20807,7 +20822,7 @@ function shpCells(o) {
   var x = cmRowInfo(o), r = x.rec, open = ' onclick="event.stopPropagation();openCommercial(\'' + o.id + '\')"';
   var ps = cmPayStatus(x.st);
   return '<td><button type="button" class="cb-cellbtn"' + open + '>' + (r.invoice_no ? '<b>' + htmlEsc(r.invoice_no) + '</b>' : '<span class="cb-sub">no invoice yet</span>') + '<div class="cb-sub">' + money(x.st.value) + '</div></button></td>'
-    + '<td><button type="button" class="cb-cellbtn"' + open + '>' + (r.stuffing_date ? '<b>' + short(r.stuffing_date) + '</b><div class="cb-sub">' + htmlEsc([r.forwarder, r.depot].filter(Boolean).join(' · ') || 'handed over') + '</div>' : '<span class="cb-due">not stuffed</span>') + '</button></td>'
+    + '<td><button type="button" class="cb-cellbtn"' + open + '>' + (cmStuffed(o, r) ? '<b>' + short(r.stuffing_date) + '</b><div class="cb-sub">' + htmlEsc([r.forwarder, r.depot].filter(Boolean).join(' · ') || 'handed over') + '</div>' : cmStuffEarly(o, r) ? '<span class="cb-due">not stuffed</span><div class="cb-sub">check date ' + short(r.stuffing_date) + '</div>' : '<span class="cb-due">not stuffed</span>') + '</button></td>'
     + '<td><button type="button" class="cb-cellbtn"' + open + '>' + (r.bl_date ? '<b>' + short(r.bl_date) + '</b><div class="cb-sub">' + htmlEsc(r.bl_no || 'B/L') + '</div>' : '<span class="cb-due">due</span>') + '</button></td>'
     + '<td><button type="button" class="cb-cellbtn"' + open + '>' + (r.bl_date || x.st.received ? cbPill(ps) + '<div class="cb-sub">' + (x.st.received ? 'received ' + money(x.st.received) : x.st.due ? 'due ' + short(x.st.due) : cbTerms(x)) + '</div>' : '<span class="cb-sub">' + htmlEsc(cbTerms(x)) + '</span>') + '</button></td>';
 }
