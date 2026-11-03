@@ -2596,6 +2596,55 @@ tr.pl-new .pl-in{border:1px dashed var(--line)}.pl-live{font-family:var(--mono);
 tr.wo-ftot td{font-weight:800;border-top:1.5px solid var(--ink)}.wo-showp{display:flex;gap:6px;align-items:center;margin:8px 0}
 table.wo-t-buy td{vertical-align:top}
 .wo-rq,.wo-rp{padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);font-family:var(--mono);color:var(--ink);text-align:right}.wo-rq:focus,.wo-rp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+
+/* ─── Wave 5: the notification bell, inbox and corner cards; Admin → Departments ─── */
+.ntf-wrap{position:relative}
+.ntf-bell{position:relative;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:15px;line-height:1.2;color:var(--muted)}
+.ntf-bell:hover,.ntf-wrap.open .ntf-bell{background:var(--accent-soft);color:var(--accent)}
+.ntf-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--panel)}
+.ntf-panel{display:none;position:absolute;right:0;top:calc(100% + 8px);width:380px;max-width:calc(100vw - 32px);max-height:70vh;overflow:hidden;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);z-index:9000;text-align:left}
+.ntf-wrap.open .ntf-panel{display:flex}
+.ntf-ph{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.ntf-pc{font-size:11px;color:var(--accent);font-weight:600}
+.ntf-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line)}
+.ntf-chip{border:1px solid var(--line);background:none;border-radius:12px;padding:2px 10px;font-size:11.5px;cursor:pointer;color:var(--muted)}
+.ntf-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.ntf-chip b{color:var(--red)}
+.ntf-list{overflow-y:auto;flex:1}
+.ntf-row{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.ntf-row:hover{background:var(--bg)}
+.ntf-row.un{background:var(--accent-soft)}
+.ntf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;background:var(--line)}
+.ntf-row.un .ntf-dot{background:var(--accent)}
+.ntf-tx{flex:1;min-width:0}
+.ntf-mod{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.ntf-t{font-size:13px;font-weight:600;color:var(--ink);margin-top:1px;word-break:break-word}
+.ntf-b{font-size:12px;color:var(--muted);margin-top:2px;word-break:break-word}
+.ntf-by{font-size:10.5px;color:var(--muted);margin-top:2px}
+.ntf-empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:12.5px}
+.ntf-toasts{position:fixed;right:24px;bottom:76px;display:flex;flex-direction:column;gap:8px;z-index:9500;width:320px;max-width:calc(100vw - 32px)}
+.ntf-toast{position:relative;display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:11px 12px 13px;box-shadow:0 8px 24px rgba(0,0,0,.16);overflow:hidden;animation:ntfIn .2s ease-out}
+.ntf-toast .ntf-tx{cursor:pointer}
+.ntf-ic{font-size:15px;line-height:1.3}
+.ntf-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 2px;line-height:1}
+.ntf-x:hover{color:var(--ink)}
+.ntf-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--accent);transform-origin:left;animation:ntfBar linear forwards}
+@keyframes ntfBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes ntfIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media print{.ntf-toasts,.ntf-wrap{display:none!important}}
+/* Admin → Departments */
+.ad-dt td,.ad-dt th{vertical-align:middle}
+.ad-dt .ad-k{font-family:Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted)}
+.ad-on{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;background:var(--line);color:var(--muted)}
+.ad-on.y{background:#E3F1E7;color:#2E7D4F}
+.ad-heads{font-size:12px}
+.ad-heads b{font-weight:600}
+.ad-mem{width:100%;border-collapse:collapse;margin-top:6px}
+.ad-mem td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:middle}
+.ad-mem select{padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font-size:12px}
+.ad-add{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:10px}
+.ad-tabs{display:flex;gap:6px;padding:10px 16px 0}
+.ad-sub2{font-size:11.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -2629,7 +2678,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.10.31.2</p>
+    <p class="login-ver">STAGING V.2026.11.03.1</p>
   </div></div>
 </div>
 
@@ -2662,6 +2711,7 @@ table.wo-t-buy td{vertical-align:top}
         <div><h2 id="page-title">Dashboard</h2><div class="sub2" id="page-sub"></div></div>
         <div style="display:flex;align-items:center;gap:10px">
           <div class="stamp" id="stamp"></div>
+          <div class="ntf-wrap" id="ntf-wrap" style="display:none"><button type="button" class="ntf-bell" id="ntf-bell" onclick="ntfToggle(event)" title="Notifications">&#x1F514;<span class="ntf-badge" id="ntf-badge" style="display:none"></span></button><div class="ntf-panel" id="ntf-panel"></div></div>
           <button onclick="location.reload()" title="Refresh page" style="background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;transition:all .15s" onmouseover="this.style.background='var(--accent-soft)';this.style.color='var(--accent)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">&#x21bb; Refresh</button>
         </div>
       </div>
@@ -2671,7 +2721,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.10.31.2</div>
+  <div id="ver-stamp">STAGING V.2026.11.03.1</div>
 </div>
 
 
@@ -3575,6 +3625,7 @@ table.wo-t-buy td{vertical-align:top}
 </div>
 
 <div id="toast"></div>
+<div id="ntf-toasts" class="ntf-toasts no-print" aria-live="polite"></div>
 
 <!-- === PERSISTENT SAVE-ERROR DIALOG ===
      Unlike a toast (auto-dismisses in 2.8s), this stays on screen until the
@@ -4097,6 +4148,8 @@ async function startApp() {
   }
 
   $('content').innerHTML = '<div class="loading"><span class="spin"></span> Loading…</div>';
+  // notifications (the bell): one read, then live; never holds up the rest
+  ntfBoot().catch(function(e){ console.error('notifications:', e); });
 
   // Department staff (requisitions only): none of the order data is loaded.
   if (rqOnlyUser()) { await rqBoot(); try { grtSchedule(); } catch (e) {} return; }
@@ -4121,7 +4174,7 @@ async function startApp() {
     ['loadBuyerSettings',    loadBuyerSettings],
     ['probeCommercialSchema', probeCommercialSchema],
     ['loadCompanies',        loadCompanies],
-    ['rqLoad',               function(){ return rqCanSee() ? rqLoad() : Promise.resolve(); }],
+    ['rqLoad',               function(){ return rqdLoad().then(function(){ return rqCanSee() ? rqLoad() : null; }); }], // departments first: anyone in a department that uses requisitions sees them
     // logos load in the background so a slow connection never holds up opening the app
     ['bpLoadLogos',          function(){ bpLoadLogos().then(function(){ try { if (bpIsView(S.view) && !document.querySelector('#ov-bp.open')) bpRender(S.view); else renderRail(); } catch (e) { console.error('logos:', e); } }); return Promise.resolve(); }]
   ];
@@ -5999,6 +6052,135 @@ async function sendThreadReply() {
   if (S.view === 'inbox') renderInboxTabBody();
   renderRail();
 }
+// THE NOTIFICATION ENGINE (Wave 5). General: it knows nothing about requisitions, orders or any other part of the app.
+// A part of the app plugs in with notifModule:
+//   send    notifModule.send({ to: [user ids], module: 'orders', kind: 'order_late', title: '...', body: '...', url: '...', ref: id })
+//           (or the database writes them itself: every requisition step does, see shahana-one-v17-wave5a.sql)
+//   opener  notifModule.opener('rq', function(id){ ... })   a notification whose url is 'open:rq:<id>' calls it;
+//           any other url is a page of the app (setView)
+//   label   notifModule.label('orders', 'Orders')           the name of its filter in the inbox
+// What the person sees: the bell (top right) with the number not read yet; a card in the bottom-right corner for each
+// new one (gone after 10 seconds, or with its close button; click it to open); the inbox (click the bell): newest first,
+// filter by part of the app, mark all read. New ones arrive live (one connection per person, only their own rows).
+// Without the Wave 5A update the bell simply stays hidden.
+var NTF = { ok: null, rows: [], ch: null, openers: {}, labels: {}, filter: '', booted: false };
+var notifModule = { send: ntfSend, opener: function(k, fn){ NTF.openers[k] = fn; }, label: function(m, n){ NTF.labels[m] = n; } };
+var NTF_TOAST_MS = 10000;
+function ntfOn() { return NTF.ok === true; }
+function ntfMissing(e) { return !!e && (e.code === '42P01' || e.code === 'PGRST205' || /notifications|does not exist|schema cache|could not find the table/i.test(e.message || '')); }
+async function ntfBoot() {
+  if (NTF.booted || !S.user) return;
+  NTF.booted = true;
+  await ntfLoad();
+  if (!ntfOn()) return;
+  ntfBell();
+  ntfSubscribe();
+  document.addEventListener('click', function(e){ var w = $('ntf-wrap'); if (w && w.classList.contains('open') && !w.contains(e.target)) ntfClose(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { var w = $('ntf-wrap'); if (w && w.classList.contains('open')) ntfClose(); } });
+}
+// the newest 100 (one read); older ones stay in the database until they are cleared
+async function ntfLoad() {
+  var r = await db.from('notifications').select('*').eq('recipient_id', S.user.id).order('created_at', { ascending: false }).limit(100);
+  if (r.error) { NTF.ok = ntfMissing(r.error) ? false : null; if (NTF.ok === null) console.error('notifications:', r.error); NTF.rows = []; return; }
+  NTF.ok = true; NTF.rows = r.data || [];
+}
+function ntfSubscribe() {
+  if (NTF.ch || !S.user) return;
+  try {
+    NTF.ch = db.channel('ntf-' + S.user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: 'recipient_id=eq.' + S.user.id }, function(p){ try { ntfLive(p); } catch (e) { console.error('notification live:', e); } })
+      .subscribe();
+  } catch (e) { console.error('notifications live:', e); }
+}
+function ntfLive(p) {
+  var n = p.new && p.new.id ? p.new : null, old = p.old && p.old.id ? p.old : null;
+  if (p.eventType === 'DELETE' && old) { NTF.rows = NTF.rows.filter(function(x){ return x.id !== old.id; }); ntfBell(); return; }
+  if (!n || n.recipient_id !== S.user.id) return;
+  var i = NTF.rows.findIndex(function(x){ return x.id === n.id; });
+  if (i >= 0) { NTF.rows[i] = n; ntfBell(); return; }   // read on another screen
+  NTF.rows.unshift(n); if (NTF.rows.length > 200) NTF.rows.length = 200;
+  ntfBell();
+  if (!n.read_at) ntfToast(n);
+}
+// for any part of the app; the sender is the person signed in; returns how many people it went to
+async function ntfSend(o) {
+  if (!ntfOn() || !o) return 0;
+  var to = [].concat(o.to || []).filter(Boolean);
+  if (!to.length) return 0;
+  var r = await db.rpc('erp_notify', { p_to: to, p_module: o.module, p_kind: o.kind, p_title: o.title, p_body: o.body || null, p_url: o.url || null, p_ref: o.ref == null ? null : String(o.ref) });
+  if (r.error) { console.error('notification not sent:', r.error); return 0; }
+  return Number(r.data) || 0;
+}
+function ntfUnread() { return NTF.rows.filter(function(x){ return !x.read_at; }).length; }
+function ntfLabel(m) { return NTF.labels[m] || String(m || 'Other').replace(/_/g, ' ').replace(/^./, function(c){ return c.toUpperCase(); }); }
+function ntfAgo(ts) {
+  var t = new Date(ts).getTime(); if (isNaN(t)) return '';
+  var s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + ' min ago'; if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+  var d = new Date(t); if (s < 7 * 86400) return Math.floor(s / 86400) + ' d ago';
+  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+}
+// the bell and its count
+function ntfBell() {
+  var w = $('ntf-wrap'), b = $('ntf-badge'); if (!w || !b) return;
+  w.style.display = ntfOn() ? '' : 'none';
+  var n = ntfUnread();
+  b.textContent = n > 99 ? '99+' : String(n); b.style.display = n ? '' : 'none';
+  $('ntf-bell').title = n ? n + ' notification' + (n === 1 ? '' : 's') + ' not read yet' : 'Notifications';
+  if (w.classList.contains('open')) ntfPanel();
+}
+function ntfToggle(e) { if (e) e.stopPropagation(); var w = $('ntf-wrap'); if (!w) return; if (w.classList.contains('open')) ntfClose(); else { w.classList.add('open'); ntfPanel(); } }
+function ntfClose() { var w = $('ntf-wrap'); if (w) w.classList.remove('open'); }
+// the inbox
+function ntfPanel() {
+  var el = $('ntf-panel'); if (!el) return;
+  var mods = []; NTF.rows.forEach(function(x){ if (mods.indexOf(x.module) === -1) mods.push(x.module); });
+  if (NTF.filter && mods.indexOf(NTF.filter) === -1) NTF.filter = '';
+  var list = NTF.rows.filter(function(x){ return !NTF.filter || x.module === NTF.filter; }), un = ntfUnread();
+  var chip = function(k, label, n){ return '<button type="button" class="ntf-chip' + (NTF.filter === k ? ' on' : '') + '" onclick="event.stopPropagation();NTF.filter=\'' + htmlEsc(k) + '\';ntfPanel()">' + htmlEsc(label) + (n ? ' <b>' + n + '</b>' : '') + '</button>'; };
+  el.innerHTML = '<div class="ntf-ph"><b>Notifications</b>' + (un ? '<span class="ntf-pc">' + un + ' not read</span>' : '') + '<span style="flex:1"></span>'
+    + (un ? '<button type="button" class="btn sm" onclick="event.stopPropagation();ntfMarkAll()">Mark all read</button>' : '') + '</div>'
+    + (mods.length > 1 ? '<div class="ntf-chips">' + chip('', 'All', 0) + mods.map(function(m){ return chip(m, ntfLabel(m), NTF.rows.filter(function(x){ return x.module === m && !x.read_at; }).length); }).join('') + '</div>' : '')
+    + '<div class="ntf-list">' + (list.length ? list.map(function(x){
+      return '<div class="ntf-row' + (x.read_at ? '' : ' un') + '" onclick="event.stopPropagation();ntfOpen(\'' + x.id + '\')"><span class="ntf-dot"></span><div class="ntf-tx">'
+        + '<div class="ntf-mod">' + htmlEsc(ntfLabel(x.module)) + ' &middot; ' + htmlEsc(ntfAgo(x.created_at)) + '</div>'
+        + '<div class="ntf-t">' + htmlEsc(x.title) + '</div>' + (x.body ? '<div class="ntf-b">' + htmlEsc(x.body) + '</div>' : '')
+        + (x.sender_name ? '<div class="ntf-by">' + htmlEsc(x.sender_name) + '</div>' : '') + '</div></div>';
+    }).join('') : '<div class="ntf-empty">Nothing here yet. New ones show up here as they happen.</div>') + '</div>';
+}
+async function ntfRead(ids) {
+  ids = ids.filter(function(id){ var x = NTF.rows.find(function(y){ return y.id === id; }); return x && !x.read_at; });
+  if (!ids.length) return;
+  var now = new Date().toISOString();
+  var r = await db.from('notifications').update({ read_at: now }).in('id', ids).is('read_at', null);
+  if (r.error) { console.error('notifications read:', r.error); return; }
+  NTF.rows.forEach(function(x){ if (ids.indexOf(x.id) !== -1) x.read_at = now; });
+  ntfBell();
+}
+function ntfMarkAll() { return ntfRead(NTF.rows.filter(function(x){ return !x.read_at; }).map(function(x){ return x.id; })); }
+// open what it is about: 'open:<what>:<id>' goes to the part of the app that registered <what>; anything else is a page
+function ntfOpen(id) {
+  var x = NTF.rows.find(function(y){ return y.id === id; }); if (!x) return;
+  ntfRead([id]); ntfClose(); ntfToastGone(id);
+  var u = String(x.url || ''), m = /^open:([a-z0-9_]+):(.+)$/i.exec(u);
+  try {
+    if (m && NTF.openers[m[1]]) NTF.openers[m[1]](m[2], x);
+    else if (u && !m) setView(u);
+  } catch (e) { console.error('open notification:', e); }
+}
+// the card in the corner
+function ntfToast(x) {
+  var box = $('ntf-toasts'); if (!box) return;
+  while (box.children.length >= 3) box.removeChild(box.firstChild);
+  var el = document.createElement('div');
+  el.className = 'ntf-toast'; el.setAttribute('data-id', x.id); el.setAttribute('role', 'status');
+  el.innerHTML = '<span class="ntf-ic">&#x1F514;</span><div class="ntf-tx" onclick="ntfOpen(\'' + x.id + '\')"><div class="ntf-mod">' + htmlEsc(ntfLabel(x.module)) + '</div><div class="ntf-t">' + htmlEsc(x.title) + '</div>'
+    + (x.body ? '<div class="ntf-b">' + htmlEsc(x.body) + '</div>' : '') + '</div>'
+    + '<button type="button" class="ntf-x" title="Close" onclick="ntfToastGone(\'' + x.id + '\')">&#x2715;</button><i class="ntf-bar" style="animation-duration:' + NTF_TOAST_MS + 'ms"></i>';
+  box.appendChild(el);
+  setTimeout(function(){ ntfToastGone(x.id); }, NTF_TOAST_MS);
+}
+function ntfToastGone(id) { var el = document.querySelector('#ntf-toasts .ntf-toast[data-id="' + id + '"]'); if (el && el.parentNode) el.parentNode.removeChild(el); }
 // Merchant board: the live board, scrolling, floating header, shipped / archive, trash, activity
 
 async function cleanOldArchive() {
@@ -16459,6 +16641,7 @@ function renderAdminPage() {
 
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Backup &amp; restore</h3><div class="adm-sub">Download a full copy of the data, or put it back from a backup file</div></div></div><div id="admin-backup-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Companies</h3><div class="adm-sub">The companies orders are made under, with the details used on commercial documents</div></div></div><div id="admin-company-body"></div></div>'
+  + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Departments</h3><div class="adm-sub">Departments, their heads and people, and which of them use requisitions</div></div></div><div id="admin-dept-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Requisitions</h3><div class="adm-sub">The seal, signature, logo and names printed on requisition forms</div></div></div><div id="admin-rq-body"></div></div>'
   + '<div id="admin-settings-body"></div>'
 
@@ -16498,6 +16681,7 @@ function renderAdminPage() {
   renderBackupCard();
   renderCompaniesCard();
   rqRenderAdminCard().catch(function(e){ console.error('rqRenderAdminCard:', e); });
+  AD.deps = null; adRenderDeptCard().catch(function(e){ console.error('departments card:', e); });
   handleProfileType();
   // Sign-in status loads separately (admin only), then the list redraws.
   loadLoginStates().then(function(){ if (S.view === 'admin') renderAdminList(); });
@@ -17196,6 +17380,157 @@ function sigListCell(uid) {
   if (!(uid in SIG.cache)) return '<span class="adm-muted">&hellip;</span>';
   var img = sigImg(uid);
   return img ? '<img class="sig-mini" src="' + img + '" alt="Signature">' : '<span class="adm-muted" style="font-size:12px">None &middot; name only</span>';
+}
+// Admin -> Departments (Wave 5): every department, its job-number code, whether it uses requisitions, its head(s) and
+// its people (1 junior, 2 officer, 3 manager, 4 head). Flat: no department sits under another; one person can be head
+// of several departments. Saved in the erp_* organisation tables; the requisitions read them at sign-in.
+var AD = { tab: 'dept', person: '', deps: null, mem: null, draft: null };
+var AD_LEVELS = [[1, 'Junior'], [2, 'Officer'], [3, 'Manager'], [4, 'Head (HOD)']];
+var AD_RESERVED = ['acc', 'x', 'plan', 'buy', 'all', 'report', 'overview', 'quotes', 'approvals', 'open', 'wo', 'dwo', 'new', 'edit', 'questions', 'pending', 'wip', 'done', 'closed'];
+function adLevelTxt(l) { var x = AD_LEVELS.find(function(a){ return a[0] === Number(l); }); return x ? x[1] : String(l); }
+function adUser(id) { return (S.users || []).find(function(u){ return u.id === id; }) || null; }
+async function adLoad() {
+  var d = await db.from('erp_departments').select('id,name,dept_key,job_prefix,rq_on,work_types,sort').order('sort', { ascending: true, nullsFirst: false }).order('name');
+  if (d.error) { AD.deps = null; return d.error; }
+  var m = await db.from('erp_memberships').select('person_id,dept_id,level');
+  if (m.error) { AD.deps = null; return m.error; }
+  AD.deps = d.data || []; AD.mem = m.data || [];
+  return null;
+}
+async function adRenderDeptCard() {
+  var box = $('admin-dept-body'); if (!box) return;
+  if (!rqdOk()) { box.innerHTML = '<div class="adm-sub" style="padding:12px 16px">Run <b>shahana-one-v17-wave5a.sql</b> in Supabase to manage departments here.</div>'; return; }
+  if (!AD.deps) { box.innerHTML = '<div class="adm-sub" style="padding:12px 16px"><span class="spin"></span> Loading&hellip;</div>'; var e = await adLoad(); if (e) { box.innerHTML = '<div class="adm-err" style="display:block;margin:12px 16px">Could not read the departments: ' + htmlEsc(e.message || e) + '</div>'; return; } }
+  var tabs = '<div class="ad-tabs"><button class="rq-tally' + (AD.tab === 'dept' ? ' on' : '') + '" onclick="AD.tab=\'dept\';adRenderDeptCard()">By department</button><button class="rq-tally' + (AD.tab === 'person' ? ' on' : '') + '" onclick="AD.tab=\'person\';adRenderDeptCard()">By person</button></div>';
+  box.innerHTML = tabs + '<div style="padding:10px 16px 16px">' + (AD.tab === 'person' ? adPersonHtml() : adDeptListHtml()) + '</div>';
+}
+function adDeptListHtml() {
+  var rows = AD.deps.map(function(d){
+    var ms = AD.mem.filter(function(m){ return m.dept_id === d.id; }), heads = ms.filter(function(m){ return Number(m.level) === 4; }).map(function(m){ var u = adUser(m.person_id); return u ? u.name : m.person_id; });
+    return '<tr><td><b>' + htmlEsc(d.name || d.id) + '</b></td><td class="ad-k">' + htmlEsc(d.dept_key || '') + '</td><td class="ad-k">' + htmlEsc(d.job_prefix || '') + '</td>'
+      + '<td>' + (d.dept_key ? '<span class="ad-on' + (d.rq_on ? ' y' : '') + '">' + (d.rq_on ? 'On' : 'Off') + '</span>' : '<span class="ad-sub2">&mdash;</span>') + '</td>'
+      + '<td class="ad-heads">' + (heads.length ? heads.map(function(h){ return '<b>' + htmlEsc(h) + '</b>'; }).join(', ') : '<span class="ad-sub2">No head yet</span>') + '</td>'
+      + '<td class="num">' + ms.length + '</td><td style="text-align:right"><button class="btn sm" onclick="adEdit(\'' + htmlEsc(d.id) + '\')">Change</button></td></tr>';
+  }).join('');
+  return '<div class="ad-sub2" style="margin-bottom:8px">Each department has its own job-number code and its own head. Switch <b>Requisitions</b> on and its people can raise requisitions; its head approves them first (HOD), then CAO, Audit and Management.</div>'
+    + '<div class="scroller"><table class="rq-t ad-dt"><thead><tr><th>Department</th><th>Key</th><th>Job code</th><th>Requisitions</th><th>Head (HOD)</th><th class="num">People</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+    + '<div class="rq-btns" style="margin-top:10px"><button class="btn pri" onclick="adEdit(null)">&#x002B; New department</button></div>';
+}
+function adUserOptions(sel, except) {
+  return (S.users || []).filter(function(u){ return !except || except.indexOf(u.id) === -1; }).slice().sort(function(a, b){ return String(a.name).localeCompare(String(b.name)); })
+    .map(function(u){ return '<option value="' + u.id + '"' + (u.id === sel ? ' selected' : '') + '>' + htmlEsc(u.name) + ' &middot; ' + htmlEsc(roleLabel(u.role)) + '</option>'; }).join('');
+}
+function adLevelSelect(cls, val, extra) { return '<select class="' + cls + '"' + (extra || '') + '>' + AD_LEVELS.map(function(l){ return '<option value="' + l[0] + '"' + (Number(val) === l[0] ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select>'; }
+// the change popup: everything is kept in a draft and saved together (Enter saves)
+function adEdit(id) {
+  var d = id ? AD.deps.find(function(x){ return x.id === id; }) : null; if (id && !d) return;
+  AD.draft = { id: id, mem: d ? AD.mem.filter(function(m){ return m.dept_id === d.id; }).map(function(m){ return { p: m.person_id, l: Number(m.level) }; }) : [] };
+  var types = d && Array.isArray(d.work_types) ? d.work_types.join(', ') : 'Purchase, Repair, Service, Other';
+  accForm({ title: d ? 'Change ' + htmlEsc(d.name || d.id) : 'New department', sub: d ? 'Key <b>' + htmlEsc(d.dept_key || '') + '</b> stays the same (old requisitions are filed under it).' : 'The key is made from the name and never changes.', wide: true,
+    body: '<div class="acc-g2"><div class="f"><label>Name</label><input id="ad-name" maxlength="60" value="' + htmlEsc(d ? d.name || '' : '') + '" placeholder="e.g. Store"></div>'
+      + '<div class="f"><label>Job-number code (2 to 6 capital letters)</label><input id="ad-code" maxlength="6" style="text-transform:uppercase" value="' + htmlEsc(d ? d.job_prefix || '' : '') + '" placeholder="e.g. STR"></div></div>'
+      + '<label class="rq-mine" style="margin:4px 0 8px"><input type="checkbox" id="ad-on"' + (d && d.rq_on ? ' checked' : '') + '> Uses requisitions <span class="sub2">(its people get the requisitions menu)</span></label>'
+      + '<div class="f"><label>Types of work on its requisition form (comma between them; "Other" is always added)</label><input id="ad-types" maxlength="600" value="' + htmlEsc(types) + '"></div>'
+      + '<div class="rq-sec-h" style="margin-top:12px">People</div><div id="ad-mems"></div>'
+      + '<div class="ad-add"><div class="f" style="flex:1;min-width:220px"><label>Add a person</label><select id="ad-addp"><option value="">&mdash; pick &mdash;</option></select></div>'
+      + '<div class="f"><label>As</label>' + adLevelSelect('', 2, ' id="ad-addl"') + '</div><button type="button" class="btn" onclick="adAddMember()">Add</button></div>',
+    ok: d ? 'Save changes' : 'Make department',
+    after: function(){ adDraftHtml(); setTimeout(function(){ var e = $('ad-name'); if (e) e.focus(); }, 0); },
+    onOk: adSave });
+}
+function adDraftHtml() {
+  var F = AD.draft, el = $('ad-mems'); if (!F || !el) return;
+  el.innerHTML = F.mem.length ? '<table class="ad-mem">' + F.mem.slice().sort(function(a, b){ return b.l - a.l || String((adUser(a.p) || {}).name).localeCompare(String((adUser(b.p) || {}).name)); }).map(function(m){
+    var u = adUser(m.p), other = AD.mem.filter(function(x){ return x.person_id === m.p && x.dept_id !== F.id; }).length;
+    return '<tr><td><b>' + htmlEsc(u ? u.name : m.p) + '</b> <span class="ad-sub2">' + htmlEsc(u ? roleLabel(u.role) : '') + (other ? ' &middot; also in ' + other + ' other department' + (other === 1 ? '' : 's') : '') + '</span></td>'
+      + '<td style="width:150px">' + adLevelSelect('ad-lv', m.l, ' data-p="' + m.p + '" onchange="adSetLevel(this.dataset.p,this.value)"') + '</td>'
+      + '<td style="width:40px;text-align:right"><button type="button" class="btn sm" title="Take out of this department" onclick="adDropMember(\'' + m.p + '\')">&#x2715;</button></td></tr>';
+  }).join('') + '</table>' : '<div class="ad-sub2">Nobody yet.</div>';
+  var sel = $('ad-addp'); if (sel) sel.innerHTML = '<option value="">&mdash; pick &mdash;</option>' + adUserOptions('', F.mem.map(function(m){ return m.p; }));
+}
+function adAddMember() { var p = $('ad-addp').value, l = Number($('ad-addl').value) || 2; if (!p) { toast('Pick the person to add', 'err'); return; } if (!AD.draft.mem.some(function(m){ return m.p === p; })) AD.draft.mem.push({ p: p, l: l }); adDraftHtml(); }
+function adSetLevel(p, l) { var m = AD.draft.mem.find(function(x){ return x.p === p; }); if (m) m.l = Number(l) || 1; }
+function adDropMember(p) { AD.draft.mem = AD.draft.mem.filter(function(m){ return m.p !== p; }); adDraftHtml(); }
+function adKeyFrom(name) { return String(name || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').replace(/^([0-9])/, 'd$1').slice(0, 24); }
+// every person in a department is in erp_people (people added after the first set-up too)
+async function adEnsurePeople(ids) {
+  var rows = ids.map(function(id){ var u = adUser(id); return u ? { id: id, name: u.name, global_role: u.role === 'management' ? 'owner' : u.role === 'audit' ? 'audit' : u.role === 'admin' ? 'admin' : null } : null; }).filter(Boolean);
+  if (!rows.length) return null;
+  var r = await db.from('erp_people').upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
+  return r.error || null;
+}
+async function adSave() {
+  var F = AD.draft, d = F.id ? AD.deps.find(function(x){ return x.id === F.id; }) : null;
+  var name = $('ad-name').value.trim(), code = $('ad-code').value.trim().toUpperCase(), on = $('ad-on').checked;
+  var types = $('ad-types').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  if (types.indexOf('Other') === -1) types.push('Other');
+  if (!name) { $('ad-name').focus(); return 'Write the department’s name.'; }
+  if (!/^[A-Z][A-Z0-9]{1,5}$/.test(code)) { $('ad-code').focus(); return 'The job-number code is 2 to 6 capital letters or numbers, starting with a letter (e.g. STR).'; }
+  if (AD.deps.some(function(x){ return x.id !== F.id && String(x.job_prefix || '').toUpperCase() === code; })) return 'Another department already uses the code ' + code + '.';
+  if (AD.deps.some(function(x){ return x.id !== F.id && String(x.name || '').toLowerCase() === name.toLowerCase(); })) return 'There is already a department called ' + name + '.';
+  if (on && !F.mem.length) return 'Add at least one person before switching requisitions on.';
+  var row = { name: name, job_prefix: code, rq_on: on, work_types: types }, id = F.id;
+  if (!d) {
+    var key = adKeyFrom(name);
+    if (key.length < 2 || AD_RESERVED.indexOf(key) !== -1 || AD.deps.some(function(x){ return x.dept_key === key; })) key = (key || 'dept').slice(0, 18) + '_' + code.toLowerCase();
+    id = key.toUpperCase().slice(0, 24);
+    if (AD.deps.some(function(x){ return x.id === id; })) id = id.slice(0, 18) + '_' + Date.now().toString(36).slice(-4).toUpperCase();
+    Object.assign(row, { id: id, template: 'staff', company_id: null, dept_key: key, sort: AD.deps.reduce(function(m, x){ return Math.max(m, Number(x.sort) || 0); }, 0) + 1 });
+    var ins = await db.from('erp_departments').insert(row);
+    if (ins.error) return 'Could not make the department: ' + (ins.error.message || ins.error);
+  } else {
+    if (!d.dept_key) row.dept_key = adKeyFrom(d.id) + (AD.deps.some(function(x){ return x.dept_key === adKeyFrom(d.id); }) ? '_' + code.toLowerCase() : '');
+    var up = await db.from('erp_departments').update(row).eq('id', id);
+    if (up.error) return 'Could not save: ' + (up.error.message || up.error);
+  }
+  // people: added, level changed, taken out
+  var before = AD.mem.filter(function(m){ return m.dept_id === id; }), add = [], lev = [], drop = [];
+  F.mem.forEach(function(m){ var b = before.find(function(x){ return x.person_id === m.p; }); if (!b) add.push({ person_id: m.p, dept_id: id, level: m.l }); else if (Number(b.level) !== m.l) lev.push(m); });
+  before.forEach(function(b){ if (!F.mem.some(function(m){ return m.p === b.person_id; })) drop.push(b.person_id); });
+  if (add.length) { var pe = await adEnsurePeople(add.map(function(a){ return a.person_id; })); if (pe) return 'Could not save the people: ' + (pe.message || pe); var ai = await db.from('erp_memberships').insert(add); if (ai.error) return 'Could not add the people: ' + (ai.error.message || ai.error); }
+  for (var i = 0; i < lev.length; i++) { var lu = await db.from('erp_memberships').update({ level: lev[i].l }).eq('person_id', lev[i].p).eq('dept_id', id); if (lu.error) return 'Could not change a level: ' + (lu.error.message || lu.error); }
+  if (drop.length) { var dd = await db.from('erp_memberships').delete().eq('dept_id', id).in('person_id', drop); if (dd.error) return 'Could not take people out: ' + (dd.error.message || dd.error); }
+  toast(name + ' saved', 'ok-t');
+  await adAfterSave();
+  return true;
+}
+async function adAfterSave() {
+  AD.deps = null; await adLoad();
+  try { await rqdLoad(true); } catch (e) {}
+  setTimeout(function(){ adRenderDeptCard(); renderRail(); }, 0);
+}
+// by person: which departments someone is in, and as what
+function adPersonHtml() {
+  var p = AD.person, mine = p ? AD.mem.filter(function(m){ return m.person_id === p; }) : [];
+  var h = '<div class="ad-add" style="margin-top:0"><div class="f" style="min-width:260px"><label>Person</label><select onchange="AD.person=this.value;adRenderDeptCard()"><option value="">&mdash; pick &mdash;</option>' + adUserOptions(p) + '</select></div></div>';
+  if (!p) return h + '<div class="ad-sub2" style="margin-top:10px">Pick a person to see and change their departments. A person can be head of several departments.</div>';
+  h += mine.length ? '<table class="ad-mem" style="max-width:640px">' + mine.map(function(m){ var d = AD.deps.find(function(x){ return x.id === m.dept_id; });
+    return '<tr><td><b>' + htmlEsc(d ? d.name : m.dept_id) + '</b>' + (d && d.dept_key && !d.rq_on ? ' <span class="ad-sub2">(requisitions off)</span>' : '') + '</td><td style="width:150px">' + adLevelSelect('', m.level, ' onchange="adPersonLevel(\'' + htmlEsc(m.dept_id) + '\',this.value)"') + '</td>'
+      + '<td style="width:40px;text-align:right"><button type="button" class="btn sm" title="Take out of this department" onclick="adPersonDrop(\'' + htmlEsc(m.dept_id) + '\')">&#x2715;</button></td></tr>'; }).join('') + '</table>'
+    : '<div class="ad-sub2" style="margin-top:10px">Not in any department yet.</div>';
+  var free = AD.deps.filter(function(d){ return !mine.some(function(m){ return m.dept_id === d.id; }); });
+  if (free.length) h += '<div class="ad-add"><div class="f" style="min-width:220px"><label>Add to department</label><select id="ad-pd">' + free.map(function(d){ return '<option value="' + htmlEsc(d.id) + '">' + htmlEsc(d.name) + '</option>'; }).join('') + '</select></div>'
+    + '<div class="f"><label>As</label>' + adLevelSelect('', 2, ' id="ad-pl"') + '</div><button type="button" class="btn pri" onclick="adPersonAdd()">Add</button></div>';
+  return h;
+}
+async function adPersonAdd() {
+  var p = AD.person, d = $('ad-pd').value, l = Number($('ad-pl').value) || 2; if (!p || !d) return;
+  var pe = await adEnsurePeople([p]); if (pe) { showSaveError('Could not save', pe); return; }
+  var r = await db.from('erp_memberships').insert({ person_id: p, dept_id: d, level: l });
+  if (r.error) { showSaveError('Could not add', r.error); return; }
+  toast('Added', 'ok-t'); await adAfterSave();
+}
+async function adPersonLevel(d, l) {
+  var r = await db.from('erp_memberships').update({ level: Number(l) }).eq('person_id', AD.person).eq('dept_id', d);
+  if (r.error) { showSaveError('Could not save', r.error); return; }
+  toast('Saved: ' + adLevelTxt(l), 'ok-t'); await adAfterSave();
+}
+async function adPersonDrop(d) {
+  var dep = AD.deps.find(function(x){ return x.id === d; }), u = adUser(AD.person);
+  if (!(await appConfirm('Take ' + (u ? u.name : 'this person') + ' out of ' + (dep ? dep.name : d) + '?', { title: 'Take out of department', okText: 'Take out', danger: true }))) return;
+  var r = await db.from('erp_memberships').delete().eq('person_id', AD.person).eq('dept_id', d);
+  if (r.error) { showSaveError('Could not save', r.error); return; }
+  toast('Taken out', 'ok-t'); await adAfterSave();
 }
 // Buyers: buyer settings, assignments, buyer profiles, order history and KPI
 
@@ -22079,8 +22414,8 @@ function grtNote(slot) {
         var w = accOn() ? accWaitingList() : [], ok = w.filter(function(x){ return apOn() && apInfo(x).avail > 0; }).length;
         if (w.length) a.push(grtN(w.length, 'requisition') + ' waiting for payment' + (ok ? ' (' + ok + ' approved to pay)' : ''));
       } else if (r === 'dept') {
-        var q = rqQOn() ? rqQCount(S.user.division) : 0; if (q) a.push(grtN(q, 'question') + ' waiting on your requisitions');
-        var c = rqCounts(S.user.division); if (c.overdue) a.push(grtN(c.overdue, 'job') + ' past the target date');
+        var q = rqQOn() ? rqQCount(rqUserDept()) : 0; if (q) a.push(grtN(q, 'question') + ' waiting on your requisitions');
+        var c = rqCounts(rqUserDept()); if (c.overdue) a.push(grtN(c.overdue, 'job') + ' past the target date');
       } else if (['agm', 'cao', 'audit', 'admin'].indexOf(r) !== -1) {
         var mm = RQ.rows.filter(rqNeedsMe).length; if (mm) a.push(grtN(mm, 'requisition') + ' waiting for your approval');
       }
@@ -22455,14 +22790,17 @@ async function deleteStyleImage() {
   }
   toast('Photo deleted', 'ok-t');
 }
-// Requisitions (Maintenance, Civil, IT): requests, questions, quotations, prints, weekly budget plans
+// Requisitions (every department; Maintenance, Civil and IT first): requests, questions, quotations, prints, weekly budget plans
 
 // ═══════════════════════════════════════════════════════════════════════════
-// REQUISITIONS (Maintenance, Civil, IT)
-// A separate part of the tracker. Own tables (rq_*), own views ('rq:...'),
-// own login role ('dept', department in users.division). Seen only by
-// admin, management, audit and the department staff (their own department).
-// Nothing here reads or writes order data.
+// REQUISITIONS (every department)
+// A separate part of the tracker. Own tables (rq_*), own views ('rq:...').
+// Department staff: a 'dept' login (department in users.division) or anyone
+// who belongs to a department that uses requisitions (Admin -> Departments,
+// 235-rq-departments.js). Seen by admin, management, audit, CAO, AGM, the
+// department heads and the department staff (their own department).
+// RQ_DEPTS below is the built-in list, replaced by the departments in the
+// database once they are set up. Nothing here reads or writes order data.
 // ═══════════════════════════════════════════════════════════════════════════
 var SG_MARK_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAB4CAMAAABsOSjPAAAAYFBMVEUREREREREREREREREREREREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzGYEmAAAAIHRSTlP2AHGMTNEurwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALdgqc4AAAQsSURBVHja1dzZYuMgDAVQrI3//+NJJ3HqJbUEXAjmpX2YsU+J2AQkLRfFhN6Fi0vOsn+amSDKsqS/wEJZU1PhjVm49Wmb5/6BFm5+Bdv7aZQTsnxGU3ul/EaGsabUHS2Al9D7YTnBSz6hEW/RNTKsA/kDmiEPBT7MR0NqhnEtI4JGRPM7nHNKI9CScGbRbuZd7yEJFxuU0hC0JVwb7Grehgfk87SevcYZDXmRDKjnDRoY0JJGoXHBYWkUGhIchPvzI70HpHZ0RCPcoHEV3T84VjTmTdZ38D6ioxWth3LuOop6O60pSV/oSNtRso8rX3mtfaWoFWomsaWu2P+FbaBjPayr/yqxjyxTrXctKfCqIDlU0cqt4ic6vODzSiCiEeQftAQXfICKzhDyD5pQZvL7qgWFziCz20fLgkOrP0EOFYkMPiC0Qdqg298p0LwkcedAkGYoCxJNoIqWhPrIAmgGhWEOJZ36o4uiI6HCLPKujKkfGRccD7Ri0DywomHoPLCiUWgbWdGXaMWENOHRGTIi8JjxO4KOT8t0WB/tDi4JgZYOaELMgG1odDjo6BtpaHQ4U9NoB8IDlivxRUCwonhoSHvLraBah4a0u7B9RIg0oZcuaD/96CZrbOQY/kzWBDKdTiZLqqJrcwKmrFiKpjpV86ciDpqr+nYn5RXNml7W5DfQ1IqmmileI7qlqrPTTfdDyx3RDTtF2VlrPdECRXNqPJ0RQ+uHrFg72rQTWl51cla3o6vVUfRZ3RzT9eow+qQG1HRtXGsYfZyGYNBVg0wB+jAPAaFrjkuVoPdjOgpd0WEXoXfLGBx6McaiaYfeNkYgupSdi9DbsIaiH48rOPAcQ/OHdS4Y/XRrF7R2RK8H7LUVzcf2TX3R6+WDyzsMVorWxiE4gG7eBsinnlQ2FWK2+XVfLrpfDJpL0OHkHvVFk5f34JqcU2e0eHlXqtnO+DZaapK/ndHm7dtITXqvM/oqB8FntEyPzuePguZAu6cCtGJzoDeavKDOE6LF2yGjCdHu1rhNiF5ySXzMgqaSbPAsaHN3UHU+9GWK+9gUp0GzW9V5thHRycsfRkWbBX29BbKbNekyDZr9cwE81dTU37fZrrpoHrSTKd6sym0itJMopvUf6TIR2tuNfO1zKU+F9nLyTy3gjgES7W78Fl6+GIP2N355PnRgq0kJFR4tx4xsk5GL7bGH75pdoU3rLtntLvflssvXyvyg/1meX/OSL9CY28cca4uYd6HQr/mm3Qut9Ruo30OvAZJvhV5nb3or9Gv6ZvdCv/Zj5VbodU0it0IPUnPCdlK5dY/wG+j3qjXfCf1W821iequmO6Hf6m7fxdQD/Xt+hu8S0zt1n69x64PeHjWgrHdB75awRsSB8y7xmVkv9Id8AejLNkUs/dTD+YtA665FbP7v48fSrfwD4T80Pr5dGscAAAAASUVORK5CYII=';
 var RQ_DEPTS = [
@@ -22483,40 +22821,41 @@ var RQ_TABS = [
 ];
 var RQ = { rows: [], loaded: false, missing: false, stagesOk: null, settings: null, events: {}, openId: null, filter: { co: '', q: '', st: '', dp: '', mine: false, checked: false }, channel: null, editId: null };
 
-function rqDept(k) { return RQ_DEPTS.find(function(d){ return d.k === k; }) || null; }
+function rqDept(k) { return RQ_DEPTS.find(function(d){ return d.k === k; }) || rqdAny(k) || null; }
 function rqCompany(c) { return RQ_COMPANIES.find(function(x){ return x.c === c; }) || { c: c, n: c || '' }; }
-function rqIsDeptUser() { return !!S.user && S.user.role === 'dept'; }
+// department staff for requisitions: a department login, or anyone else who belongs to a department that uses them
+function rqIsDeptUser() { return !!S.user && (S.user.role === 'dept' || rqMyDeptKeys().length > 0); }
 // logins that only ever see requisitions: department staff and the AGM
 function rqOnlyUser() { return !!S.user && (S.user.role === 'dept' || S.user.role === 'agm' || S.user.role === 'accounts'); }
 // The approval steps, in the order they are meant to check. Only management's
-// approval starts the work; the others are checks before it. AGM and CAO can
-// approve or return, not reject. Nobody approves a requisition they raised.
+// approval starts the work; the others are checks before it. The head of the
+// department (HOD) and CAO can approve or return, not reject. Nobody approves
+// a requisition they raised. The HOD is whoever heads the requisition's
+// department (Admin -> Departments; see rqHasStage).
 var RQ_STAGES = [
-  { k: 'agm', role: 'agm', n: 'AGM', full: 'AGM (HR, Admin & Compliance)', reject: false, note: 'rq-agm-note' },
+  { k: 'agm', role: 'agm', n: 'HOD', full: 'Head of department (HOD)', reject: false, note: 'rq-agm-note' },
   { k: 'cao', role: 'cao', n: 'CAO', full: 'CAO', reject: false, note: 'rq-cao-note' },
   { k: 'audit', role: 'audit', n: 'Audit', full: 'Audit', reject: true, note: 'rq-a-note' },
   { k: 'mgmt', role: 'management', n: 'Management', full: 'Management', reject: true, note: 'rq-m-note' }
 ];
 function rqStage(k) { return RQ_STAGES.find(function(x){ return x.k === k; }) || null; }
-function rqStageOfRole(role) {
-  var st = RQ_STAGES.find(function(x){ return x.role === role; }) || null;
-  return st && rqStageOn(st) ? st : null;
-}
-// AGM and CAO steps exist once their database columns are there (requisition-
-// approvals-migration.sql) and someone has that login; before that, approval
+// HOD and CAO steps exist once their database columns are there (requisition-
+// approvals-migration.sql) and someone holds them (a head of a department, or the
+// AGM login before departments are set up; a CAO login); before that, approval
 // works exactly as it always has (audit and management).
 function rqStageOn(st) {
   if (st.k === 'audit' || st.k === 'mgmt') return true;
   if (RQ.stagesOk !== true) return false;
+  if (st.k === 'agm' && rqdOk()) return RQD.members.some(function(m){ return Number(m.l) === 4; });
   return (S.users || []).some(function(u){ return u.role === st.role; });
 }
-function rqStagesFor(r) { return RQ_STAGES.filter(function(st){ return rqStageOn(st) || (r && r[st.k + '_status']); }); }
+function rqStagesFor(r) { return RQ_STAGES.filter(function(st){ return (rqStageOn(st) && rqStageApplies(r, st)) || (r && r[st.k + '_status']); }); }
 function rqIsOwn(r) { return !!S.user && !!r && r.created_by === S.user.id; }
 // earlier steps that have not approved yet (shown as a reminder, never a block)
 function rqNotCheckedBefore(r, st) {
   var out = [];
   if (RQ.stagesOk !== true) return out; // before the approvals update: exactly as it always worked
-  for (var i = 0; i < RQ_STAGES.length && RQ_STAGES[i].k !== st.k; i++) { var e = RQ_STAGES[i]; if (rqStageOn(e) && r[e.k + '_status'] !== 'approved') out.push(e.n); }
+  for (var i = 0; i < RQ_STAGES.length && RQ_STAGES[i].k !== st.k; i++) { var e = RQ_STAGES[i]; if (rqStageOn(e) && rqStageApplies(r, e) && r[e.k + '_status'] !== 'approved') out.push(e.n); }
   return out;
 }
 // the step that returned / rejected it (latest)
@@ -22534,10 +22873,10 @@ function rqApprMini(r) {
     return '<span class="rq-mini ' + cls + '" title="' + rqEsc(st.full) + ': ' + ({ approved: 'approved', returned: 'returned', rejected: 'rejected' }[v] || 'waiting') + '">' + st.n + ' ' + ic + '</span>';
   }).join('') + '</span>';
 }
-function rqCanSee() { return !!S.user && (['admin', 'management', 'audit', 'cao', 'agm', 'accounts'].includes(S.user.role) || (rqIsDeptUser() && !!rqDept(S.user.division))); }
-function rqMyDepts() { if (!rqCanSee() || S.user.role === 'accounts') return []; return rqIsDeptUser() ? [rqDept(S.user.division)] : RQ_DEPTS.slice(); }
-function rqCanWork(dept) { return !!S.user && (S.user.role === 'admin' || (rqIsDeptUser() && S.user.division === dept)); }
-function rqHomeView() { return rqIsDeptUser() ? 'rq:' + S.user.division + ':pending' : S.user.role === 'accounts' ? 'rq:acc:wait' : (S.user.role === 'admin' ? 'rq:overview' : 'rq:x:pending'); }
+function rqCanSee() { return !!S.user && (RQ_SEE_ALL.includes(S.user.role) || (rqIsDeptUser() && rqMyDeptKeys().length > 0)); }
+function rqMyDepts() { if (!rqCanSee() || S.user.role === 'accounts') return []; return rqIsDeptUser() ? rqMyDeptKeys().map(rqDept).filter(Boolean) : RQ_DEPTS.slice(); }
+function rqCanWork(dept) { return !!S.user && (S.user.role === 'admin' || (rqIsDeptUser() && rqInMyDepts(dept))); }
+function rqHomeView() { return rqIsDeptUser() ? 'rq:' + rqUserDept() + ':pending' : S.user.role === 'accounts' ? 'rq:acc:wait' : (S.user.role === 'admin' ? 'rq:overview' : 'rq:x:pending'); }
 function rqEsc(s) { return htmlEsc(s); }
 function rqMoney(n) { if (n == null || n === '' || isNaN(Number(n))) return '&mdash;'; return 'Tk ' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 function rqMoneyTxt(n) { if (n == null || n === '' || isNaN(Number(n))) return ''; return 'Tk ' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
@@ -22561,9 +22900,9 @@ function rqTabOf(r) {
   return 'closed';
 }
 function rqNeedsMe(r) {
-  if (S.user && r.status === 'returned') { var _ms = rqStageOfRole(S.user.role); return !!_ms && _ms.k === 'mgmt' && !rqIsOwn(r); }
+  if (S.user && r.status === 'returned') return rqHasStage(r, rqStage('mgmt')) && !rqIsOwn(r);
   if (!S.user || r.status !== 'pending') return false;
-  var st = rqStageOfRole(S.user.role);
+  var st = rqMyStageFor(r);
   return !!st && !r[st.k + '_status'] && !rqIsOwn(r);
 }
 function rqStatusChip(r) {
@@ -22584,14 +22923,15 @@ function rqPriChip(p) {
 
 // ─── DATA ───
 async function rqLoad() {
+  try { await rqdLoad(); } catch (e) { console.error('departments:', e); }
   if (!rqCanSee()) { RQ.rows = []; RQ.loaded = true; return; }
   // read in pages of 1,000 (Supabase hands out at most 1,000 rows per request)
   var res;
   try {
     res = { data: await fetchAllRows(function(){
       var q = db.from('rq_requisitions').select('*').order('created_at', { ascending: false }).order('id');
-      if (rqIsDeptUser()) q = q.eq('dept', S.user.division);
-      if (S.user.role === 'accounts') q = q.eq('mgmt_status', 'approved'); // accounts see a requisition only once management has approved it
+      if (rqIsDeptUser()) q = rqDeptFilter(q);
+      if (S.user.role === 'accounts') q = q.eq('mgmt_status', 'approved'); // accounts see a requisition only once management has approved it (and a payment: rqAccNarrow)
       return q;
     }) };
   } catch (e) { res = { error: e }; }
@@ -22608,11 +22948,18 @@ async function rqLoad() {
     var pr = await db.from('rq_requisitions').select('agm_status,cao_status').limit(1);
     RQ.stagesOk = !pr.error;
   }
+  if (S.user.role === 'accounts') { // payments and payment approvals first: Accounts sees only what Management approved for payment
+    try { await apLoad(); } catch (e) { console.error('payment approvals:', e); }
+    try { await accLoadPays(); } catch (e) { console.error('payments:', e); }
+    rqAccNarrow();
+  }
   try { await rqqLoad(); } catch (e) { console.error('quotations:', e); }
   if (S.user.role !== 'accounts') { try { await woLoad(true); } catch (e) { console.error('work orders:', e); } } // Management purchases, and the chip on the requisition
   try { await rqQLoad(); } catch (e) { console.error('questions:', e); }
-  try { await accLoadPays(); } catch (e) { console.error('payments:', e); }
-  try { await apLoad(); } catch (e) { console.error('payment approvals:', e); }
+  if (S.user.role !== 'accounts') {
+    try { await accLoadPays(); } catch (e) { console.error('payments:', e); }
+    try { await apLoad(); } catch (e) { console.error('payment approvals:', e); }
+  }
   try { if (posCanSee() && !POS.weeks.length) await posLoadWeeks(); } catch (e) { console.error('position weeks:', e); }
 }
 async function rqLoadSettings(force) {
@@ -22632,9 +22979,9 @@ async function rqRefreshOne(id) {
   var res = await db.from('rq_requisitions').select('*').eq('id', id).maybeSingle();
   var i = RQ.rows.findIndex(function(x){ return x.id === id; });
   if (res.data) {
-    if (rqIsDeptUser() && res.data.dept !== S.user.division) return null;
-    if (S.user.role === 'accounts' && (res.data.mgmt_status !== 'approved' || res.data.mgmt_buy)) { if (i >= 0) RQ.rows.splice(i, 1); return null; }
-    if (S.user.role === 'accounts' && i < 0 && accPayable(res.data)) toast('Approved by Management: ' + res.data.job_no + ' is waiting for payment', 'ok-t');
+    if (rqIsDeptUser() && !rqInMyDepts(res.data.dept)) return null;
+    if (S.user.role === 'accounts' && !rqAccSees(res.data)) { if (i >= 0) RQ.rows.splice(i, 1); return null; }
+    if (S.user.role === 'accounts' && i < 0 && accPayable(res.data)) toast('Payment approved by Management: ' + res.data.job_no + ' is waiting for payment', 'ok-t');
     if (i >= 0) RQ.rows[i] = res.data; else RQ.rows.unshift(res.data);
   } else if (i >= 0 && !res.error) RQ.rows.splice(i, 1);
   if (res.error) return i >= 0 ? RQ.rows[i] : null;
@@ -22710,7 +23057,7 @@ function rqCounts(dept) {
 }
 function rqRailHtml() {
   if (!rqCanSee()) return '';
-  var flat = rqIsDeptUser();
+  var flat = rqIsDeptUser() && rqMyDeptKeys().length === 1;
   function item(view, icon, label, count, hot) {
     var on = S.view === view ? ' on' : '';
     var cnt = count > 0 ? (hot ? '<span class="badge">' + count + '</span>' : '<span class="ct">' + count + '</span>') : '';
@@ -22723,7 +23070,7 @@ function rqRailHtml() {
     var all = rqCounts(null);
     // one menu for every department (the lists show the department)
     // approvers: the badge counts what waits for them (the list opens on "Waiting for me")
-    var _st = rqStageOfRole(S.user.role);
+    var _st = rqMyStageAny();
     h += item('rq:overview', '&#x25A6;', 'Overview', all.overdue, all.overdue > 0)
       + item('rq:x:pending', '&#x23F3;', 'Approval pending', _st ? all.mine : all.pending, !!_st && all.mine > 0)
       + item('rq:x:wip', '&#x2692;', 'Work in progress', all.wip, all.overdue > 0)
@@ -22735,7 +23082,7 @@ function rqRailHtml() {
     if (dueQ) h += item('rq:quotes', '&#x26A0;', 'Quotations to be deleted', dueQ, true);
     return h;
   }
-  if (rqIsDeptUser()) { var dueD = rqqDueSoon(S.user.division).length; if (dueD) h += item('rq:quotes', '&#x26A0;', 'Quotations to be deleted', dueD, true); }
+  if (rqIsDeptUser()) { var dueD = rqqDueSoon(null).length; if (dueD) h += item('rq:quotes', '&#x26A0;', 'Quotations to be deleted', dueD, true); }
   rqMyDepts().forEach(function(d){
     var c = rqCounts(d.k);
     var key = 'rq_' + d.k;
@@ -22743,10 +23090,11 @@ function rqRailHtml() {
     var body = (rqCanWork(d.k) ? item('rq:' + d.k + ':new', '&#x002B;', 'New requisition') : '')
       + item('rq:' + d.k + ':all', '&#x2630;', flat ? 'My requisitions' : 'All ' + d.n, RQ.rows.filter(function(r){ return r.dept === d.k; }).length)
       + (function(){ var qn = rqQOn() ? rqQCount(d.k) : 0; return qn || S.view === 'rq:' + d.k + ':questions' ? item('rq:' + d.k + ':questions', '&#x2753;', 'Questions to answer', qn, qn > 0) : ''; })()
-      + item('rq:' + d.k + ':pending', '&#x23F3;', 'Approval pending', c.pending, c.pending > 0 && !rqIsDeptUser())
+      + (rqdIsHead(d.k, S.user.id) ? item('rq:' + d.k + ':pending', '&#x23F3;', 'Approval pending', c.mine || c.pending, c.mine > 0) : item('rq:' + d.k + ':pending', '&#x23F3;', 'Approval pending', c.pending, c.pending > 0 && !rqIsDeptUser()))
       + item('rq:' + d.k + ':wip', '&#x2692;', 'Work in progress', c.wip, c.overdue > 0)
       + item('rq:' + d.k + ':done', '&#x2713;', 'Completed', c.done)
       + item('rq:' + d.k + ':closed', '&#x21A9;', 'Rejected / cancelled', c.closed)
+      + (woDeptOn() ? (function(){ var n = woDeptToOrderN(d.k); return item('rq:' + d.k + ':wo', '&#x1F4DD;', 'Work orders', n, n > 0); })() : '')
       + item('rq:plan', '&#x1F4C5;', 'Weekly plan');
     if (flat) { h += '<div class="rail-label">' + d.n + ' department</div>' + body; return; }
     h += '<div class="rail-section-hdr" onclick="toggleSection(\'' + key + '\')"><div class="rail-label" style="padding:0;margin:0">' + d.n + '</div><span class="rail-section-arrow' + (open ? ' open' : '') + '">&#x25B6;</span></div>'
@@ -22756,7 +23104,7 @@ function rqRailHtml() {
 }
 function rqRenderRailForDept() {
   var rb = $('rail-body'); if (!rb) return;
-  var d = rqDept(S.user.division), h;
+  var d = rqDept(rqUserDept()), h;
   if (S.user.role === 'accounts') {
     h = RQ.missing ? '<div class="rail-label" style="color:var(--muted)">Requisitions need the database update</div>'
       : accRailHtml() + '<div class="rail-sep"></div><div class="rail-label">Requisitions</div><button class="ni' + (S.view === 'rq:all' ? ' on' : '') + ' rq-ni" onclick="setView(\'rq:all\')"><span class="av" style="font-size:12px">&#x2630;</span><span class="nm">Approved requisitions</span><span class="ct">' + RQ.rows.length + '</span></button>';
@@ -22800,6 +23148,7 @@ function rqRender(view) {
   if (p[2] === 'edit' && !RQ.editId) { setView('rq:' + d.k + ':pending'); return; } // e.g. after a page refresh
   if (p[2] === 'questions') { RQ.editId = null; return rqRenderQuestions(d); }
   if (p[2] === 'new' || p[2] === 'edit') return rqRenderForm(d, p[2] === 'edit' ? RQ.editId : null);
+  if (p[2] === 'wo') { RQ.editId = null; if (!woDeptOn()) { setView('rq:' + d.k + ':pending'); return; } WO.dept = d.k; return woRenderPage('rqd'); }
   RQ.editId = null;
   rqRenderList(d, RQ_TABS.some(function(t){ return t.k === p[2]; }) ? p[2] : 'pending');
 }
@@ -23178,7 +23527,7 @@ async function rqOpen(id) {
   if (RQ.openId === id) rqRenderDetail(id, true);
 }
 function rqKv(k, v) { return '<div class="rq-kv"><div class="k">' + k + '</div><div class="v">' + (v == null || v === '' ? '&mdash;' : v) + '</div></div>'; }
-var RQ_EVENT_TXT = { mgmt_buy: 'Management will buy it', mgmt_buy_off: 'Accounts will pay it', wo_ordered: 'Put on a work order', wo_cancelled: 'Off the work order', wo_received: 'Received (bought by Management)', asked: 'Question / change asked', answered: 'Answered', created: 'Raised the requisition', edited: 'Changed the requisition', resubmitted: 'Changed it and sent it again', agm_approved: 'AGM approved', cao_approved: 'CAO approved', audit_approved: 'Audit approved', mgmt_approved: 'Management approved', returned: 'Returned for changes', rejected: 'Rejected', progress: 'Progress update', hold: 'Put on hold', resumed: 'Work resumed', cost: 'Cost spent', quote_added: 'Quotation added', quote_removed: 'Quotation removed', done: 'Marked the work complete', reopened: 'Reopened', cancelled: 'Cancelled', paid: 'Payment recorded', pay_reversed: 'Payment reversed (admin)', cheque_cleared: 'Cheque cleared', cheque_bounced: 'Cheque bounced', cheque_cancelled: 'Cheque cancelled (admin)', pay_ok: 'Payment approved by Management', pay_ok_withdrawn: 'Payment approval withdrawn', pay_asked: 'Accounts asked for payment approval' };
+var RQ_EVENT_TXT = { mgmt_buy: 'Management will buy it', mgmt_buy_off: 'Accounts will pay it', wo_ordered: 'Put on a work order', wo_cancelled: 'Off the work order', wo_received: 'Received (bought by Management)', asked: 'Question / change asked', answered: 'Answered', created: 'Raised the requisition', edited: 'Changed the requisition', resubmitted: 'Changed it and sent it again', agm_approved: 'HOD approved', cao_approved: 'CAO approved', audit_approved: 'Audit approved', mgmt_approved: 'Management approved', returned: 'Returned for changes', rejected: 'Rejected', progress: 'Progress update', hold: 'Put on hold', resumed: 'Work resumed', cost: 'Cost spent', quote_added: 'Quotation added', quote_removed: 'Quotation removed', done: 'Marked the work complete', reopened: 'Reopened', cancelled: 'Cancelled', paid: 'Payment recorded', pay_reversed: 'Payment reversed (admin)', cheque_cleared: 'Cheque cleared', cheque_bounced: 'Cheque bounced', cheque_cancelled: 'Cheque cancelled (admin)', pay_ok: 'Payment approved by Management', pay_ok_withdrawn: 'Payment approval withdrawn', pay_asked: 'Accounts asked for payment approval' };
 function rqRenderDetail(id, withEvents) {
   var r = RQ.rows.find(function(x){ return x.id === id; });
   if (!r) { closeModal('ov-rq'); return; }
@@ -23215,6 +23564,7 @@ function rqRenderDetail(id, withEvents) {
   }
   if ((r.status === 'pending' || r.status === 'returned') && rqCanWork(r.dept)) h += '<div class="rq-hint">Need signatures on paper first? Use <b>Print form for signing</b> below. The approvers then record their approval here.</div>';
   try { h += woReqBoxHtml(r); } catch (e) { console.error('work order box:', e); }
+  try { h += woDeptBoxHtml(r); } catch (e) { console.error('department work order box:', e); }
   try { h += accPaySection(r); } catch (e) { console.error('accPaySection:', e); }
   try { h += rqQSectionHtml(r); } catch (e) { console.error('questions:', e); }
   h += '<div id="rq-actions">' + rqActionsHtml(r) + '</div>';
@@ -23232,7 +23582,7 @@ function rqActionsHtml(r) {
   var role = S.user.role, h = '';
   var note = function(id, ph){ return '<textarea id="' + id + '" rows="2" placeholder="' + ph + '"></textarea>'; };
   if (r.status === 'pending') {
-    var myStep = rqStageOfRole(role);
+    var myStep = rqMyStageFor(r);
     if (myStep && !r[myStep.k + '_status'] && rqIsOwn(r)) h += '<div class="rq-act"><div class="sub2">You raised this requisition, so you cannot approve it yourself.</div></div>';
     else if (myStep && !r[myStep.k + '_status']) {
       var notYet = rqNotCheckedBefore(r, myStep);
@@ -23251,7 +23601,7 @@ function rqActionsHtml(r) {
     else if (rqCanWork(r.dept) && !rqCanAnswerEdit(r)) h += '<div class="sub2 rq-own">Approval has started, so it can no longer be changed. Ask an approver to return it if something is wrong.</div>';
   } else if (r.status === 'returned') {
     if (rqCanEditReq(r)) h += '<div class="rq-btns rq-own"><button class="btn pri" onclick="rqStartEdit(\'' + r.id + '\')">Change and send again</button><button class="btn danger" onclick="rqCancelReq(\'' + r.id + '\')">Cancel requisition</button></div>';
-    if (role === 'management' && !rqIsOwn(r) && rqStageOn(rqStage('mgmt'))) {
+    if (rqHasStage(r, rqStage('mgmt')) && !rqIsOwn(r)) {
       var _rd = rqDecider(r, 'returned');
       h += '<div class="rq-act"><div class="rq-sec-h">Returned' + (_rd ? ' by ' + rqEsc(_rd.st.n) : '') + ' for changes. Management can still approve it as it is.</div>'
         + woBuyTickHtml() + '<div class="f" style="max-width:240px;margin-bottom:6px"><label>Approved amount (Tk)</label><input id="rq-m-amt" type="number" min="0" step="1" value="' + rqEsc(r.est_cost == null ? '' : r.est_cost) + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();rqDecide(\'' + r.id + '\',\'mgmt\',\'approved\');}"></div>'
@@ -23298,7 +23648,7 @@ async function rqQLoad() {
   try {
     var rows = await fetchAllRows(function(){
       var q = db.from('rq_queries').select('*').or('status.eq.open,asked_at.gte.' + since);
-      if (rqIsDeptUser()) q = q.eq('dept', S.user.division);
+      if (rqIsDeptUser()) q = rqDeptFilter(q);
       return q.order('id');
     });
     RQ.qOk = true; RQ.qs = rows || [];
@@ -23344,12 +23694,12 @@ function rqQSectionHtml(r) {
         + '<div class="rq-btns">' + (rqqCanAdd(r) ? '<button class="btn" onclick="rqqAdd(\'' + r.id + '\')">&#x002B; Add quotation</button>' : '')
         + '<button class="btn" onclick="rqStartEdit(\'' + r.id + '\')">Change items</button>'
         + '<button class="btn pri" id="rq-qa-btn-' + q.id + '" onclick="rqAnswer(\'' + q.id + '\')">Send answer</button></div>'
-        + '<div class="sub2" style="margin-top:6px">If the amount goes down, AGM, CAO and Audit approvals stay. If it goes up, they are asked to check again.</div>';
+        + '<div class="sub2" style="margin-top:6px">If the amount goes down, HOD, CAO and Audit approvals stay. If it goes up, they are asked to check again.</div>';
     } else h += '<div class="sub2">Waiting for the department to answer.</div>';
     h += '</div>';
   });
   // the asker sees the answer to their question until they decide
-  var mine = rqStageOfRole(S.user.role);
+  var mine = rqMyStageFor(r);
   if (mine) rqQAnswered(r, mine.k).slice(-2).forEach(function(q){
     h += '<div class="rq-q ans"><div class="t">&#x2709; Answered &middot; ' + rqEsc(q.answered_by_name || '') + ' &middot; ' + rqDateTime(q.answered_at) + '</div><div class="m">' + rqEsc(q.answer || '') + '</div>'
       + '<div class="sub2">You asked: ' + rqEsc(q.question) + (q.changes ? ' &middot; <b>' + rqEsc(q.changes) + '</b>' : '') + '</div></div>';
@@ -23359,7 +23709,7 @@ function rqQSectionHtml(r) {
 async function rqAsk(id, who) {
   var r = RQ.rows.find(function(x){ return x.id === id; }); if (!r || !rqQOn()) return;
   var step = rqStage(who);
-  if (!step || S.user.role !== step.role || !rqStageOn(step)) return;
+  if (!step || !rqHasStage(r, step)) return;
   if (rqIsOwn(r)) { toast('You raised this requisition', 'err'); return; }
   var noteEl = $(step.note), txt = noteEl ? noteEl.value.trim() : '';
   if (!txt) { toast('Write your question or the change you want', 'err'); if (noteEl) noteEl.focus(); return; }
@@ -23442,14 +23792,14 @@ function rqRenderQuestions(d) {
 }
 function rqQRealtime(p) {
   var row = p.new && p.new.id ? p.new : p.old; if (!row || !row.req_id) return;
-  if (rqIsDeptUser() && row.dept && row.dept !== S.user.division) return;
+  if (rqIsDeptUser() && row.dept && !rqInMyDepts(row.dept)) return;
   var before = (RQ.qs || []).find(function(q){ return q.id === row.id; });
   rqQRefresh(row.req_id).then(function(){
     var q = (RQ.qs || []).find(function(x){ return x.id === row.id; });
     var r = RQ.rows.find(function(x){ return x.id === row.req_id; });
     if (q && r && q.asked_by !== S.user.id && q.answered_by !== S.user.id) {
       if (q.status === 'open' && !before && rqCanWork(r.dept)) toast('Question on ' + r.job_no + ' from ' + ((rqStage(q.step) || {}).n || '') + ': ' + q.question, 'ok-t');
-      if (q.status === 'answered' && before && before.status === 'open') { var mine = rqStageOfRole(S.user.role); if (mine && mine.k === q.step) toast('Answer received on ' + r.job_no, 'ok-t'); }
+      if (q.status === 'answered' && before && before.status === 'open') { var mine = rqMyStageFor(r); if (mine && mine.k === q.step) toast('Answer received on ' + r.job_no, 'ok-t'); }
     }
     renderRail();
     if (typeof S.view === 'string' && S.view.indexOf('rq:') === 0 && !RQ.editId && !rqFormDirty()) rqRender(S.view);
@@ -23472,7 +23822,7 @@ function rqStaleMsg(id) {
 async function rqDecide(id, who, decision) {
   var r = RQ.rows.find(function(x){ return x.id === id; }); if (!r) return;
   var step = rqStage(who);
-  if (!step || S.user.role !== step.role || !rqStageOn(step)) return;
+  if (!step || !rqHasStage(r, step)) return;
   if (rqIsOwn(r)) { toast('You raised this requisition, so you cannot approve it yourself', 'err'); return; }
   if (decision === 'rejected' && !step.reject) return;
   var noteEl = $(step.note);
@@ -23678,7 +24028,7 @@ function rqPrintHtml(r, st, ev, formOnly) {
   var purchase = r.kind === 'purchase';
   var started = !formOnly && ['wip', 'hold', 'done'].indexOf(r.status) !== -1;
   var head = st['dept_head_' + r.dept] || '';
-  var newton = st.newton_line || 'Mr. Newton, AGM (HR, Admin & Compliance)';
+  var newton = rqPrintHeadLine(r, st);
   var status = { pending: 'Approval pending', returned: 'Returned for changes', rejected: 'Rejected', wip: 'Approved · in progress', hold: 'Approved · on hold', done: 'Completed', cancelled: 'Cancelled' }[r.status] || r.status;
   function tick(pct, col) { pct = Math.max(0, Math.min(100, Math.round(pct))); return '<div class="bar"><div class="tk" style="--c:' + col + ';width:' + pct + '%"></div><div class="tk" style="--c:#dededb;width:' + (100 - pct) + '%"></div></div>'; }
   function cell(k, v, bar) { return '<div><div class="k">' + k + '</div><div class="v">' + (v || '&nbsp;') + '</div>' + (bar || '') + '</div>'; }
@@ -23739,7 +24089,7 @@ function rqPrintHtml(r, st, ev, formOnly) {
   var sigs = '<div class="sigs">'
     + sig('Prepared by', E(r.created_by_name || ''), sigImg(r.created_by), 'sign')
     + sig('Department head', head ? E(head) : E(d.n), !formOnly && head && sigUserByName(head) ? sigImg(sigUserByName(head).id) : '', 'sign')
-    + sig('AGM', agmOk ? E(r.agm_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.agm_at))) : E(newton), agmOk ? (sigImg(r.agm_by) || st.agm_sign) : '', 'sign')
+    + sig('HOD', agmOk ? E(r.agm_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.agm_at))) : E(newton), agmOk ? (sigImg(r.agm_by) || st.agm_sign) : '', 'sign')
     + sig('CAO', caoOk ? E(r.cao_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.cao_at))) : (st.cao_line ? E(st.cao_line) : 'Date:'), caoOk ? (sigImg(r.cao_by) || st.cao_sign) : '', 'sign')
     + sig('Audit', auditOk ? E(r.audit_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.audit_at))) : 'Date:', auditOk ? [st.audit_seal, sigImg(r.audit_by)] : '', 'seal')
     + sig('Management', mgmtOk ? E(r.mgmt_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.mgmt_at))) : 'Date:', mgmtOk ? (sigImg(r.mgmt_by) || st.mgmt_sign) : '', 'sign')
@@ -23859,14 +24209,14 @@ async function rqRenderAdminCard() {
   box.innerHTML = '<div style="padding:12px 16px 16px"><div class="rq-adm-grid">'
     + img('audit_seal', 'Audit seal', 'Printed in the Audit box once audit approves.')
     + img('mgmt_sign', 'Management signature', 'Printed in the Management box once management approves.')
-    + img('agm_sign', 'AGM signature / seal', 'Printed in the AGM box once the AGM approves.')
+    + img('agm_sign', 'AGM (HOD) signature / seal', 'Printed in the HOD box once the AGM approves as head of the department.')
     + img('cao_sign', 'CAO signature / seal', 'Printed in the CAO box once the CAO approves.')
     + img('group_logo', 'Shahana Group logo', 'Printed at the top of every requisition form.')
     + '</div><div class="sub2" style="margin:8px 0 12px">A photo of a stamp or signature on white paper works: the paper is made see-through automatically.</div>'
     + '<div class="adm-form" style="grid-template-columns:repeat(4,1fr)">'
     + RQ_DEPTS.map(function(d){ return '<div class="adm-field"><label class="adm-lbl">' + d.n + ' head (name)</label><input class="adm-inp" id="rq-head-' + d.k + '" value="' + rqEsc(st['dept_head_' + d.k] || '') + '" placeholder="Printed under Department Head"></div>'; }).join('')
     + RQ_COMPANIES.map(function(c){ return '<div class="adm-field" style="grid-column:span 2"><label class="adm-lbl">' + c.n + ' address</label><input class="adm-inp" id="rq-addr-' + c.c + '" value="' + rqEsc(rqCoAddr(st, c.c)) + '"></div>'; }).join('')
-    + '<div class="adm-field"><label class="adm-lbl">AGM line</label><input class="adm-inp" id="rq-newton" value="' + rqEsc(st.newton_line || 'Mr. Newton, AGM (HR, Admin & Compliance)') + '"></div>'
+    + '<div class="adm-field"><label class="adm-lbl">AGM line (HOD box)</label><input class="adm-inp" id="rq-newton" value="' + rqEsc(st.newton_line || 'Mr. Newton, AGM (HR, Admin & Compliance)') + '"></div>'
     + '<div class="adm-field"><label class="adm-lbl">CAO line</label><input class="adm-inp" id="rq-caoline" value="' + rqEsc(st.cao_line || '') + '" placeholder="Name, CAO"></div>'
     + '<div class="adm-field"><label class="adm-lbl">&nbsp;</label><button class="btn pri adm-save-btn" onclick="rqSaveNames()">Save</button></div></div></div>';
 }
@@ -23942,7 +24292,7 @@ function rqqUrl(path) { return db.storage.from('rq-quotations').getPublicUrl(pat
 function rqqMoney(n, cur) { if (n == null || n === '' || isNaN(Number(n))) return '&mdash;'; return (cur && cur !== 'BDT' ? rqEsc(cur) + ' ' : 'Tk ') + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 async function rqqLoad() {
   var res;
-  try { res = await fetchAllRows(function(){ var qq = db.from('rq_quotations').select(RQQ_COLS); if (rqIsDeptUser()) qq = qq.eq('dept', S.user.division); return qq.order('id'); }); }
+  try { res = await fetchAllRows(function(){ var qq = db.from('rq_quotations').select(RQQ_COLS); if (rqIsDeptUser()) qq = rqDeptFilter(qq); return qq.order('id'); }); }
   catch (e) {
     RQ.qtOk = !(e && (e.code === '42P01' || e.code === 'PGRST205' || /rq_quotations|does not exist|schema cache/i.test(e.message || '')));
     if (RQ.qtOk) console.error('rqqLoad:', e);
@@ -24189,13 +24539,13 @@ function rqqDueSoon(dept) {
 }
 function rqqDueBanner(dept) {
   if (!S.user || (S.user.role !== 'admin' && !rqIsDeptUser())) return '';
-  var due = rqqDueSoon(rqIsDeptUser() ? S.user.division : dept);
+  var due = rqqDueSoon(dept); // a department's staff only have their own quotations loaded
   if (!due.length) return '';
   var first = due.map(function(q){ return q.keep_until; }).sort()[0];
   return '<div class="rqq-banner">&#x26A0; The pages of <b>' + due.length + ' quotation' + (due.length === 1 ? '' : 's') + '</b> will be deleted from ' + rqDateTxt(first) + ' (2 years after upload). The supplier and amount stay on record. <button class="btn sm" onclick="setView(\'rq:quotes\')">See them</button></div>';
 }
 function rqqRenderDue() {
-  var due = rqqDueSoon(rqIsDeptUser() ? S.user.division : null).sort(function(a, b){ return String(a.keep_until).localeCompare(String(b.keep_until)); });
+  var due = rqqDueSoon(null).sort(function(a, b){ return String(a.keep_until).localeCompare(String(b.keep_until)); });
   rqSetHead('Requisitions', 'Quotation pages to be deleted', 'Pages are deleted 2 years after upload. ' + (S.user.role === 'admin' ? 'Keep any you still need for one more year.' : 'Admin can keep any you still need for one more year.'), '');
   var rows = due.map(function(q){
     var r = RQ.rows.find(function(x){ return x.id === q.req_id; }) || {};
@@ -24254,7 +24604,7 @@ async function plLoad(force) {
   PL._p = (async function(){
     try {
       var from = rqAddDays(todayStr(), -400);
-      var rows = await fetchAllRows(function(){ var q = db.from('rq_plan_lines').select('*').gte('week_start', from); if (rqIsDeptUser()) q = q.eq('dept', S.user.division); return q.order('week_start').order('sort').order('id'); });
+      var rows = await fetchAllRows(function(){ var q = db.from('rq_plan_lines').select('*').gte('week_start', from); if (rqIsDeptUser()) q = rqDeptFilter(q); return q.order('week_start').order('sort').order('id'); });
       PL.rows = rows || []; PL.ok = true; PL.at = Date.now();
     } catch (e) { if (plMissing(e)) { PL.ok = false; PL.rows = []; } else { console.error('plans:', e); if (PL.ok !== true) PL.ok = null; throw e; } }
     finally { PL._p = null; }
@@ -24269,7 +24619,7 @@ function plWeekShort(ws) { var e = plWeekEnd(ws); return ws.slice(8, 10) + '.' +
 function plWeeksOfMonth(ym) { var out = [], d = plWeekStart(ym + '-01'); if (d.slice(0, 7) !== ym) d = rqAddDays(d, 7); while (d.slice(0, 7) === ym) { out.push(d); d = rqAddDays(d, 7); } return out; }
 function plMonthName(ym) { var m = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']; return m[Number(ym.slice(5, 7)) - 1] + ' ' + ym.slice(0, 4); }
 function plMonthAdd(ym, n) { var y = Number(ym.slice(0, 4)), m = Number(ym.slice(5, 7)) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + String(m + 1).padStart(2, '0'); }
-function plDepts() { return rqIsDeptUser() ? [rqDept(S.user.division)] : RQ_DEPTS.slice(); }
+function plDepts() { return rqIsDeptUser() ? rqMyDeptKeys().map(rqDept).filter(Boolean) : RQ_DEPTS.slice(); }
 function plCanSee() { return rqCanSee() && S.user.role !== 'accounts'; }
 function plCanEdit(dk, ws) { return rqCanWork(dk) && (S.user.role === 'admin' || plWeekEnd(ws) >= todayStr()); }
 function plLines(dk, ws) { return PL.rows.filter(function(l){ return l.dept === dk && String(l.week_start).slice(0, 10) === ws; }).sort(function(a, b){ return (a.sort || 0) - (b.sort || 0) || String(a.created_at || '').localeCompare(String(b.created_at || '')); }); }
@@ -24489,7 +24839,7 @@ function plPrintWeek(ws, dks) {
     + (deps.length > 1 ? '<div class="kp">' + kp + '<div class="main"><span>Total</span><b>' + plMoney(all) + '</b></div></div>' : '')
     + '<table><thead><tr><th style="width:5%">SL</th><th style="width:43%">Description</th><th class="num" style="width:11%">Qty</th><th class="num" style="width:13%">Amount (Tk)</th><th style="width:12%">Req. no.</th><th>Remarks</th></tr></thead>' + body
     + (deps.length > 1 ? '<tbody class="keep"><tr class="tot"><td></td><td>Total, all departments</td><td></td><td class="num">' + plMoney(all) + '</td><td colspan="2"></td></tr></tbody>' : '') + '</table>'
-    + '<div class="sig"><div>Prepared by</div><div>AGM</div><div>CAO</div><div>Management</div></div>';
+    + '<div class="sig"><div>Prepared by</div><div>HOD</div><div>CAO</div><div>Management</div></div>';
   plOpenDoc(title, html, false);
 }
 function plPrintMonth(ym) {
@@ -24503,7 +24853,7 @@ function plPrintMonth(ym) {
     + '<table class="wk"><thead><tr><th>Department</th>' + weeks.map(function(ws, i){ return '<th class="num">Week ' + (i + 1) + '<br>' + plWeekShort(ws) + '</th>'; }).join('') + '<th class="num">Month total</th></tr></thead><tbody>' + rows + '</tbody>'
     + '<tbody class="keep"><tr class="tot"><td>Total</td>' + colTot.map(function(x){ return '<td class="num">' + (x ? plMoney(x) : '&ndash;') + '</td>'; }).join('') + '<td class="num">' + plMoney(grand) + '</td></tr></tbody></table>'
     + (lines ? '<div class="sec"><span><i></i>Lines, week by week</span></div><table><thead><tr><th style="width:5%">SL</th><th style="width:55%">Description</th><th class="num" style="width:12%">Qty</th><th class="num" style="width:14%">Amount (Tk)</th><th>Req. no.</th></tr></thead>' + lines + '</table>' : '')
-    + '<div class="sig"><div>Prepared by</div><div>AGM</div><div>CAO</div><div>Management</div></div>';
+    + '<div class="sig"><div>Prepared by</div><div>HOD</div><div>CAO</div><div>Management</div></div>';
   plOpenDoc('Monthly budget plan ' + ym, html, true);
 }
 function plOpenDoc(title, body, land) {
@@ -24518,7 +24868,7 @@ function plOpenDoc(title, body, land) {
 function rqRenderCombined(tab) {
   if (!RQ_X_TABS[tab]) tab = 'pending';
   if (PL.ok === null && !PL._p) plLoad().then(function(){ if (S.view === 'rq:x:' + tab) rqRender(S.view); }).catch(function(){});
-  var f = RQ.filter, me = S.user.role, st = rqStageOfRole(me), showClosed = tab === 'done' && f.closed;
+  var f = RQ.filter, me = S.user.role, st = rqMyStageAny(), showClosed = tab === 'done' && f.closed;
   var inTab = function(r){ var t = rqTabOf(r); return showClosed ? t === 'closed' : t === tab; };
   var base = RQ.rows.filter(inTab), deps = rqMyDepts();
   var acts = deps.some(function(d){ return rqCanWork(d.k); }) ? '<button class="btn pri" onclick="rqNewPick()">&#x002B; New requisition</button>' : '';
@@ -24533,13 +24883,13 @@ function rqRenderCombined(tab) {
       var all = mineAll.filter(function(r){ return r.status === 'pending'; }), retList = mineAll.filter(function(r){ return r.status === 'returned'; });
       // audit / management: which ones the earlier steps have already checked
       var earlier = RQ_STAGES.slice(0, RQ_STAGES.indexOf(st)).filter(rqStageOn);
-      var checked = function(r){ return earlier.every(function(e){ return r[e.k + '_status'] === 'approved'; }); };
+      var checked = function(r){ return earlier.every(function(e){ return !rqStageApplies(r, e) || r[e.k + '_status'] === 'approved'; }); };
       var nChecked = all.filter(checked).length;
       var list0 = rqSortForTab(rqFiltered(f.checked && earlier.length ? all.filter(checked) : all), 'pending');
       var names = earlier.map(function(e){ return e.n; }).join(', ').replace(/, ([^,]*)$/, ' and $1');
       var chk = earlier.length ? '<div class="rq-tallies" style="margin-top:-4px"><button class="rq-tally' + (!f.checked ? ' on' : '') + '" onclick="RQ.filter.checked=false;rqRender(S.view)">All waiting <b>' + all.length + '</b></button>'
         + '<button class="rq-tally' + (f.checked ? ' on' : '') + '" onclick="RQ.filter.checked=true;rqRender(S.view)">Checked by ' + names + ' <b>' + nChecked + '</b></button></div>' : '';
-      var sub0 = { audit: 'Audit approval is recorded; management approval starts the work.', management: 'Your approval moves the work straight to Work in progress.', agm: 'Your check is recorded before audit and management decide.', cao: 'Your check is recorded before audit and management decide.' }[me] || '';
+      var sub0 = { audit: 'Audit approval is recorded; management approval starts the work.', management: 'Your approval moves the work straight to Work in progress.', agm: 'Your check is recorded before audit and management decide.', cao: 'Your check is recorded before audit and management decide.' }[me] || (st && st.k === 'agm' ? 'Your check as head of the department is recorded before audit and management decide.' : '');
       rqSetHead('Requisitions', 'Approval pending', 'Waiting for me. ' + sub0, acts);
       var ret = rqSortForTab(rqFiltered(retList), 'pending');
       $('content').innerHTML = banner + pmChips + chk + '<div class="card"><div class="card-h"><h3>Waiting for me <span class="rq-count">' + list0.length + '</span></h3>' + rqFilterBar() + '</div>' + rqTable(list0, 'pending', true) + '</div>'
@@ -24631,6 +24981,123 @@ async function rqDoneNotYet(id) {
   ACCM = null; closeModal('ov-acc');
   await rqProgressSave(id, 100, note);
 }
+// Requisitions for every department (Wave 5): the departments, their job-number codes, their heads and who works where
+// come from the database (Admin -> Departments). Until the Wave 5A update is run, the three built-in departments
+// (Maintenance, Civil, IT) work exactly as before.
+
+// logins that see every department's requisitions (never "department staff" for requisitions)
+var RQ_SEE_ALL = ['admin', 'management', 'audit', 'cao', 'agm', 'accounts'];
+var RQD = { ok: null, all: [], members: [], builtin: RQ_DEPTS.slice(), _p: null };
+function rqdOk() { return RQD.ok === true; }
+var RQD_TYPES = ['Purchase', 'Repair', 'Service', 'Other'];
+function rqdNorm(d) {
+  if (!d || !d.k) return null;
+  var b = RQD.builtin.find(function(x){ return x.k === d.k; });
+  var types = Array.isArray(d.types) ? d.types.map(function(t){ return String(t || '').trim(); }).filter(Boolean) : [];
+  if (!types.length) types = b ? b.types.slice() : RQD_TYPES.slice();
+  if (types.indexOf('Other') === -1) types.push('Other');
+  return { k: d.k, n: d.n || (b && b.n) || d.k, code: d.code || (b && b.code) || String(d.k).toUpperCase().slice(0, 6), types: types, on: !!d.on, id: d.id || null, sort: d.sort };
+}
+// one call after sign-in; the departments switched on replace the built-in list (same object, so every page sees them)
+async function rqdLoad(force) {
+  if (RQD.ok !== null && !force) return;
+  if (RQD._p) return RQD._p;
+  RQD._p = (async function(){
+    try {
+      var r = await db.rpc('erp_rq_setup');
+      // not set up yet (or not readable just now): the built-in departments, exactly as before
+      if (r.error || !r.data) { if (r.error && !/erp_rq_setup|schema cache|does not exist|PGRST202/i.test((r.error.message || '') + ' ' + (r.error.code || ''))) console.warn('departments not read, using the built-in ones:', r.error.message || r.error); RQD.ok = false; return; }
+      RQD.all = (r.data.depts || []).map(rqdNorm).filter(Boolean);
+      RQD.members = (r.data.members || []).filter(function(m){ return m && m.p && m.k; });
+      RQD.ok = true;
+      RQ_DEPTS.length = 0;
+      RQD.all.filter(function(d){ return d.on; }).forEach(function(d){ RQ_DEPTS.push(d); });
+    } catch (e) { console.error('departments:', e); RQD.ok = false; }
+    finally { RQD._p = null; }
+  })();
+  return RQD._p;
+}
+// any department by key, switched on or not (old requisitions keep their department's name)
+function rqdAny(k) { return RQD.all.find(function(d){ return d.k === k; }) || RQD.builtin.find(function(d){ return d.k === k; }) || null; }
+function rqdHeads(k) { return RQD.members.filter(function(m){ return m.k === k && Number(m.l) === 4; }).map(function(m){ return m.p; }); }
+function rqdIsHead(k, uid) { return !!uid && rqdHeads(k).indexOf(uid) !== -1; }
+function rqdHeadOfAny(uid) { return !!uid && RQD.members.some(function(m){ return m.p === uid && Number(m.l) === 4; }); }
+function rqdHeadName(k) { var ids = rqdHeads(k), u = ids.length ? (S.users || []).find(function(x){ return x.id === ids[0]; }) : null; return u ? u.name : ''; }
+// the departments a person raises and works requisitions for: a department login's own department, plus the
+// departments they belong to that use requisitions (people who see every department are not department staff)
+function rqMyDeptKeys() {
+  if (!S.user) return [];
+  var out = [];
+  if (S.user.role === 'dept' && S.user.division && rqDept(S.user.division)) out.push(S.user.division);
+  if (rqdOk() && RQ_SEE_ALL.indexOf(S.user.role) === -1) RQD.members.forEach(function(m){
+    if (m.p === S.user.id && out.indexOf(m.k) === -1 && RQ_DEPTS.some(function(d){ return d.k === m.k; })) out.push(m.k);
+  });
+  return out;
+}
+function rqUserDept() { return rqMyDeptKeys()[0] || null; }
+// filter a query to the person's departments (one department: eq, several: in)
+function rqDeptFilter(q) { var ks = rqMyDeptKeys(); return ks.length === 1 ? q.eq('dept', ks[0]) : q.in('dept', ks.length ? ks : ['-']); }
+function rqInMyDepts(k) { return rqMyDeptKeys().indexOf(k) !== -1; }
+
+// ─── the approval steps, per requisition ───
+// The first step is the head of the requisition's department (Head of department, HOD). With the departments set up,
+// whoever is head (level 4) of that department fills it; before, the AGM login did, as it always has.
+function rqHasStage(r, st) {
+  if (!S.user || !st || !rqStageOn(st)) return false;
+  if (st.k === 'agm') return rqdOk() ? !!r && rqdIsHead(r.dept, S.user.id) : S.user.role === 'agm';
+  return S.user.role === st.role;
+}
+// the step this person fills on this requisition (the first one still open, if they hold more than one)
+function rqMyStageFor(r) {
+  var c = RQ_STAGES.filter(function(st){ return rqHasStage(r, st); });
+  return c.find(function(st){ return !r || !r[st.k + '_status']; }) || c[0] || null;
+}
+// does this person approve requisitions at all (menus, "Waiting for me")
+function rqMyStageAny() {
+  if (!S.user) return null;
+  var byRole = RQ_STAGES.find(function(st){ return st.k !== 'agm' && st.role === S.user.role && rqStageOn(st); });
+  if (byRole) return byRole;
+  var h = rqStage('agm');
+  if (!rqStageOn(h)) return null;
+  return (rqdOk() ? rqdHeadOfAny(S.user.id) : S.user.role === 'agm') ? h : null;
+}
+// a department without a head has no head step
+function rqStageApplies(r, st) { return !(st.k === 'agm' && rqdOk() && r && !rqdHeads(r.dept).length); }
+
+// ─── Accounts: a requisition shows once Management has approved a payment for it (or something is already paid) ───
+function rqAccSees(r) {
+  if (!r || r.mgmt_status !== 'approved' || r.mgmt_buy) return false;
+  if (!apOn()) return true; // no payment approvals in this database: as before (approved by Management)
+  return apActive(r.id).length > 0 || accPaysOf(r.id).length > 0;
+}
+function rqAccNarrow() {
+  if (!S.user || S.user.role !== 'accounts') return;
+  RQ.rows = RQ.rows.filter(rqAccSees);
+  var ids = {}; RQ.rows.forEach(function(r){ ids[r.id] = 1; });
+  ACC.pays = (ACC.pays || []).filter(function(p){ return ids[p.req_id]; }); ACC.byReq = null;
+}
+
+// the name printed in the HOD box before the head approves: the AGM line (Admin -> Requisitions) when the AGM heads the
+// department or no head is set up, otherwise the head's name
+function rqPrintHeadLine(r, st) {
+  var agmLine = (st && st.newton_line) || 'Mr. Newton, AGM (HR, Admin & Compliance)';
+  if (!rqdOk()) return agmLine;
+  var ids = rqdHeads(r.dept), u = ids.length ? (S.users || []).find(function(x){ return x.id === ids[0]; }) : null;
+  if (!u || u.role === 'agm') return agmLine;
+  var d = rqDept(r.dept);
+  return u.name + ', Head of ' + (d ? d.n : r.dept);
+}
+
+// ─── requisitions in the notification engine ───
+notifModule.label('requisitions', 'Requisitions');
+notifModule.label('work_orders', 'Work orders');
+notifModule.opener('rq', rqOpenFromNotice);
+async function rqOpenFromNotice(id) {
+  if (!rqCanSee()) { toast('Requisitions are not part of your login', 'err'); return; }
+  var r = RQ.rows.find(function(x){ return x.id === id; }) || await rqRefreshOne(id);
+  if (!r) { toast('This requisition is no longer open to you', 'err'); return; }
+  rqOpen(id);
+}
 // Work orders: general work orders, management purchases from requisitions
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -24658,8 +25125,8 @@ async function woLoad(force) {
   if (WO._p) return WO._p;
   WO._p = (async function(){
     try {
-      var dept = rqIsDeptUser() ? S.user.division : null;
-      var lines = await fetchAllRows(function(){ var q = db.from('work_order_lines').select('*'); if (dept) q = q.eq('dept', dept); return q.order('wo_id').order('sort').order('id'); });
+      var dept = rqIsDeptUser();
+      var lines = await fetchAllRows(function(){ var q = db.from('work_order_lines').select('*'); if (dept) q = rqDeptFilter(q); return q.order('wo_id').order('sort').order('id'); });
       var rows;
       if (dept) {
         var ids = Array.from(new Set(lines.map(function(l){ return l.wo_id; }))); rows = [];
@@ -24690,12 +25157,25 @@ function woLineAmt(l, recv) { var p = recv && l.recv_price != null ? l.recv_pric
 function woTotal(lines, recv) { var t = 0, all = true; lines.forEach(function(l){ var a = woLineAmt(l, recv); if (a == null) all = false; else t += a; }); return { p: t, all: all }; }
 function woQtyTxt(q, u) { return q == null || q === '' ? '' : Number(q).toLocaleString('en-IN', { maximumFractionDigits: 3 }) + (u ? ' ' + rqEsc(u) : ''); }
 function woTkWords(p) { var w = Math.floor(Math.abs(p) / 100), c = Math.abs(p) % 100; return 'Taka ' + ciWords(w) + (c ? ' and Paisa ' + ciWords(c) : '') + ' only'; }
-function woNoOf(yr, seq) { return 'WO-' + String(yr).slice(-2) + '-' + String(seq).padStart(4, '0'); }
-// next number for the year: one read, and the unique index stops two people taking the same one
-async function woNextSeq(yr) {
-  var r = await db.from('work_orders').select('seq').eq('yr', yr).order('seq', { ascending: false }).limit(1);
+// numbers: per company and year (WO/MTS/26/0001) once the database has the company column (Wave 5A); before, one
+// series per year (WO-26-0001) as it always was
+function woCoOn() { return rqdOk(); }
+function woNoOf(yr, seq, co) { return co ? 'WO/' + co + '/' + String(yr).slice(-2) + '/' + String(seq).padStart(4, '0') : 'WO-' + String(yr).slice(-2) + '-' + String(seq).padStart(4, '0'); }
+// next number: the database counts every work order of that company and year (a department sees only its own);
+// the unique index stops two people taking the same one
+async function woNextSeq(yr, co) {
+  if (co) { var c = await db.rpc('erp_wo_next_seq', { p_company: co, p_year: yr }); if (!c.error && c.data != null) return Number(c.data); }
+  var q = db.from('work_orders').select('seq').eq('yr', yr); if (co) q = q.eq('company', co);
+  var r = await q.order('seq', { ascending: false }).limit(1);
   if (r.error) throw r.error;
   return (r.data && r.data.length ? Number(r.data[0].seq) || 0 : 0) + 1;
+}
+// the company a work order is for: the one company of its lines (each source says which line is which company)
+function woCompanyOf(def, lines) {
+  if (!woCoOn() || !def.companyOf) return { co: null };
+  var cs = Array.from(new Set(lines.map(function(l){ return def.companyOf(l); }).filter(Boolean)));
+  if (cs.length > 1) return { err: 'One work order is for one company. These items are for ' + cs.map(function(c){ return rqCompany(c).n; }).join(' and ') + ': make one work order for each.' };
+  return { co: cs[0] || null };
 }
 
 // the form: new (picks = lines to order) or change (wo = the work order; only before anything is received)
@@ -24810,9 +25290,11 @@ async function woFormSave() {
     if (def.afterSave) await def.afterSave(wo, nl, 'changed', dropped);
     toast(wo.wo_no + ' saved', 'ok-t');
   } else {
-    var yr = Number(day.slice(0, 4)), seq = await woNextSeq(yr), w0 = null, err = null;
+    var cw = woCompanyOf(def, F.lines); if (cw.err) return cw.err;
+    var yr = Number(day.slice(0, 4)), seq = await woNextSeq(yr, cw.co), w0 = null, err = null;
     for (var tries = 0; tries < 6 && !w0; tries++) {
-      var id = accUuid(), wrow = Object.assign({ id: id, wo_no: woNoOf(yr, seq), yr: yr, seq: seq, source: F.source, status: 'ordered', made_by: S.user.id, made_by_name: S.user.name, made_by_role: S.user.role, created_at: now }, head);
+      var id = accUuid(), wrow = Object.assign({ id: id, wo_no: woNoOf(yr, seq, cw.co), yr: yr, seq: seq, source: F.source, status: 'ordered', made_by: S.user.id, made_by_name: S.user.name, made_by_role: S.user.role, created_at: now }, head);
+      if (cw.co) wrow.company = cw.co;
       var r = await db.from('work_orders').insert(wrow);
       if (!r.error) { w0 = wrow; break; }
       if (!accDup(r.error)) { err = r.error; break; }
@@ -24949,7 +25431,7 @@ function woDocHtml(w, ls) {
   var rows = ls.map(function(l, i){ var a = woLineAmt(l);
     return '<tr><td>' + (i + 1) + '</td><td><b>' + E(l.item) + '</b>' + (l.spec ? '<small>' + E(l.spec) + '</small>' : '') + '</td><td>' + E(l.ref_no || '') + '</td><td class="num">' + woQtyTxt(l.qty, l.unit) + '</td>'
       + (show ? '<td class="num">' + (l.unit_price != null ? accFmt(accP(l.unit_price)) : '&mdash;') + '</td><td class="num">' + (a == null ? '&mdash;' : accFmt(a)) + '</td>' : '') + '</tr>'; }).join('');
-  return '<div class="top"></div><div class="wo-hd"><div><div class="co">Shahana Group</div><h1>Work Order</h1><div class="addr">M.T. Sweaters Ltd &middot; Banga Fashion Ltd &middot; Banga Knitwear Ltd<br>Gacha, Gazipur, Bangladesh</div></div>'
+  return '<div class="top"></div><div class="wo-hd"><div><div class="co">Shahana Group</div><h1>Work Order</h1><div class="addr">' + (w.company ? '<b>' + E(rqCompany(w.company).n) + '</b>' : 'M.T. Sweaters Ltd &middot; Banga Fashion Ltd &middot; Banga Knitwear Ltd') + '<br>Gacha, Gazipur, Bangladesh</div></div>'
     + '<div class="wo-meta"><div><span>No.</span><b>' + E(w.wo_no) + '</b></div><div><span>Date</span><b>' + rqDateTxt(w.wo_date) + '</b></div>' + (w.deliver_by ? '<div><span>Deliver by</span><b>' + rqDateTxt(w.deliver_by) + '</b></div>' : '') + (w.status === 'cancelled' ? '<div><b>CANCELLED</b></div>' : '') + '</div></div>'
     + '<div class="wo-box"><div><span>To</span><b>' + E(w.party_name) + '</b>' + (w.party_address ? '<br>' + E(w.party_address) : '') + (w.party_phone ? '<br>Phone ' + E(w.party_phone) : '') + '</div>'
     + '<div><span>Deliver to</span>' + E(w.deliver_to || '') + '</div></div>'
@@ -24985,7 +25467,7 @@ function woRenderPage(source, tab) {
   var mine = WO.rows.filter(function(w){ return w.source === source; });
   var ord = mine.filter(function(w){ return w.status === 'ordered'; }), rec = mine.filter(function(w){ return w.status === 'received'; }), canc = mine.filter(function(w){ return w.status === 'cancelled'; });
   var groups = woGroups(cands);
-  var tabs = '<div class="rq-tallies">' + [['buy', 'To buy', groups.length], ['ord', 'Ordered', ord.length], ['rec', 'Received', rec.length]].map(function(x){
+  var tabs = '<div class="rq-tallies">' + [['buy', def.buyTab || 'To buy', groups.length], ['ord', 'Ordered', ord.length], ['rec', 'Received', rec.length]].map(function(x){
     return '<button class="rq-tally' + (tab === x[0] ? ' on' : '') + '" onclick="WO.ui.tab.' + source + '=\'' + x[0] + '\';rqRender(S.view)">' + x[1] + ' <b>' + x[2] + '</b></button>'; }).join('') + '</div>';
   var q = String(f.q || '').trim().toLowerCase();
   var bar = '<div class="rq-filter">' + (def.depts ? '<select onchange="WO.ui.dp=this.value;rqRender(S.view)"><option value="">All departments</option>' + def.depts().map(function(d){ return '<option value="' + d.k + '"' + (f.dp === d.k ? ' selected' : '') + '>' + d.n + '</option>'; }).join('') + '</select>' : '')
@@ -24995,13 +25477,13 @@ function woRenderPage(source, tab) {
     var list = groups.filter(function(g){ return (!f.dp || g.dept === f.dp) && (!q || (g.ref_no + ' ' + g.lines.map(function(l){ return l.item + ' ' + (l.spec || ''); }).join(' ') + ' ' + (g.extra || '')).toLowerCase().indexOf(q) !== -1); });
     Object.keys(f.sel).forEach(function(k){ if (!groups.some(function(g){ return g.key === k; })) delete f.sel[k]; });
     acts = (list.length ? '<button class="btn" onclick="woPrintList(\'' + source + '\')">&#x1F5A8; Print list</button>' : '') + (can && list.length ? '<button class="btn pri" id="wo-mk" onclick="woMakeSel(\'' + source + '\')">Make work order</button>' : '');
-    body = '<div class="card"><div class="card-h" style="flex-wrap:wrap"><h3>To buy <span class="rq-count">' + list.length + '</span></h3>' + (can && list.length ? '<label class="rq-mine"><input type="checkbox" onchange="woSelAll(this.checked)"> Tick all</label>' : '') + bar + '</div>'
+    body = '<div class="card"><div class="card-h" style="flex-wrap:wrap"><h3>' + rqEsc(def.buyTab || 'To buy') + ' <span class="rq-count">' + list.length + '</span></h3>' + (can && list.length ? '<label class="rq-mine"><input type="checkbox" onchange="woSelAll(this.checked)"> Tick all</label>' : '') + bar + '</div>'
       + (list.length ? '<div class="scroller"><table class="rq-t wo-t-buy"><thead><tr>' + (can ? '<th></th>' : '') + '<th>' + rqEsc(def.refHead) + '</th><th>Department</th><th>Item(s)</th><th class="num">Qty</th><th class="num">Approved</th><th>Approved on</th><th>Waiting</th></tr></thead><tbody>'
         + list.map(function(g){ return '<tr>' + (can ? '<td onclick="event.stopPropagation()"><input type="checkbox" class="wo-cb" data-k="' + rqEsc(g.key) + '"' + (f.sel[g.key] ? ' checked' : '') + ' onchange="WO.ui.sel[this.dataset.k]=this.checked;woSelCount()"></td>' : '')
           + '<td onclick="' + (def.openRef ? def.openRef + '(\'' + g.ref_id + '\')' : '') + '"><span class="rq-job">' + rqEsc(g.ref_no) + '</span></td><td>' + rqEsc(g.deptName || '') + '</td>'
           + '<td>' + g.lines.map(function(l){ return '<b>' + rqEsc(l.item) + '</b>' + (l.spec ? ' <span class="sub2">' + rqEsc(l.spec) + '</span>' : ''); }).join('<br>') + '</td>'
           + '<td class="num">' + g.lines.map(function(l){ return woQtyTxt(l.qty, l.unit); }).join('<br>') + '</td><td class="num">' + (g.approved != null ? rqMoney(g.approved) : '&mdash;') + '</td><td>' + (g.since ? rqDateTxt(g.since) : '') + '</td><td>' + (g.since ? rqDaysBetween(g.since, todayStr()) + 'd' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>'
-        : '<div class="empty"><h4>Nothing to buy</h4>' + (groups.length ? 'Nothing matches the filter.' : 'Requisitions Management buys itself show here once approved.') + '</div>') + '</div>';
+        : '<div class="empty"><h4>Nothing to buy</h4>' + (groups.length ? 'Nothing matches the filter.' : (def.emptyBuy || 'Requisitions Management buys itself show here once approved.')) + '</div>') + '</div>';
   } else {
     var wl = (tab === 'ord' ? ord : f.cancelled ? canc : rec).filter(function(w){
       var ls = woLinesOf(w.id);
@@ -25064,7 +25546,7 @@ async function woRqEvents(rows) { if (!rows.length) return; var r = await db.fro
 woSource({
   key: 'rq', view: 'rq:buy', crumb: 'Requisitions', title: 'Management purchases', sub: 'Requisitions Management buys itself: no payment approval, not sent to Accounts.',
   label: 'Requisitions', refHead: 'Requisition', refName: 'Requisition', openRef: 'rqOpen',
-  canEdit: woRqCanEdit, canView: woRqCanView,
+  canEdit: woRqCanEdit, canView: woRqCanView, companyOf: woRqCompanyOf,
   depts: function(){ return RQ_DEPTS; },
   candidates: function(){ var on = {}; woRqLinesOfAll().forEach(function(l){ on[l.ref_id] = 1; }); return RQ.rows.filter(function(r){ return woRqOpen(r) && !on[r.id]; }).sort(function(a, b){ return String(a.mgmt_at || '').localeCompare(String(b.mgmt_at || '')); }).reduce(function(a, r){ return a.concat(woRqItems(r)); }, []); },
   deliverTo: function(lines){ var ds = Array.from(new Set(lines.map(function(l){ return l.dept; }))).map(function(k){ return ((rqDept(k) || {}).n || k) + ' Department'; }); var cs = Array.from(new Set(lines.map(function(l){ var r = RQ.rows.find(function(x){ return x.id === l.ref_id; }); return r ? rqCompany(r.company).n : ''; }).filter(Boolean))); return ds.join(', ') + (cs.length ? ', ' + cs.join(' / ') : ''); },
@@ -25092,6 +25574,8 @@ woSource({
   }
 });
 function woRqLinesOfAll() { return woActiveLines('rq'); }
+// the company of a work-order line that came from a requisition
+function woRqCompanyOf(l) { var r = l && l.ref_id ? RQ.rows.find(function(x){ return x.id === l.ref_id; }) : null; return r ? r.company || null : null; }
 function woToBuyN() { return woOn() && woRqCanView() ? woGroups(WO.src.rq.candidates()).length : 0; }
 // ─── on the requisition ───
 // the tick in Management's approval box
@@ -25146,6 +25630,64 @@ async function woSetBuy(id, on) {
   r = rqPut(res.data[0]);
   toast(r.job_no + (on ? ': Management will buy it' : ': Accounts will pay it'), 'ok-t');
   renderRail(); rqRender(S.view); await rqLoadEvents(id); rqRenderDetail(id, true);
+}
+// Work orders made by a department (Wave 5). The second way into the general work-order engine (woSource):
+// once Management has approved the payment of a department's requisition, the department orders it from the party
+// itself; Accounts pays as before. (The first way: Management buys it itself, "Management purchases".)
+// Numbers are per company and year, the same series as Management's work orders.
+
+// on once the database has work orders, company numbering (Wave 5A) and payment approvals
+function woDeptOn() { return woOn() && woCoOn() && apOn(); }
+function woDeptCanEdit() { return !!S.user && (S.user.role === 'admin' || (rqIsDeptUser() && !!WO.dept && rqCanWork(WO.dept))); }
+function woDeptCanView() { return !!S.user && (S.user.role === 'admin' || (rqIsDeptUser() && !!WO.dept && rqInMyDepts(WO.dept))); }
+// payment approved, Accounts pays, the work is on, not on a live work order yet
+function woDeptOpen(r) { return !!r && !r.mgmt_buy && r.mgmt_status === 'approved' && (r.status === 'wip' || r.status === 'hold') && apActive(r.id).length > 0; }
+function woDeptLinesOf(id) { return woActiveLines(null).filter(function(l){ return l.ref_id === id; }); }
+function woDeptCandidates(k) {
+  if (!woDeptOn()) return [];
+  var on = {}; woActiveLines(null).forEach(function(l){ if (l.ref_id) on[l.ref_id] = 1; });
+  return RQ.rows.filter(function(r){ return r.dept === k && woDeptOpen(r) && !on[r.id]; })
+    .sort(function(a, b){ return String(a.mgmt_at || '').localeCompare(String(b.mgmt_at || '')); })
+    .reduce(function(a, r){ return a.concat(woRqItems(r)); }, []);
+}
+function woDeptToOrderN(k) { return rqCanWork(k) ? woGroups(woDeptCandidates(k)).length : 0; }
+woSource({
+  key: 'rqd', view: 'rq:', label: 'Requisitions', refHead: 'Requisition', refName: 'Requisition', openRef: 'rqOpen',
+  get crumb() { var d = rqDept(WO.dept); return 'Requisitions' + (d ? ' › ' + d.n : ''); },
+  title: 'Work orders', buyTab: 'To order', emptyBuy: 'A requisition shows here once Management has approved its payment.',
+  sub: 'Requisitions whose payment Management has approved: order them from the party here. Accounts pays.',
+  canEdit: woDeptCanEdit, canView: woDeptCanView, companyOf: woRqCompanyOf,
+  candidates: function(){ return woDeptCandidates(WO.dept); },
+  deliverTo: function(lines){ return WO.src.rq.deliverTo(lines); },
+  afterSave: function(w, lines, kind, dropped){ return WO.src.rq.afterSave(w, lines, kind, dropped); },
+  // received in full: noted on the requisition (the department finishes the work and its cost as usual)
+  onReceived: async function(w, got, day){
+    var ids = Array.from(new Set(got.map(function(l){ return l.ref_id; }).filter(Boolean))), ev = [];
+    ids.forEach(function(id){
+      var ls = woDeptLinesOf(id); if (!ls.length || !ls.every(woLineDone)) return;
+      ev.push({ req_id: id, kind: 'wo_received', note: w.wo_no + ' (' + w.party_name + ') received ' + rqDateTxt(day) });
+    });
+    await woRqEvents(ev);
+  }
+});
+// on the requisition: its work order, or the button to make one
+function woDeptBoxHtml(r) {
+  if (!woDeptOn() || !r || r.mgmt_buy || r.mgmt_status !== 'approved' || ['wip', 'hold', 'done'].indexOf(r.status) === -1) return '';
+  var live = woDeptLinesOf(r.id), ws = Array.from(new Set(live.map(function(l){ return l.wo_id; }))).map(woById).filter(Boolean);
+  var can = rqCanWork(r.dept) && woDeptOpen(r) && !live.length;
+  if (!ws.length && !can) return '';
+  var h = '<div class="rq-sec wo-reqbox"><div class="rq-sec-h">&#x1F4DD; Work order</div>';
+  h += ws.map(function(w){ var ls = live.filter(function(l){ return l.wo_id === w.id; }), d = ls.every(woLineDone);
+    return '<div><a href="#" class="rq-job" onclick="event.preventDefault();closeModal(\'ov-rq\');WO.dept=\'' + rqEsc(r.dept) + '\';woView(\'' + w.id + '\')">' + rqEsc(w.wo_no) + '</a> &middot; ' + rqEsc(w.party_name) + ' &middot; ordered ' + rqDateTxt(w.wo_date)
+      + (d ? ' &middot; <b class="wo-ok">received ' + rqDateTxt(ls.map(function(l){ return l.recv_on; }).sort().slice(-1)[0]) + '</b>' : w.deliver_by ? ' &middot; deliver by ' + rqDateTxt(w.deliver_by) : '') + '</div>'; }).join('');
+  if (can) h += '<div class="sub2">Management approved the payment. Order it from the party: the work order is printed with your signature.</div>'
+    + '<div class="rq-btns"><button class="btn sm pri" onclick="woDeptMake(\'' + r.id + '\')">&#x1F4DD; Make work order</button></div>';
+  return h + '</div>';
+}
+function woDeptMake(id) {
+  var r = RQ.rows.find(function(x){ return x.id === id; }); if (!r || !woDeptOpen(r)) return;
+  WO.dept = r.dept; closeModal('ov-rq');
+  woForm('rqd', woRqItems(r));
 }
 // Accounts: payments, cheques, banks, IOU, payment approval, petty cash
 
@@ -25227,7 +25769,7 @@ function accLoadSealsOnce(after) {
 async function accLoadPays() {
   if (!rqCanSee()) return;
   try {
-    var rows = await fetchAllRows(function(){ var q = db.from('acc_payments').select('*'); if (rqIsDeptUser()) q = q.eq('dept', S.user.division); return q.order('id'); });
+    var rows = await fetchAllRows(function(){ var q = db.from('acc_payments').select('*'); if (rqIsDeptUser()) q = rqDeptFilter(q); return q.order('id'); });
     if (accIsAcc()) { var ids = {}; RQ.rows.forEach(function(r){ ids[r.id] = 1; }); rows = rows.filter(function(p){ return ids[p.req_id]; }); }
     ACC.pays = rows; ACC.byReq = null; ACC.ok = true;
   } catch (e) {
@@ -25278,12 +25820,12 @@ function accRealtime(table, p) {
   var id = (p.new && p.new.id) || (p.old && p.old.id); if (!id) return;
   var list = table === 'acc_payments' ? ACC.pays : table === 'acc_cheques' ? ACC.cheques : table === 'acc_banks' ? ACC.banks : table === 'acc_iou_people' ? ACC.people : ACC.entries;
   if (!list) return; // not loaded here
-  if (table === 'acc_payments' && rqIsDeptUser() && p.new && p.new.dept && p.new.dept !== S.user.division) return;
+  if (table === 'acc_payments' && rqIsDeptUser() && p.new && p.new.dept && !rqInMyDepts(p.new.dept)) return;
   db.from(table).select('*').eq('id', id).maybeSingle().then(function(res){
     if (res.error) return;
     if (res.data) {
       if (table === 'acc_payments' && accIsAcc() && !RQ.rows.some(function(r){ return r.id === res.data.req_id; })) return;
-      if (table === 'acc_payments' && rqIsDeptUser() && res.data.dept !== S.user.division) return;
+      if (table === 'acc_payments' && rqIsDeptUser() && !rqInMyDepts(res.data.dept)) return;
       accPut(list, res.data);
     } else { var i = list.findIndex(function(x){ return x.id === id; }); if (i >= 0) list.splice(i, 1); }
     ACC.byReq = null; ACC.calc = null;
@@ -26362,7 +26904,7 @@ function apMissingErr(e) { return !!e && (e.code === '42P01' || e.code === 'PGRS
 async function apLoad() {
   if (!rqCanSee()) { AP.rows = []; return; }
   try {
-    var rows = await fetchAllRows(function(){ var q = db.from('acc_pay_approvals').select('*'); if (rqIsDeptUser()) q = q.eq('dept', S.user.division); return q.order('id'); });
+    var rows = await fetchAllRows(function(){ var q = db.from('acc_pay_approvals').select('*'); if (rqIsDeptUser()) q = rqDeptFilter(q); return q.order('id'); });
     AP.rows = rows || []; AP.ok = true;
   } catch (e) {
     if (apMissingErr(e)) { AP.ok = false; AP.rows = []; }
@@ -26562,10 +27104,12 @@ function apRealtime(p) {
   db.from('acc_pay_approvals').select('*').eq('id', id).maybeSingle().then(function(res){
     if (res.error || !res.data) return;
     var x = res.data;
-    if (rqIsDeptUser() && x.dept && x.dept !== S.user.division) return;
+    if (rqIsDeptUser() && x.dept && !rqInMyDepts(x.dept)) return;
     var had = AP.rows.some(function(y){ return y.id === id; });
     var i = AP.rows.findIndex(function(y){ return y.id === id; }); if (i >= 0) AP.rows[i] = x; else AP.rows.push(x);
     var r = RQ.rows.find(function(y){ return y.id === x.req_id; });
+    // Accounts: a payment approval (or its withdrawal) brings the requisition in or takes it out
+    if (accIsAcc() && x.kind === 'approval') { rqRefreshOne(x.req_id).then(function(){ renderRail(); accRedraw(x.req_id); if (typeof S.view === 'string' && S.view.indexOf('rq:') === 0 && !rqFormDirty()) rqRender(S.view); }); if (!r) return; }
     if (!had && r && x.by_id !== S.user.id) {
       if (x.kind === 'request' && apCanApprove()) toast('Accounts asked for payment approval: ' + r.job_no + ' (' + accTkTxt(accP(x.amount)) + ')', 'ok-t');
       if (x.kind === 'approval' && (accIsAcc() || S.user.role === 'admin')) toast('Management approved payment: ' + r.job_no + ' (' + accTkTxt(accP(x.amount)) + ')', 'ok-t');
@@ -28763,9 +29307,10 @@ var BACKUP_TABLES = [ // known tables, parents before children (restore goes in 
   'buyer_logos','buyer_team','buyer_contacts','buyer_notes','buyer_payment','buyer_banking','buyer_bank_changes','buyer_addresses','buyer_change_log',
   'rq_settings','rq_counters','rq_requisitions','rq_events','rq_quotations','rq_queries',
   'acc_banks','acc_iou_people','acc_cheques','acc_payments','acc_iou_entries','acc_pay_approvals',
-  'pos_parties','pos_items','pos_weeks','pos_vals','costing_settings','costings','costing_history','acc_petty_cash','rq_plan_lines','wo_parties','work_orders','work_order_lines','pnl_orders','pnl_settings','pnl_oh_months'
+  'pos_parties','pos_items','pos_weeks','pos_vals','costing_settings','costings','costing_history','acc_petty_cash','rq_plan_lines','wo_parties','work_orders','work_order_lines','pnl_orders','pnl_settings','pnl_oh_months',
+  'erp_departments','erp_people','erp_memberships' // the organisation (Admin -> Departments): departments and people before who-belongs-where
 ];
-var BACKUP_EXCLUDE = ['user_password_view'];
+var BACKUP_EXCLUDE = ['user_password_view', 'notifications']; // notifications are private to each person (and passing)
 var _backupBusy = false;
 // Tables that are matched on something other than an "id" column (from how
 // the app saves them). Used to order the read, and to rebuild a database.
@@ -28775,7 +29320,7 @@ var BACKUP_KEYS = {
   style_attachments: ['merchant_id', 'style'], style_images: ['merchant_id', 'style'], order_field_values: ['order_id', 'field_key'],
   user_password_view: ['user_id'], user_signatures: ['user_id'],
   rq_settings: ['key'], rq_counters: ['dept', 'yr'], costing_settings: ['id'], pnl_settings: ['key'], pnl_oh_months: ['month'],
-  buyer_logos: ['buyer_id'], buyer_payment: ['buyer_id'], buyer_banking: ['buyer_id']
+  buyer_logos: ['buyer_id'], buyer_payment: ['buyer_id'], buyer_banking: ['buyer_id'], erp_memberships: ['person_id', 'dept_id']
 };
 function backupStamp() { var d = new Date(); function z(n){ return String(n).padStart(2,'0'); } return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes()); }
 function downloadBlob(blob, name) {
@@ -29191,7 +29736,7 @@ var SETUP_KNOWN = { // every column the app uses: for tables a backup has no row
   pnl_settings: 'key:text,updated_at:timestamptz,updated_by_name:text,value:jsonb',
   pnl_oh_months: 'actual_tk:numeric,month:text,note:text,updated_at:timestamptz,updated_by_name:text',
   wo_parties: 'address:text,contact:text,created_at:timestamptz,created_by_name:text,id:uuid,name:text,norm:text,phone:text,updated_at:timestamptz,updated_by_name:text',
-  work_orders: 'cancel_reason:text,cancelled_at:timestamptz,cancelled_by_name:text,created_at:timestamptz,deliver_by:date,deliver_to:text,id:uuid,made_by:text,made_by_name:text,made_by_role:text,note:text,party_address:text,party_id:uuid,party_name:text,party_phone:text,received_on:date,seq:integer,show_prices:boolean,source:text,status:text,updated_at:timestamptz,updated_by_name:text,wo_date:date,wo_no:text,yr:integer',
+  work_orders: 'cancel_reason:text,cancelled_at:timestamptz,cancelled_by_name:text,company:text,created_at:timestamptz,deliver_by:date,deliver_to:text,id:uuid,made_by:text,made_by_name:text,made_by_role:text,note:text,party_address:text,party_id:uuid,party_name:text,party_phone:text,received_on:date,seq:integer,show_prices:boolean,source:text,status:text,updated_at:timestamptz,updated_by_name:text,wo_date:date,wo_no:text,yr:integer',
   work_order_lines: 'created_at:timestamptz,dept:text,id:uuid,item:text,qty:numeric,recv_on:date,recv_price:numeric,recv_qty:numeric,ref_id:uuid,ref_no:text,sort:integer,source:text,spec:text,unit:text,unit_price:numeric,wo_id:uuid',
   rq_plan_lines: 'amount:numeric,created_at:timestamptz,created_by_name:text,dept:text,description:text,id:uuid,qty:numeric,remarks:text,req_id:uuid,sort:integer,unit:text,updated_at:timestamptz,updated_by_name:text,week_start:date',
   acc_petty_cash: 'balance:numeric,created_at:timestamptz,day:date,details:text,entered_by:text,entered_by_name:text,history:jsonb,id:uuid,updated_at:timestamptz,updated_by_name:text',
