@@ -2697,7 +2697,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.04.1</p>
+    <p class="login-ver">STAGING V.2026.11.04.2</p>
   </div></div>
 </div>
 
@@ -2740,7 +2740,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.04.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.04.2</div>
 </div>
 
 
@@ -17411,7 +17411,7 @@ var AD_RESERVED = ['acc', 'x', 'plan', 'buy', 'all', 'report', 'overview', 'quot
 function adLevelTxt(l) { var x = AD_LEVELS.find(function(a){ return a[0] === Number(l); }); return x ? x[1] : String(l); }
 function adUser(id) { return (S.users || []).find(function(u){ return u.id === id; }) || null; }
 async function adLoad() {
-  var d = await db.from('erp_departments').select('id,name,dept_key,job_prefix,rq_on,work_types,sort').order('sort', { ascending: true, nullsFirst: false }).order('name');
+  var d = await db.from('erp_departments').select('*').order('sort', { ascending: true, nullsFirst: false }).order('name');
   if (d.error) { AD.deps = null; return d.error; }
   var m = await db.from('erp_memberships').select('person_id,dept_id,level');
   if (m.error) { AD.deps = null; return m.error; }
@@ -17430,8 +17430,9 @@ function adDeptListHtml() {
     var ms = AD.mem.filter(function(m){ return m.dept_id === d.id; }), heads = ms.filter(function(m){ return Number(m.level) === 4; }).map(function(m){ var u = adUser(m.person_id); return u ? u.name : m.person_id; });
     return '<tr><td><b>' + htmlEsc(d.name || d.id) + '</b></td><td class="ad-k">' + htmlEsc(d.dept_key || '') + '</td><td class="ad-k">' + htmlEsc(d.job_prefix || '') + '</td>'
       + '<td>' + (d.dept_key ? '<span class="ad-on' + (d.rq_on ? ' y' : '') + '">' + (d.rq_on ? 'On' : 'Off') + '</span>' : '<span class="ad-sub2">&mdash;</span>') + '</td>'
-      + '<td class="ad-heads">' + (heads.length ? heads.map(function(h){ return '<b>' + htmlEsc(h) + '</b>'; }).join(', ') : '<span class="ad-sub2">No head yet</span>') + '</td>'
-      + '<td class="num">' + ms.length + '</td><td style="text-align:right"><button class="btn sm" onclick="adEdit(\'' + htmlEsc(d.id) + '\')">Change</button></td></tr>';
+      + (adRoleDept(d) ? '<td class="ad-heads"><span class="ad-sub2">Everyone who is ' + adRolesTxt(d) + ' (no head)</span></td><td class="num">&mdash;</td>' : '<td class="ad-heads">' + (heads.length ? heads.map(function(h){ return '<b>' + htmlEsc(h) + '</b>'; }).join(', ') : '<span class="ad-sub2">No head yet</span>') + '</td>'
+      + '<td class="num">' + ms.length + '</td>')
+      + '<td style="text-align:right"><button class="btn sm" onclick="adEdit(\'' + htmlEsc(d.id) + '\')">Change</button></td></tr>';
   }).join('');
   return '<div class="ad-sub2" style="margin-bottom:8px">Each department has its own job-number code and its own head. Switch <b>Requisitions</b> on and its people can raise requisitions; its head approves them first (HOD), then CAO, Audit and Management.</div>'
     + '<div class="scroller"><table class="rq-t ad-dt"><thead><tr><th>Department</th><th>Key</th><th>Job code</th><th>Requisitions</th><th>Head (HOD)</th><th class="num">People</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
@@ -17452,13 +17453,16 @@ function adEdit(id) {
       + '<div class="f"><label>Job-number code (2 to 6 capital letters)</label><input id="ad-code" maxlength="6" style="text-transform:uppercase" value="' + htmlEsc(d ? d.job_prefix || '' : '') + '" placeholder="e.g. STR"></div></div>'
       + '<label class="rq-mine" style="margin:4px 0 8px"><input type="checkbox" id="ad-on"' + (d && d.rq_on ? ' checked' : '') + '> Uses requisitions <span class="sub2">(its people get the requisitions menu)</span></label>'
       + '<div class="f"><label>Types of work on its requisition form (comma between them; "Other" is always added)</label><input id="ad-types" maxlength="600" value="' + htmlEsc(types) + '"></div>'
-      + '<div class="rq-sec-h" style="margin-top:12px">People</div><div id="ad-mems"></div>'
+      + (adRoleDept(d) ? '<div class="rq-sec-h" style="margin-top:12px">People</div><div class="ad-sub2">This department goes by role: everyone who is <b>' + adRolesTxt(d) + '</b> raises its requisitions. It has no members, levels or head; another ' + adRolesTxt(d) + ' member or Admin approves.</div>' : '<div class="rq-sec-h" style="margin-top:12px">People</div><div id="ad-mems"></div>'
       + '<div class="ad-add"><div class="f" style="flex:1;min-width:220px"><label>Add a person</label><select id="ad-addp"><option value="">&mdash; pick &mdash;</option></select></div>'
-      + '<div class="f"><label>As</label>' + adLevelSelect('', 2, ' id="ad-addl"') + '</div><button type="button" class="btn" onclick="adAddMember()">Add</button></div>',
+      + '<div class="f"><label>As</label>' + adLevelSelect('', 2, ' id="ad-addl"') + '</div><button type="button" class="btn" onclick="adAddMember()">Add</button></div>'),
     ok: d ? 'Save changes' : 'Make department',
     after: function(){ adDraftHtml(); setTimeout(function(){ var e = $('ad-name'); if (e) e.focus(); }, 0); },
     onOk: adSave });
 }
+// a department that goes by role (Wave 6E: Management, the owners): no members, levels or head
+function adRoleDept(d) { return !!d && Array.isArray(d.raise_roles) && d.raise_roles.length > 0; }
+function adRolesTxt(d) { return d.raise_roles.map(function(r){ return htmlEsc(roleLabel(r)); }).join(', '); }
 function adDraftHtml() {
   var F = AD.draft, el = $('ad-mems'); if (!F || !el) return;
   el.innerHTML = F.mem.length ? '<table class="ad-mem">' + F.mem.slice().sort(function(a, b){ return b.l - a.l || String((adUser(a.p) || {}).name).localeCompare(String((adUser(b.p) || {}).name)); }).map(function(m){
@@ -17489,7 +17493,7 @@ async function adSave() {
   if (!/^[A-Z][A-Z0-9]{1,5}$/.test(code)) { $('ad-code').focus(); return 'The job-number code is 2 to 6 capital letters or numbers, starting with a letter (e.g. STR).'; }
   if (AD.deps.some(function(x){ return x.id !== F.id && String(x.job_prefix || '').toUpperCase() === code; })) return 'Another department already uses the code ' + code + '.';
   if (AD.deps.some(function(x){ return x.id !== F.id && String(x.name || '').toLowerCase() === name.toLowerCase(); })) return 'There is already a department called ' + name + '.';
-  if (on && !F.mem.length) return 'Add at least one person before switching requisitions on.';
+  if (on && !F.mem.length && !adRoleDept(d)) return 'Add at least one person before switching requisitions on.';
   var row = { name: name, job_prefix: code, rq_on: on, work_types: types }, id = F.id;
   if (!d) {
     var key = adKeyFrom(name);
@@ -17529,7 +17533,7 @@ function adPersonHtml() {
     return '<tr><td><b>' + htmlEsc(d ? d.name : m.dept_id) + '</b>' + (d && d.dept_key && !d.rq_on ? ' <span class="ad-sub2">(requisitions off)</span>' : '') + '</td><td style="width:150px">' + adLevelSelect('', m.level, ' onchange="adPersonLevel(\'' + htmlEsc(m.dept_id) + '\',this.value)"') + '</td>'
       + '<td style="width:40px;text-align:right"><button type="button" class="btn sm" title="Take out of this department" onclick="adPersonDrop(\'' + htmlEsc(m.dept_id) + '\')">&#x2715;</button></td></tr>'; }).join('') + '</table>'
     : '<div class="ad-sub2" style="margin-top:10px">Not in any department yet.</div>';
-  var free = AD.deps.filter(function(d){ return !mine.some(function(m){ return m.dept_id === d.id; }); });
+  var free = AD.deps.filter(function(d){ return !adRoleDept(d) && !mine.some(function(m){ return m.dept_id === d.id; }); });
   if (free.length) h += '<div class="ad-add"><div class="f" style="min-width:220px"><label>Add to department</label><select id="ad-pd">' + free.map(function(d){ return '<option value="' + htmlEsc(d.id) + '">' + htmlEsc(d.name) + '</option>'; }).join('') + '</select></div>'
     + '<div class="f"><label>As</label>' + adLevelSelect('', 2, ' id="ad-pl"') + '</div><button type="button" class="btn pri" onclick="adPersonAdd()">Add</button></div>';
   return h;
@@ -22900,8 +22904,8 @@ function rqCanWork(dept) { return !!S.user && (S.user.role === 'admin' || (rqIsD
 // one requisition: its department's staff, or the person who raised it (the database lets the raiser work on their own, Wave 6A)
 function rqCanWorkOn(r) { return !!r && (rqCanWork(r.dept) || rqIsOwn(r)); }
 // raise a new one for a department: its staff and Admin, or anyone the department lists as its member
-// (e.g. Management in the Management department), even people who see every department
-function rqIsMemberOf(k) { return !!S.user && rqdOk() && RQD.members.some(function(m){ return m.p === S.user.id && m.k === k; }); }
+// or a role the department goes by (Management raises in the Management department), even people who see every department
+function rqIsMemberOf(k) { if (!S.user || !rqdOk()) return false; var rr = rqdRoles(k); if (rr) return rr.indexOf(S.user.role) !== -1; return RQD.members.some(function(m){ return m.p === S.user.id && m.k === k; }); }
 function rqCanRaise(dept) { return rqCanWork(dept) || (RQ_DEPTS.some(function(d){ return d.k === dept; }) && rqIsMemberOf(dept)); }
 function rqHomeView() { return rqIsDeptUser() ? 'rq:' + rqUserDept() + ':pending' : S.user.role === 'accounts' ? 'rq:acc:wait' : (S.user.role === 'admin' ? 'rq:overview' : 'rq:x:pending'); }
 function rqEsc(s) { return htmlEsc(s); }
@@ -25154,7 +25158,7 @@ function rqdNorm(d) {
   var types = Array.isArray(d.types) ? d.types.map(function(t){ return String(t || '').trim(); }).filter(Boolean) : [];
   if (!types.length) types = b ? b.types.slice() : RQD_TYPES.slice();
   if (types.indexOf('Other') === -1) types.push('Other');
-  return { k: d.k, n: d.n || (b && b.n) || d.k, code: d.code || (b && b.code) || String(d.k).toUpperCase().slice(0, 6), types: types, on: !!d.on, id: d.id || null, sort: d.sort };
+  return { k: d.k, n: d.n || (b && b.n) || d.k, code: d.code || (b && b.code) || String(d.k).toUpperCase().slice(0, 6), types: types, on: !!d.on, id: d.id || null, sort: d.sort, roles: Array.isArray(d.roles) && d.roles.length ? d.roles.slice() : null };
 }
 // one call after sign-in; the departments switched on replace the built-in list (same object, so every page sees them)
 async function rqdLoad(force) {
@@ -25180,6 +25184,8 @@ function rqdAny(k) { return RQD.all.find(function(d){ return d.k === k; }) || RQ
 function rqdHeads(k) { return RQD.members.filter(function(m){ return m.k === k && Number(m.l) === 4; }).map(function(m){ return m.p; }); }
 function rqdIsHead(k, uid) { return !!uid && rqdHeads(k).indexOf(uid) !== -1; }
 function rqdHeadOfAny(uid) { return !!uid && RQD.members.some(function(m){ return m.p === uid && Number(m.l) === 4; }); }
+// a department that goes by role (e.g. Management, the owners): no members, raised by those roles (Wave 6E)
+function rqdRoles(k) { var d = rqdAny(k); return d && d.roles ? d.roles : null; }
 function rqdHeadName(k) { var ids = rqdHeads(k), u = ids.length ? (S.users || []).find(function(x){ return x.id === ids[0]; }) : null; return u ? u.name : ''; }
 // the departments a person raises and works requisitions for: a department login's own department, plus the
 // departments they belong to that use requisitions (people who see every department are not department staff)
