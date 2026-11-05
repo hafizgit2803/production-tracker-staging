@@ -2697,7 +2697,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.04.2</p>
+    <p class="login-ver">STAGING V.2026.11.05.1</p>
   </div></div>
 </div>
 
@@ -2740,7 +2740,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.04.2</div>
+  <div id="ver-stamp">STAGING V.2026.11.05.1</div>
 </div>
 
 
@@ -4837,22 +4837,7 @@ function subscribeRealtime() {
       await loadTNARequests(); renderRail();
       if (S.view === 'requests' || S.view === 'my-requests' || S.view === 'inbox') render();
     })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async (payload) => {
-      var involvesMe = payload.new && (payload.new.sender_id === S.user.id || payload.new.recipient_id === S.user.id);
-      var involvedMe = payload.old && (payload.old.sender_id === S.user.id || payload.old.recipient_id === S.user.id);
-      if (!involvesMe && !involvedMe) return; // not any of my conversations — ignore
-      // one reload for a burst of rows (a department message arrives as many rows)
-      clearTimeout(S._msgRtTimer);
-      S._msgRtTimer = setTimeout(async function(){
-        await loadMessages();
-        renderRail();
-        if (S.view === 'inbox') renderInboxTabBody();
-        if (_openThreadId) {
-          var openThread = getMyThreads().find(function(t){ return t.thread_id === _openThreadId; });
-          if (openThread) renderMessageThreadBody(openThread);
-        }
-      }, 300);
-    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, msgRealtime)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'yarn_bookings' }, async (payload) => {
       // Booking/receipt/approval/accessory changes don't touch order ROW data (style,
       // qty, dates) — only the summary counts shown alongside it — so there's no need
@@ -4900,7 +4885,7 @@ function subscribeRealtime() {
 
 // ─── RENDER ───
 function render() {
-  if (rqOnlyUser() && !(typeof S.view === 'string' && S.view.indexOf('rq:') === 0)) { setView(rqHomeView()); return; }
+  if (rqOnlyUser() && !(typeof S.view === 'string' && S.view.indexOf('rq:') === 0) && !(S.view === 'inbox' && msgRqInbox())) { setView(rqHomeView()); return; }
   renderRail();
   if (typeof S.view === 'string' && S.view.indexOf('rq:') === 0) { rqRender(S.view); return; }
   if (bpIsView(S.view)) { bpRender(S.view); return; }
@@ -4926,7 +4911,7 @@ function setView(v) {
   if (document.body) document.body.classList.remove('rq-form-phone'); // the phone layout belongs to the requisition form only
   // Requisitions are a separate part: department staff never leave it, and
   // only admin / management / audit / department staff can open it.
-  if (rqOnlyUser() && !(typeof v === 'string' && v.indexOf('rq:') === 0)) v = rqHomeView();
+  if (rqOnlyUser() && !(typeof v === 'string' && v.indexOf('rq:') === 0) && !(v === 'inbox' && msgRqInbox())) v = rqHomeView();
   if (rqFormDirty() && v !== S.view) {
     appConfirm('Leave the requisition form? What you typed will be lost.', { title: 'Discard changes', okText: 'Leave', cancelText: 'Stay', danger: true }).then(function(ok){ if (ok) { _rqFormStart = null; RQ.editId = null; setView(v); } });
     return;
@@ -5592,8 +5577,22 @@ async function adminShowNewLogin(u) {
 // Merchant/JM: their assigned manager, the commercial team, plus
 //              Admin/Management/HOD directly — never another merchant or JM.
 // Commercial: Admin/Management/HOD, merchants, JMs and each other.
+// The messages wave keeps who may write to whom in the database (message_rights, worked out by
+// erp_msg_targets): Admin, Management, Audit and CAO anyone; everyone else their own department, heads of
+// department each other, Merchandising and Commercial each other, and a reply to anyone who wrote first.
+// When that is in place (S.msgTargets loaded) the page asks the database; otherwise the older rules below.
+function msgRulesOn() { return !!S.user && Array.isArray(S.msgTargets); }
+async function loadMsgTargets() {
+  try {
+    var r = await db.rpc('erp_msg_targets');
+    S.msgTargets = (!r.error && Array.isArray(r.data)) ? r.data.map(function(x){ return (x && typeof x === 'object') ? Object.keys(x).map(function(k){ return x[k]; })[0] : x; }) : null;
+  } catch (e) { S.msgTargets = null; }
+}
+function msgCanCompose() { return msgRulesOn() ? getMessageableUsers().length > 0 : (S.user.role !== 'audit' && S.user.role !== 'cao'); }
+function msgCanReply() { return msgRulesOn() || (S.user.role !== 'audit' && S.user.role !== 'cao'); }
 function getMessageableUsers() {
   if (!S.user) return [];
+  if (msgRulesOn()) return S.users.filter(function(u){ return u.id !== S.user.id && S.msgTargets.indexOf(u.id) >= 0; });
   var role = S.user.role;
   var others = S.users.filter(function(u){ return u.id !== S.user.id && u.role !== 'dept' && u.role !== 'agm'; }); // requisition-only logins have no messaging
 
@@ -5751,7 +5750,7 @@ function openAlertReply(alertId) {
 function closeAlertReply() { closeModal('ov-alert-reply'); _alertReplyTarget = null; }
 async function sendAlertReply() {
   if (!_alertReplyTarget) return;
-  if (S.user.role === 'audit' || S.user.role === 'cao' || !getMessageableUsers().some(function(u){ return u.id === _alertReplyTarget.merchantId; })) { toast('You can\u2019t message this merchant', 'err'); return; }
+  if ((!msgRulesOn() && (S.user.role === 'audit' || S.user.role === 'cao')) || !getMessageableUsers().some(function(u){ return u.id === _alertReplyTarget.merchantId; })) { toast('You can\u2019t message this merchant', 'err'); return; }
   var body = $('ar-body').value.trim();
   if (!body) { toast('Write something first', 'err'); return; }
   var subject = $('ar-subject').value.trim();
@@ -5801,6 +5800,7 @@ async function loadMessages() {
     .or('sender_id.eq.' + S.user.id + ',recipient_id.eq.' + S.user.id)
     .order('created_at', { ascending: true });
   S.messages = res.data || [];
+  await loadMsgTargets(); // who I may write to changes when someone writes to me (a reply is always allowed)
 }
 
 // One row per thread — the two participants are fixed (whoever the root message
@@ -5841,6 +5841,36 @@ function convoOfMessage(msgId) {
   return getMyThreads().find(function(t){ return t.messages.some(function(m){ return m.id === msgId; }); });
 }
 
+// a message row changed somewhere: reload my conversations (one reload for a burst of rows)
+function msgRealtime(payload) {
+  var involvesMe = payload.new && (payload.new.sender_id === S.user.id || payload.new.recipient_id === S.user.id);
+  var involvedMe = payload.old && (payload.old.sender_id === S.user.id || payload.old.recipient_id === S.user.id);
+  if (!involvesMe && !involvedMe) return; // not any of my conversations — ignore
+  clearTimeout(S._msgRtTimer);
+  S._msgRtTimer = setTimeout(async function(){
+    await loadMessages();
+    renderRail();
+    if (S.view === 'inbox') renderInboxTabBody();
+    if (_openThreadId) {
+      var openThread = getMyThreads().find(function(t){ return t.thread_id === _openThreadId; });
+      if (openThread) renderMessageThreadBody(openThread);
+    }
+  }, 300);
+}
+// Requisitions-only logins (department staff, the AGM, Accounts) get the Inbox once the messages wave is in place.
+function msgRqInbox() { return rqOnlyUser() && msgRulesOn(); }
+async function msgRqBoot() {
+  try { await loadMessages(); } catch (e) { console.error('messages:', e); return; }
+  if (!msgRulesOn() || S.msgChannel) return;
+  try { S.msgChannel = db.channel('rq-messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, msgRealtime).subscribe(); } catch (e) {}
+}
+function msgRqRailHtml() {
+  if (!msgRqInbox()) return '';
+  var n = getMyThreads().filter(function(t){ return t.unread; }).length;
+  return '<div class="rail-sep"></div><button class="ni' + (S.view === 'inbox' ? ' on' : '') + '" onclick="setView(\'inbox\')"><span class="av" style="font-size:12px">&#x1F4EC;</span><span class="nm">Messages</span>'
+    + (n ? '<span class="badge">' + n + '</span>' : '') + '</button>';
+}
+
 // ─── INBOX PAGE (Messages / Requests / Alerts, unified) ───
 function getAvailableInboxTabs() {
   var tabs = [{ id: 'messages', label: 'Messages' }];
@@ -5872,7 +5902,7 @@ function renderInbox() {
 
   var tabs = getAvailableInboxTabs();
   if (!tabs.some(function(t){ return t.id === S.inboxTab; })) S.inboxTab = tabs[0].id;
-  var canCompose = S.user.role !== 'audit' && S.user.role !== 'cao';
+  var canCompose = msgCanCompose();
   $('act-row').innerHTML = (S.inboxTab === 'messages' && canCompose) ? '<button class="btn pri" onclick="openSendMessageModal()">+ Send Message</button>' : '';
 
   var tabBarHtml = '<div class="inbox-tabs">' + tabs.map(function(t){
@@ -5903,7 +5933,7 @@ function renderMessagesTabHTML() {
       + '<div class="msg-thread-preview">' + htmlEsc((a.first.body || '').slice(0, 90)) + ((a.first.body||'').length > 90 ? '\u2026' : '') + ' \u00b7 read by ' + a.read + ' of ' + a.rows.length + '</div></div>'
       + '<div class="msg-thread-time">' + relTime(a.first.created_at) + '</div></div>';
   }).join('');
-  if (!threads.length && !annHtml) return '<div class="empty"><h4>No messages yet</h4><div>' + (S.user.role==='audit'||S.user.role==='cao' ? 'Messages sent to you will appear here.' : 'Use "+ Send Message" above to start a conversation.') + '</div></div>';
+  if (!threads.length && !annHtml) return '<div class="empty"><h4>No messages yet</h4><div>' + (!msgCanCompose() ? 'Messages sent to you will appear here.' : 'Use "+ Send Message" above to start a conversation.') + '</div></div>';
   return annHtml + threads.map(function(t) {
     var preview = (t.last.body || '').slice(0, 90);
     var badge = t.actionStatus ? '<span class="action-badge ' + t.actionStatus + '">' + (t.actionStatus==='open'?'Action needed':t.actionStatus==='done'?'Done \u2014 awaiting confirmation':'Resolved') + '</span>' : '';
@@ -5987,7 +6017,7 @@ function openMessageThread(threadId) {
   markThreadRead(threadId);
 }
 function renderMessageThreadBody(thread) {
-  var canReply = S.user.role !== 'audit' && S.user.role !== 'cao';
+  var canReply = msgCanReply();
   var actionBarHtml = (thread.actions || []).filter(function(a){ return a.action_status !== 'resolved'; }).map(function(a){
     var isRequester = a.sender_id === S.user.id;
     var what = htmlEsc(a.subject || (a.body || '').slice(0, 50) + ((a.body || '').length > 50 ? '…' : ''));
@@ -6047,7 +6077,7 @@ async function markThreadRead(threadId) {
   renderRail();
 }
 async function sendThreadReply() {
-  if (S.user.role === 'audit' || S.user.role === 'cao') return; // audit and CAO read, never send
+  if (!msgCanReply()) return; // before the messages wave: audit and CAO read, never send
   var threadId = _openThreadId;
   var thread = getMyThreads().find(function(t){ return t.thread_id === threadId; });
   if (!thread) return;
@@ -23070,8 +23100,9 @@ async function rqBoot() {
   try { await rqLoad(); } catch (e) { console.error('rqLoad:', e); }
   if (S.user.role === 'accounts') { try { await accLoadBooks(); } catch (e) { console.error('accLoadBooks:', e); } }
   rqSubscribe();
+  await msgRqBoot();
   var v = null; try { v = sessionStorage.getItem('pt_last_view'); } catch (e) {}
-  setView(v && v.indexOf('rq:') === 0 ? v : rqHomeView());
+  setView(v && (v.indexOf('rq:') === 0 || (v === 'inbox' && msgRqInbox())) ? v : rqHomeView());
   if (S.user.role === 'accounts') accLoginNotice();
 }
 
@@ -23145,6 +23176,7 @@ function rqRenderRailForDept() {
       + '<div class="rail-sep"></div><div class="rail-label">HR &amp; Compliance</div><div class="rq-rail-note" style="white-space:normal">Certificates, audits and HR records will come here later.</div>';
   } else h = d ? (RQ.missing ? '<div class="rail-label" style="color:var(--muted)">Requisitions need the database update</div>' : rqRailHtml())
             : '<div class="rail-label" style="color:var(--muted)">No department set for this login. Ask the admin.</div>';
+  h += msgRqRailHtml();
   var top = rb.scrollTop; rb.innerHTML = h; rb.scrollTop = top;
 }
 
