@@ -2664,6 +2664,25 @@ table.wo-t-buy td{vertical-align:top}
 .wo-flines .wo-in.wo-ro{background:transparent;border-color:transparent;font-weight:600}
 .wo-over{margin-top:10px}
 .wo-flines td.wo-left{white-space:nowrap;line-height:1.25}.wo-flines td.wo-left .sub2{font-size:11px}
+/* companies (Wave 9B) */
+.co-sw{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:5px 8px 5px 10px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.co-sw select{border:none;background:transparent;font-weight:700;font-size:13px;color:var(--ink);padding:0;cursor:pointer}
+.co-sw.on{border-color:var(--accent);background:var(--accent-soft)}
+.co-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:5px;margin-left:5px;vertical-align:1px;font-family:var(--sans,inherit)}
+.co-c0{background:#E3EFF9;color:#1F5F8E}.co-c1{background:#EAF4E4;color:#3B6D1F}.co-c2{background:#F4ECF8;color:#6A3A86}.co-c3{background:#FCEFE3;color:#9A5214}.co-c4{background:#E6F4F3;color:#1E6B66}.co-c5{background:#EFEDE5;color:#555}
+.co-tag.co-un{outline:1px dashed #B08A2E;outline-offset:-1px}
+.co-tna{margin-left:5px;font-size:9.5px;vertical-align:1px}
+.co-top{background:#F7F4EC;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+.co-top-h{font-size:12px;font-weight:600;margin-bottom:6px}.co-top-n{font-weight:400;color:var(--muted);font-size:11.5px}
+.co-pick{display:inline-flex;align-items:center;gap:4px;margin:0 16px 0 0;cursor:pointer;font-weight:500}
+.draft-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#FBF4E2;border:1px solid #E8D9A8;border-radius:8px;padding:7px 12px;font-size:12.5px;margin-bottom:12px}
+.tna-bad{border-color:#C0392B!important;background:#FDF0EE!important}.tna-msg{color:#C0392B;font-size:11.5px;margin-top:4px;font-weight:600}
+.co-list .tgl{display:inline-block;width:34px;height:19px;border-radius:12px;background:var(--line);position:relative;border:none;cursor:pointer;padding:0}
+.co-list .tgl.on{background:#3B6D1F}.co-list .tgl::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s}.co-list .tgl.on::after{left:17px}
+.co-unb{color:#8A6410}
+.co-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.co-mv-h{font-size:12px;font-weight:600;margin:10px 0 4px}.co-mv-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.co-costbar{display:flex;align-items:center;gap:10px;font-size:12.5px;margin:0 0 8px;flex-wrap:wrap}.co-costbar select{font-weight:600}
 </style>
 </head>
 <body>
@@ -2697,7 +2716,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.05.1</p>
+    <p class="login-ver">STAGING V.2026.11.06.1</p>
   </div></div>
 </div>
 
@@ -2731,6 +2750,7 @@ table.wo-t-buy td{vertical-align:top}
         <div style="display:flex;align-items:center;gap:10px">
           <div class="stamp" id="stamp"></div>
           <div class="ntf-wrap" id="ntf-wrap" style="display:none"><button type="button" class="ntf-bell" id="ntf-bell" onclick="ntfToggle(event)" title="Notifications">&#x1F514;<span class="ntf-badge" id="ntf-badge" style="display:none"></span></button><div class="ntf-panel" id="ntf-panel"></div></div>
+          <span class="co-sw" id="co-switch" style="display:none" title="Show one company, or all of them"><span>Company</span><select id="co-switch-sel" onchange="coSwitchTo(this.value)"></select></span>
           <button onclick="location.reload()" title="Refresh page" style="background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;transition:all .15s" onmouseover="this.style.background='var(--accent-soft)';this.style.color='var(--accent)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">&#x21bb; Refresh</button>
         </div>
       </div>
@@ -2740,7 +2760,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.05.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.06.1</div>
 </div>
 
 
@@ -2751,6 +2771,8 @@ table.wo-t-buy td{vertical-align:top}
     <div class="m-h"><div><h3>New order</h3><div class="msub" id="ord-sub"></div></div>
       <button class="btn" onclick="closeModal('ov-order')">Cancel</button></div>
     <div class="m-b">
+      <div id="co-draft-bar" class="draft-bar" style="display:none"></div>
+      <div id="o_co_top" class="co-top" style="display:none"></div>
 
       <div class="f" id="o_repeat_box" style="margin-bottom:14px;background:var(--accent-soft);border:1px solid #E8CFC2;border-radius:9px;padding:12px 14px">
         <label style="margin-bottom:8px">Is this a repeat order? <span style="font-size:11px;color:var(--muted);font-weight:400">(same style carried over from a previous season)</span></label>
@@ -2999,6 +3021,7 @@ table.wo-t-buy td{vertical-align:top}
     <div class="m-h"><div><h3>New Development</h3><div class="msub">Just the basics — everything else is filled in on the next screen</div></div>
       <button class="btn" onclick="closeModal('ov-new-development')">Cancel</button></div>
     <div class="m-b">
+      <div id="devnew-co" class="co-top" style="display:none"></div>
       <div class="f" style="margin-bottom:10px"><label>Style <span style="color:var(--red)">*</span></label>
         <input id="devnew-style" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FCFBF7;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="e.g. KB-8801"></div>
       <div class="f" style="margin-bottom:10px" id="devnew-merchant-wrap">
@@ -4076,7 +4099,10 @@ document.addEventListener('scroll', hideFloatingTip, true);
 
 // ─── Modal ───
 function openModal(id) { $(id).classList.add('open'); }
-function closeModal(id) { $(id).classList.remove('open'); }
+function closeModal(id) {
+  if (id === 'ov-order' && coOrdCloseAsk()) return;   // a new order with something typed in: keep the draft or discard it first
+  $(id).classList.remove('open');
+}
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     // The notes modal autosaves on a delay while typing — if Escape closes it
@@ -4084,6 +4110,9 @@ document.addEventListener('keydown', e => {
     // first so the last few keystrokes aren't lost.
     var notesModal = document.getElementById('ov-order-notes');
     if (notesModal && notesModal.classList.contains('open')) { closeNotesModal(); return; }
+    // a new order with something typed in: ask to keep the draft first
+    var ordModal = document.getElementById('ov-order'), accModal = document.getElementById('ov-acc');
+    if (ordModal && ordModal.classList.contains('open') && !(accModal && accModal.classList.contains('open')) && coOrdCloseAsk()) { e.preventDefault(); return; }
     document.querySelectorAll('.ov.open').forEach(o => o.classList.remove('open'));
   }
 });
@@ -4170,6 +4199,9 @@ async function startApp() {
   // notifications (the bell): one read, then live; never holds up the rest
   ntfBoot().catch(function(e){ console.error('notifications:', e); });
 
+  // companies first: the Company switch decides what every list below reads
+  try { await coBoot(); } catch (e) { console.error('companies:', e); }
+
   // Department staff (requisitions only): none of the order data is loaded.
   if (rqOnlyUser()) { await rqBoot(); try { grtSchedule(); } catch (e) {} return; }
 
@@ -4192,7 +4224,6 @@ async function startApp() {
     ['loadAppSettings',      loadAppSettings],
     ['loadBuyerSettings',    loadBuyerSettings],
     ['probeCommercialSchema', probeCommercialSchema],
-    ['loadCompanies',        loadCompanies],
     ['rqLoad',               function(){ return rqdLoad().then(function(){ return rqCanSee() ? rqLoad() : null; }); }], // departments first: anyone in a department that uses requisitions sees them
     // logos load in the background so a slow connection never holds up opening the app
     ['bpLoadLogos',          function(){ bpLoadLogos().then(function(){ try { if (bpIsView(S.view) && !document.querySelector('#ov-bp.open')) bpRender(S.view); else renderRail(); } catch (e) { console.error('logos:', e); } }); return Promise.resolve(); }]
@@ -4817,6 +4848,8 @@ function subscribeRealtime() {
       const mid = (payload.new && payload.new.merchant_id) || (payload.old && payload.old.merchant_id);
       if (payload.eventType === 'DELETE') {
         removeLocalOrder(payload.old.id, mid);
+      } else if (payload.new && coHides(payload.new)) {
+        removeLocalOrder(payload.new.id, mid); // another company than the one chosen at the top
       } else if (payload.new) {
         upsertLocalOrder(payload.new); // merge in place — no cache wipe, no reload flash
       }
@@ -6230,6 +6263,455 @@ function ntfToast(x) {
   setTimeout(function(){ ntfToastGone(x.id); }, NTF_TOAST_MS);
 }
 function ntfToastGone(id) { var el = document.querySelector('#ntf-toasts .ntf-toast[data-id="' + id + '"]'); if (el && el.parentNode) el.parentNode.removeChild(el); }
+// ─── COMPANIES (Wave 9B) ───
+// Every business record belongs to one company (the database fills it in and checks it, Wave 9A).
+// This file is the page side:
+//   - the Company switch at the top: All companies, or one; every list follows it. The switch adds
+//     "company = X" to every read of a company-owned table (the list of those tables comes from the
+//     database register, erp_company_register), so nothing per screen has to know about it.
+//   - a small company tag next to each style, and a red tag on orders with a TNA date after shipment
+//   - the company picker on a new order / development, the TNA check in the order form
+//   - the New order draft (kept in erp_drafts until the order is saved or the draft discarded)
+//   - Admin: the companies list, the review list of records not confirmed yet, Move to another company, Move log
+var CO = { regOk: false, reg: [], owned: {}, filter: '', tnaGap: 0, draftOn: false, draftKind: null, draftTimer: null, draftAt: null, restoring: false, det: {}, rev: { t: 'orders', rows: [], tick: {} } };
+var _coFrom = db.from.bind(db);
+function dbAll(t) { return _coFrom(t); }   // reads every company (Admin's review, counts, moves)
+db.from = function(t) {
+  var q = _coFrom(t);
+  if (CO.filter && CO.owned[t]) {
+    var sel = q.select;
+    q.select = function(){ return sel.apply(q, arguments).eq('company', CO.filter); };
+  }
+  return q;
+};
+
+async function coBoot() {
+  await loadCompanies();
+  try {
+    var r = await _coFrom('erp_company_register').select('tbl,kind,label,pk');
+    if (!r.error && r.data && r.data.length) {
+      CO.regOk = true; CO.reg = r.data; CO.owned = {};
+      r.data.forEach(function(x){ if (x.kind !== 'shared') CO.owned[x.tbl] = x; });
+    }
+  } catch (e) { CO.regOk = false; }
+  if (CO.regOk) {
+    try { var g = await _coFrom('erp_rule_settings').select('key,value').eq('key', 'tna_max_days_after_ship').maybeSingle(); if (g.data) CO.tnaGap = parseInt(g.data.value, 10) || 0; } catch (e) {}
+    try { var d = await _coFrom('erp_drafts').select('kind').limit(1); CO.draftOn = !d.error; } catch (e) { CO.draftOn = false; }
+    var saved = ''; try { saved = localStorage.getItem('coFilter:' + S.user.id) || ''; } catch (e) {}
+    CO.filter = saved && companyOf(saved) ? saved : '';
+  }
+  coSyncRq();
+  coRenderSwitch();
+}
+function coList() { return (S.companies || []).slice().sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }); }
+function coActive() { return coList().filter(function(c){ return c.active !== false; }); }
+function coDefault() { var d = coList().find(function(c){ return c.is_default; }); return d ? d.code : ''; }
+function coIdx(code) { var i = coList().findIndex(function(c){ return c.code === code; }); return i < 0 ? 5 : i % 6; }
+// the requisition and accounts pages keep their own short list: fill it from the table
+function coSyncRq() {
+  if (typeof RQ_COMPANIES === 'undefined' || !(S.companies || []).length) return;
+  RQ_COMPANIES.length = 0;
+  coList().forEach(function(c){ RQ_COMPANIES.push({ c: c.code, n: c.name, off: c.active === false }); });
+}
+
+// ── the switch ──
+function coRenderSwitch() {
+  var w = $('co-switch'), sel = $('co-switch-sel'); if (!w || !sel) return;
+  if (!CO.regOk || coList().length < 2) { w.style.display = 'none'; return; }
+  sel.innerHTML = '<option value="">All companies</option>' + coList().map(function(c){
+    return '<option value="' + htmlEsc(c.code) + '"' + (c.code === CO.filter ? ' selected' : '') + '>' + htmlEsc(c.code) + ' &middot; ' + htmlEsc(c.name) + (c.active === false ? ' (off)' : '') + '</option>';
+  }).join('');
+  w.style.display = '';
+  w.classList.toggle('on', !!CO.filter);
+}
+function coSwitchTo(code) {
+  try { if (code) localStorage.setItem('coFilter:' + S.user.id, code); else localStorage.removeItem('coFilter:' + S.user.id); } catch (e) {}
+  location.reload();   // every list loads again for the chosen company
+}
+// a live change from another company is not shown while one company is chosen
+function coHides(row) { return !!(CO.filter && row && row.company && row.company !== CO.filter); }
+
+// ── tags ──
+function coTagCode(code, unconfirmed) {
+  if (!code) return '';
+  var c = companyOf(code);
+  return '<span class="co-tag co-c' + coIdx(code) + (unconfirmed ? ' co-un' : '') + '" title="' + htmlEsc((c ? c.name : code) + (unconfirmed ? ' (not confirmed yet)' : '')) + '">' + htmlEsc(code) + '</span>';
+}
+function coTag(o) { return CO.regOk && o && o.company ? coTagCode(o.company, o.company_confirmed === false) : ''; }
+var CO_TNA = [['plan_yarn', 'Yarn Inhouse'], ['plan_knit', 'Knitting'], ['plan_pp', 'PP Approval'], ['plan_sew', 'Sewing Item Inhouse'], ['plan_pack', 'Packing Item Inhouse'], ['plan_insp', 'Final Inspection']];
+function coAddDays(d, n) { var x = new Date(d + 'T00:00:00'); x.setDate(x.getDate() + n); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
+function coTnaBad(o) {
+  if (!o || !o.ship_date) return false;
+  var lim = coAddDays(o.ship_date, CO.tnaGap || 0);
+  return CO_TNA.some(function(f){ return o[f[0]] && o[f[0]] > lim; });
+}
+function coTnaChip(o) { return coTnaBad(o) ? ' <span class="chip bad co-tna" title="A TNA plan date is after the shipment date. Fix it the next time the dates are changed.">TNA after ship</span>' : ''; }
+function coTnaToggle() { S.coTnaOnly = !S.coTnaOnly; render(); }
+
+// ── company on a new order / development ──
+function coPickerHtml(name, sel, onchange) {
+  return coActive().map(function(c){
+    return '<label class="co-pick"><input type="radio" name="' + name + '" value="' + htmlEsc(c.code) + '"' + (c.code === sel ? ' checked' : '') + (onchange ? ' onchange="' + onchange + '"' : '') + '> ' + coTagCode(c.code) + ' ' + htmlEsc(c.name) + '</label>';
+  }).join('');
+}
+function coOrderCompanyPaint(code, o) {
+  var top = $('o_co_top'), wrap = $('o_company_wrap'), sel = $('o_company'); if (!top) return;
+  if (!CO.regOk || !companyOn()) { top.style.display = 'none'; return; }
+  if (wrap) wrap.style.display = 'none';
+  if (o) {   // an order that exists: the company is shown, never changed here
+    top.innerHTML = '<div class="co-top-h">Company</div>' + coTagCode(o.company, o.company_confirmed === false) + ' <b>' + htmlEsc(companyName(o.company)) + '</b>'
+      + ' <span class="co-top-n">' + (S.user.role === 'admin' ? '<button type="button" class="btn sm" onclick="coMoveOpen(\'orders\',\'' + o.id + '\',\'' + jsAttrEsc(o.style || '') + '\')">Move to another company&hellip;</button>' : 'Only Admin can move an order to another company.') + '</span>';
+  } else {
+    top.innerHTML = '<div class="co-top-h">Company <span style="color:var(--red)">*</span> <span class="co-top-n">the order, its POs, bookings, approvals and payments all belong to this company; only Admin can move it later</span></div>'
+      + coPickerHtml('o_co_pick', code, 'coOrderCompanyPick(this.value)');
+  }
+  top.style.display = '';
+  if (sel && !o) { sel.innerHTML = companyOptions(code || ''); sel.disabled = false; sel.value = code || ''; }
+}
+function coOrderCompanyPick(code) {
+  var sel = $('o_company'); if (sel) { if (!sel.querySelector('option[value="' + code + '"]')) sel.innerHTML = companyOptions(code); sel.value = code || ''; }
+  document.querySelectorAll('input[name="o_co_pick"]').forEach(function(r){ r.checked = r.value === code; });
+  coOrdDraftSoon();
+}
+function coDevCompanyPaint() {
+  var w = $('devnew-co'); if (!w) return;
+  if (!CO.regOk) { w.style.display = 'none'; return; }
+  w.innerHTML = '<div class="co-top-h">Company <span style="color:var(--red)">*</span> <span class="co-top-n">only Admin can move it later</span></div>' + coPickerHtml('devnew_co', CO.filter, '');
+  w.style.display = '';
+}
+function coDevCompanyValue() { var r = document.querySelector('input[name="devnew_co"]:checked'); return r ? r.value : ''; }
+
+// ── TNA check in the order form ──
+var CO_TNA_FORM = [['p_yarn', 'Yarn Inhouse'], ['p_pp', 'PP Approval'], ['p_sew', 'Sewing Item Inhouse'], ['p_pack', 'Packing Item Inhouse'], ['p_insp', 'Final Inspection']];
+function coFormShip() {
+  var multi = (document.querySelector('input[name="o_multi_po"]:checked') || {}).value === 'yes';
+  if (multi) {
+    var ds = [].map.call(document.querySelectorAll('#o_multi_po_rows .mpo-ship'), function(e){ return e.value; }).filter(Boolean).sort();
+    return ds[0] || '';
+  }
+  return ($('o_ship_date') && $('o_ship_date').value) || '';
+}
+function coTnaFormCheck() {
+  var ship = coFormShip(), lim = ship ? coAddDays(ship, CO.tnaGap || 0) : '', bad = [];
+  CO_TNA_FORM.forEach(function(f){
+    var e = $(f[0]); if (!e) return;
+    var m = $('tnam_' + f[0]);
+    var isBad = !!(lim && e.value && e.value > lim);
+    e.classList.toggle('tna-bad', isBad);
+    if (isBad) {
+      if (!m) { m = document.createElement('div'); m.id = 'tnam_' + f[0]; m.className = 'tna-msg'; e.parentNode.appendChild(m); }
+      m.textContent = 'After the shipment date (' + short(ship) + '). TNA dates must be on or before shipment' + (CO.tnaGap ? ' (+' + CO.tnaGap + ' days)' : '') + '.';
+      bad.push(f[1] + ' ' + short(e.value));
+    } else if (m) m.remove();
+  });
+  return bad;
+}
+// called by the save: true = go on
+function coTnaGuard() {
+  if (!CO.regOk) return true;
+  if (_editOrderId) {   // an order that exists: only when a date is changed (old orders keep their dates)
+    var o = findOrderAnywhere(_editOrderId); if (!o) return true;
+    var changed = ($('o_ship_date') && ($('o_ship_date').value || null) !== (o.ship_date || null))
+      || CO_TNA_FORM.some(function(f){ var e = $(f[0]); return e && !e.disabled && (e.value || null) !== (o[f[0].replace('p_', 'plan_')] || null); });
+    if (!changed) { coTnaFormCheck(); return true; }
+  }
+  var bad = coTnaFormCheck();
+  if (!bad.length) return true;
+  $('ord-err').innerHTML = 'A TNA date is after the shipment date: <strong>' + bad.map(htmlEsc).join(', ') + '</strong>. Change the TNA date or the shipment date.';
+  $('ord-err').style.display = 'block';
+  var f = document.querySelector('#ov-order .tna-bad'); if (f) { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  return false;
+}
+
+// ── New order draft ──
+function coOrdDraftActive() { return CO.draftOn && !!CO.draftKind && !_editOrderId && !_confirmingDevOptionId; }
+function coOrdSnap() {
+  var m = $('ov-order'), v = {}, r = {};
+  m.querySelectorAll('input[id],select[id],textarea[id]').forEach(function(e){
+    if (e.type === 'file' || e.type === 'radio' || e.id === 'o_total') return;
+    v[e.id] = e.type === 'checkbox' ? !!e.checked : e.value;
+  });
+  m.querySelectorAll('input[type=radio][name]').forEach(function(e){ if (e.checked) r[e.name] = e.value; });
+  var q = function(row, c){ var e = row.querySelector(c); return e ? e.value : ''; };
+  var rows = [].map.call(m.querySelectorAll('#o_multi_po_rows .mpo-row'), function(row){
+    return { po: q(row, '.mpo-po'), country: q(row, '.mpo-country'), qty: q(row, '.mpo-qty'), ship: q(row, '.mpo-ship'), article: q(row, '.mpo-article'), colour: q(row, '.mpo-colour-override-input') };
+  });
+  var att = []; try { att = JSON.parse(JSON.stringify(_orderAttachments || [])); } catch (e) {}
+  return { v: v, r: r, rows: rows, colors: (_orderColors || []).slice(), comps: (_orderComps || []).slice(), att: att };
+}
+function coOrdHasContent(s) {
+  if (!s) return false;
+  var keys = ['o_style', 'o_po', 'o_qty', 'o_fob', 'o_buyer', 'o_house', 'o_ship_date', 'o_confirm_date', 'o_article_no', 'o_season', 'o_department', 'o_avg_weight', 'p_yarn', 'p_pp', 'p_sew', 'p_pack', 'p_insp', 'o_repeat_style'];
+  return keys.some(function(k){ return s.v[k] && String(s.v[k]).trim(); }) || s.colors.length > 0 || s.comps.length > 0
+    || s.rows.some(function(x){ return x.po || x.qty || x.ship; });
+}
+function coOrdDraftSoon() {
+  if (!coOrdDraftActive() || CO.restoring) return;
+  clearTimeout(CO.draftTimer);
+  CO.draftTimer = setTimeout(coOrdDraftSave, 900);
+}
+async function coOrdDraftSave() {
+  clearTimeout(CO.draftTimer); CO.draftTimer = null;
+  if (!coOrdDraftActive()) return;
+  var s = coOrdSnap();
+  if (!coOrdHasContent(s)) return;
+  var now = new Date().toISOString();
+  var r = await db.from('erp_drafts').upsert({ user_id: S.user.id, kind: CO.draftKind, data: s, updated_at: now }, { onConflict: 'user_id,kind' });
+  if (r.error) { console.error('draft:', r.error.message); return; }
+  CO.draftAt = now; coOrdDraftBar('saved');
+}
+function coOrdDraftBar(how) {
+  var b = $('co-draft-bar'); if (!b) return;
+  if (!coOrdDraftActive() || !CO.draftAt) { b.style.display = 'none'; return; }
+  var t = new Date(CO.draftAt), hm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0');
+  var day = t.toDateString() === new Date().toDateString() ? hm : short(CO.draftAt.slice(0, 10)) + ' ' + hm;
+  b.innerHTML = '<span>&#x270E; <b>' + (how === 'restored' ? 'Your draft from ' + day + ' is back' : 'Draft saved ' + day) + '</b> &middot; everything you type is kept until the order is saved</span><button type="button" class="btn sm" onclick="coOrdDraftDiscard()">Discard draft</button>';
+  b.style.display = 'flex';
+}
+async function coOrdDraftOpen() {   // the end of openOrder: a brand new order
+  CO.draftKind = null; CO.draftAt = null; coOrdDraftBar();
+  coOrderCompanyPaint(CO.filter && companyOf(CO.filter) && companyOf(CO.filter).active !== false ? CO.filter : '', null);
+  coTnaFormCheck();
+  if (!CO.draftOn || _editOrderId || _confirmingDevOptionId || CO.noDraft) return;
+  CO.draftKind = 'new_order:' + orderForMerchant;
+  var r = await db.from('erp_drafts').select('data,updated_at').eq('user_id', S.user.id).eq('kind', CO.draftKind).maybeSingle();
+  if (r.error || !r.data || !r.data.data) return;
+  CO.restoring = true;
+  try { coOrdRestore(r.data.data); } catch (e) { console.error('draft restore:', e); }
+  CO.restoring = false;
+  CO.draftAt = r.data.updated_at; coOrdDraftBar('restored');
+}
+function coOrdRestore(s) {
+  var m = $('ov-order'), fire = function(e){ e.dispatchEvent(new Event('change', { bubbles: true })); };
+  Object.keys(s.r || {}).forEach(function(name){
+    if (name === 'o_co_pick') return;
+    var el = [].find.call(m.querySelectorAll('input[type=radio][name="' + name + '"]'), function(x){ return x.value === s.r[name]; });
+    if (el && !el.checked) { el.checked = true; fire(el); }
+  });
+  var rows = s.rows || [];
+  if (rows.length) {
+    var have = m.querySelectorAll('#o_multi_po_rows .mpo-row').length;
+    for (var i = have; i < rows.length; i++) addMultiPORow();
+    [].forEach.call(m.querySelectorAll('#o_multi_po_rows .mpo-row'), function(row, i){
+      var d = rows[i]; if (!d) return;
+      var set = function(c, v){ var e = row.querySelector(c); if (e && v != null) e.value = v; };
+      set('.mpo-po', d.po); set('.mpo-country', d.country); set('.mpo-qty', d.qty); set('.mpo-ship', d.ship); set('.mpo-article', d.article);
+      if (d.colour) { set('.mpo-colour-override-input', d.colour); var ov = row.querySelector('.mpo-colour-override'); if (ov) ov.style.display = ''; }
+    });
+  }
+  var v = s.v || {};
+  ['o_buyer', 'o_country', 'o_ship_date'].forEach(function(id){ var e = $(id); if (e && v[id] != null) { e.value = v[id]; fire(e); } });
+  Object.keys(v).forEach(function(id){
+    if (['o_buyer', 'o_country', 'o_ship_date'].indexOf(id) !== -1) return;
+    var e = $(id); if (!e || e.disabled) return;
+    if (e.type === 'checkbox') e.checked = !!v[id]; else e.value = v[id];
+  });
+  if (v.o_company) coOrderCompanyPick(v.o_company);
+  _orderColors = (s.colors || []).slice(); _orderComps = (s.comps || []).slice();
+  try { renderColourTags(); renderCompTags(); } catch (e) {}
+  if (s.att && s.att.length) { _orderAttachments = s.att; try { renderAttachTags(); } catch (e) {} }
+  try { calcTotal(); } catch (e) {}
+  coTnaFormCheck();
+}
+async function coOrdDraftClear() {
+  var k = CO.draftKind; CO.draftKind = null; CO.draftAt = null; clearTimeout(CO.draftTimer);
+  if (!k || !CO.draftOn) return;
+  await db.from('erp_drafts').delete().eq('user_id', S.user.id).eq('kind', k);
+}
+async function coOrdDraftDiscard() {
+  if (!(await appConfirm('Everything typed in this new order will be cleared.', { title: 'Discard the draft?', okText: 'Discard', danger: true }))) return;
+  var mid = orderForMerchant;
+  await coOrdDraftClear();
+  await openOrder(mid);
+}
+// Cancel, a click outside the form or Escape (closeModal asks this first): true = the question is shown, do not close yet
+function coOrdCloseAsk() {
+  if (!coOrdDraftActive()) return false;
+  if (!coOrdHasContent(coOrdSnap())) { CO.draftKind = null; clearTimeout(CO.draftTimer); return false; }
+  var s = coOrdSnap(), co = s.v.o_company ? companyName(s.v.o_company) : '';
+  accForm({ title: 'Keep this new order as a draft?',
+    body: '<div>You typed in ' + (s.v.o_style ? '<b>' + htmlEsc(s.v.o_style) + '</b>' : 'a new order') + (co ? ' for ' + htmlEsc(co) : '') + '. Keep it and it will be here the next time you press <b>+ New order</b>, on this or any other computer.</div>',
+    extra: '<button class="btn danger" onclick="coOrdCloseDiscard()">Discard</button>',
+    ok: 'Keep draft',
+    after: function(){ var c = document.querySelector('#acc-m-foot .btn:not(.pri):not(.danger)'); if (c) c.textContent = 'Back to the form'; var k = $('acc-m-ok'); if (k) k.focus(); },
+    onOk: async function(){ await coOrdDraftSave(); CO.draftKind = null; closeModal('ov-order'); return true; } });
+  return true;
+}
+async function coOrdCloseDiscard() { accClose(); await coOrdDraftClear(); closeModal('ov-order'); }
+document.addEventListener('input', function(e){ if (e.target && e.target.closest && e.target.closest('#ov-order')) { coOrdDraftSoon(); if (/^p_|o_ship_date|mpo-ship/.test(e.target.id + ' ' + e.target.className)) coTnaFormCheck(); } }, true);
+document.addEventListener('change', function(e){ if (e.target && e.target.closest && e.target.closest('#ov-order')) { coOrdDraftSoon(); coTnaFormCheck(); } }, true);
+document.addEventListener('click', function(e){ if (e.target && e.target.closest && e.target.closest('#ov-order button')) setTimeout(coOrdDraftSoon, 50); }, true);
+
+// ── Admin: Move to another company ──
+function coCap(t) { t = String(t || ''); return t.charAt(0).toUpperCase() + t.slice(1); }
+function coLabelOf(t) { var r = CO.owned[t] || CO.reg.find(function(x){ return x.tbl === t; }); return r && r.label ? r.label : t; }
+async function coMoveOpen(table, id, label) {
+  if (!S.user || S.user.role !== 'admin' || !CO.owned[table]) return;
+  var pk = CO.owned[table].pk || 'id';
+  var cur = await dbAll(table).select('company,company_confirmed').eq(pk, id).maybeSingle();
+  if (cur.error || !cur.data) { toast('Could not read the record: ' + (cur.error ? cur.error.message : 'not found'), 'err'); return; }
+  var from = cur.data.company, opts = coActive().map(function(c){ return '<option value="' + htmlEsc(c.code) + '"' + (c.code === from ? '' : '') + '>' + htmlEsc(c.code) + ' &middot; ' + htmlEsc(c.name) + (c.code === from ? ' (stays, mark confirmed)' : '') + '</option>'; }).join('');
+  var first = (coActive().find(function(c){ return c.code !== from; }) || {}).code || from;
+  accForm({ title: 'Move ' + coLabelOf(table) + ' ' + (label || '') + ' to another company', sub: 'Now ' + coTagCode(from, cur.data.company_confirmed === false) + ' ' + htmlEsc(companyName(from)),
+    body: '<div class="f"><label>Move to</label><select id="co-mv-to" onchange="coMovePreview(\'' + table + '\',\'' + id + '\')">' + opts + '</select></div>'
+      + '<div class="co-mv-h">Everything that moves with it</div><div id="co-mv-prev" class="co-mv-prev"><span class="sub2">Working it out&hellip;</span></div>'
+      + '<div class="f" style="margin-top:10px"><label>Reason (kept in the move log)</label><input id="co-mv-why" maxlength="300" placeholder="e.g. Order was taken in Banga, entered under MTS by mistake"></div>'
+      + '<div class="sub2" style="margin-top:8px">Requisitions and work orders that move get the next number of the new company; the old number stays on the record.</div>',
+    ok: 'Move', after: function(){ $('co-mv-to').value = first; coMovePreview(table, id); },
+    onOk: async function(){
+      var to = $('co-mv-to').value, why = $('co-mv-why').value.trim();
+      if (why.length < 3) return 'Write the reason for the move.';
+      var r = await db.rpc('erp_company_move', { p_table: table, p_id: id, p_to: to, p_reason: why, p_preview: false });
+      if (r.error) return r.error.message;
+      var n = (r.data || []).reduce(function(a, x){ return a + (x.rows_moved || 0); }, 0);
+      toast(to === from ? 'Confirmed in ' + to + ' (' + n + ' records)' : 'Moved to ' + to + ' (' + n + ' records)', 'ok-t');
+      setTimeout(function(){ location.reload(); }, 900);
+      return true;
+    } });
+}
+async function coMovePreview(table, id) {
+  var el = $('co-mv-prev'), to = $('co-mv-to') && $('co-mv-to').value; if (!el || !to) return;
+  el.innerHTML = '<span class="sub2">Working it out&hellip;</span>';
+  var r = await db.rpc('erp_company_move', { p_table: table, p_id: id, p_to: to, p_reason: '', p_preview: true });
+  if (!$('co-mv-prev')) return;
+  if (r.error) { el.innerHTML = '<span class="rq-warn">' + htmlEsc(r.error.message) + '</span>'; return; }
+  var tot = 0, by = {}, keys = [];
+  (r.data || []).forEach(function(x){ var k = coCap(coLabelOf(x.tbl)); if (!(k in by)) { by[k] = 0; keys.push(k); } by[k] += x.rows_moved; tot += x.rows_moved; });
+  var root = coCap(coLabelOf(table)); keys.sort(function(a, b){ return (a === root ? -1 : b === root ? 1 : a.localeCompare(b)); });
+  el.innerHTML = keys.map(function(k){ return '<div class="co-mv-row"><span>' + htmlEsc(k) + '</span><b>' + by[k] + '</b></div>'; }).join('');
+  var ok = $('acc-m-ok'); if (ok) ok.textContent = 'Move ' + tot + ' record' + (tot === 1 ? '' : 's');
+}
+
+// ── Admin: the companies card ──
+async function renderCompaniesCard() {
+  var el = $('admin-company-body'); if (!el) return;
+  if (!companyOn()) { el.innerHTML = '<div class="adm-sub">Run <b>company-migration.sql</b> (in all-updates-since-live.sql) in Supabase to switch on companies.</div>'; return; }
+  if (!CO.regOk) { el.innerHTML = coList().map(coDetailsHtml).join('') + coAddHtml(); return; }
+  el.innerHTML = '<div class="sub2">Counting&hellip;</div>';
+  var cnt = {}, un = {}, unT = 0;
+  coList().forEach(function(c){ cnt[c.code] = { o: 0, r: 0 }; un[c.code] = 0; });
+  var o = await fetchAllRows(function(){ return dbAll('orders').select('company,company_confirmed'); });
+  (o || []).forEach(function(x){ if (cnt[x.company]) cnt[x.company].o++; });
+  var q = await fetchAllRows(function(){ return dbAll('rq_requisitions').select('company'); });
+  (q || []).forEach(function(x){ if (cnt[x.company]) cnt[x.company].r++; });
+  var own = CO.reg.filter(function(x){ return x.kind === 'own'; });
+  var res = await Promise.all(own.map(function(x){ return dbAll(x.tbl).select('company').eq('company_confirmed', false).limit(5000); }));
+  res.forEach(function(r){ (r.data || []).forEach(function(x){ if (un[x.company] != null) { un[x.company]++; unT++; } }); });
+  var el2 = $('admin-company-body'); if (!el2) return;
+  var def = coDefault();
+  el2.innerHTML = '<div class="scroller"><table class="rq-t co-list"><thead><tr><th>Code</th><th>Legal name</th><th>Invoice prefix</th><th class="num">Orders</th><th class="num">Requisitions</th><th class="num">Not confirmed</th><th>In use</th><th>Default</th><th></th></tr></thead><tbody>'
+    + coList().map(function(c){
+        var on = c.active !== false;
+        return '<tr><td>' + coTagCode(c.code) + '</td><td>' + htmlEsc(c.name || '') + '</td><td>' + (c.invoice_prefix ? htmlEsc(c.invoice_prefix) : '<span class="adm-muted">not set</span>') + '</td>'
+          + '<td class="num">' + cnt[c.code].o + '</td><td class="num">' + cnt[c.code].r + '</td><td class="num">' + (un[c.code] ? '<b class="co-unb">' + un[c.code] + '</b>' : '0') + '</td>'
+          + '<td><button type="button" class="tgl' + (on ? ' on' : '') + '" title="' + (on ? 'In use: new records can be made for it' : 'Switched off: no new records; its history stays') + '" onclick="coSetActive(\'' + htmlEsc(c.code) + '\',' + (on ? 'false' : 'true') + ')"></button></td>'
+          + '<td><input type="radio" name="co-def"' + (c.code === def ? ' checked' : '') + ' title="Records with no company are put here (not confirmed)" onchange="coSetDefault(\'' + htmlEsc(c.code) + '\')"></td>'
+          + '<td><button class="btn sm" onclick="CO.det[\'' + htmlEsc(c.code) + '\']=!CO.det[\'' + htmlEsc(c.code) + '\'];renderCompaniesCard()">' + (CO.det[c.code] ? 'Hide details' : 'Details') + '</button></td></tr>'
+          + (CO.det[c.code] ? '<tr><td colspan="9" style="white-space:normal">' + coDetailsHtml(c) + '</td></tr>' : '');
+      }).join('') + '</tbody></table></div>'
+    + '<div class="co-btns">' + (unT ? '<button class="btn sm pri" onclick="coReviewOpen()">Review ' + unT + ' not confirmed</button>' : '<span class="sub2">Every record is confirmed.</span>')
+    + '<button class="btn sm" onclick="CO.addOpen=!CO.addOpen;renderCompaniesCard()">+ Add company</button><button class="btn sm" onclick="coMoveLog()">Move log</button></div>'
+    + (CO.addOpen ? coAddHtml() : '')
+    + '<div class="adm-sub" style="margin-top:8px">Switching a company off stops new records for it; its history stays. Records with no company go to the default, marked not confirmed. "Details" has the bank, licence and signature used on documents.</div>';
+}
+function coDetailsHtml(c) {
+  return '<div class="co-card"><div class="co-h"><b>' + htmlEsc(c.code) + '</b> &middot; ' + htmlEsc(c.name || '') + '</div><div class="yarn-form-grid">'
+    + COMPANY_FIELDS.map(function(f){
+        var wide = f[0] === 'address' || f[0] === 'bank_branch', id = 'co-' + htmlEsc(c.code) + '-' + f[0];
+        return '<div class="f"' + (wide ? ' style="grid-column:1/-1"' : '') + '><label>' + f[1] + '</label>'
+          + (wide ? '<textarea id="' + id + '" rows="2" style="width:100%">' + htmlEsc(c[f[0]] || '') + '</textarea>' : '<input id="' + id + '" value="' + htmlEsc(c[f[0]] || '') + '">') + '</div>';
+      }).join('')
+    + '<div class="f" style="grid-column:1/-1"><label>Signature / seal picture (printed on the commercial invoice)</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+    + (ciSigOk(c.signature_img) ? '<img src="' + c.signature_img + '" alt="" style="max-height:56px;max-width:220px;border:1px solid var(--line);border-radius:6px;padding:4px;background:#fff"><button class="btn sm" onclick="removeCompanySignature(\'' + htmlEsc(c.code) + '\')">Remove</button>' : '<span class="adm-muted">None yet. Without one the invoice has a line to sign by hand.</span>')
+    + '<input type="file" accept="image/png,image/jpeg" style="width:auto" onchange="companySignaturePick(\'' + htmlEsc(c.code) + '\',this)"></div></div>'
+    + '</div><div style="margin-top:8px"><button class="btn sm pri" onclick="saveCompany(\'' + htmlEsc(c.code) + '\')">Save ' + htmlEsc(c.code) + '</button></div></div>';
+}
+function coAddHtml() {
+  return '<div class="co-card"><div class="co-h">Add a company</div><div class="yarn-form-grid"><div class="f"><label>Short code (e.g. MTS)</label><input id="co-new-code" maxlength="8"></div><div class="f"><label>Legal name</label><input id="co-new-name" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addCompany();}"></div></div><div style="margin-top:8px"><button class="btn sm pri" onclick="addCompany()">Add company</button></div></div>';
+}
+async function coSetActive(code, on) {
+  if (S.user.role !== 'admin') return;
+  if (!on && code === coDefault()) { toast('This is the default company. Make another one the default first.', 'err'); return; }
+  if (!on && !(await appConfirm(companyName(code) + ' will take no new records. Its history stays and can still be read.', { title: 'Switch ' + code + ' off?', okText: 'Switch off' }))) return;
+  var r = await db.from('companies').update({ active: on }).eq('code', code);
+  if (r.error) { showSaveError('Not saved.\n\nDatabase said:\n' + r.error.message); return; }
+  var c = companyOf(code); if (c) c.active = on;
+  toast(code + (on ? ' is in use' : ' is switched off'), 'ok-t'); coSyncRq(); coRenderSwitch(); renderCompaniesCard();
+}
+async function coSetDefault(code) {
+  if (S.user.role !== 'admin') return;
+  var c = companyOf(code); if (!c || c.active === false) { toast('Switch the company on first', 'err'); renderCompaniesCard(); return; }
+  var a = await db.from('companies').update({ is_default: false }).eq('is_default', true);
+  var b = a.error ? a : await db.from('companies').update({ is_default: true }).eq('code', code);
+  if (b.error) { showSaveError('Not saved.\n\nDatabase said:\n' + b.error.message); await loadCompanies(); renderCompaniesCard(); return; }
+  coList().forEach(function(x){ x.is_default = x.code === code; });
+  toast(code + ' is the default company', 'ok-t'); renderCompaniesCard();
+}
+
+// ── Admin: review the records not confirmed yet ──
+var CO_LBL = ['style', 'job_no', 'wo_no', 'bank', 'name', 'cheque_no', 'party_name', 'item', 'title', 'label'];
+function coRowMain(r) { var k = CO_LBL.find(function(x){ return r[x]; }); return (k ? String(r[k]) : String(r.id || '').slice(0, 8)) + (r.po_number ? ' / ' + r.po_number : ''); }
+function coRowDetail(r) {
+  var u = r.merchant_id || r.owner_id || r.created_by; var who = u && typeof userById === 'function' && userById(u) ? userById(u).name : (r.owner_name || r.created_by_name || '');
+  return [r.buyer, who, r.ship_date ? 'ships ' + short(r.ship_date) : '', r.created_at ? 'made ' + short(String(r.created_at).slice(0, 10)) : ''].filter(Boolean).map(htmlEsc).join(' &middot; ');
+}
+async function coReviewOpen() {
+  if (S.user.role !== 'admin') return;
+  var own = CO.reg.filter(function(x){ return x.kind === 'own'; });
+  var cs = await Promise.all(own.map(function(x){ return dbAll(x.tbl).select('*', { count: 'exact', head: true }).eq('company_confirmed', false); }));
+  CO.rev.counts = {}; own.forEach(function(x, i){ CO.rev.counts[x.tbl] = cs[i].count || 0; });
+  var first = own.find(function(x){ return CO.rev.counts[x.tbl] > 0; });
+  CO.rev.t = CO.rev.counts[CO.rev.t] ? CO.rev.t : (first ? first.tbl : 'orders');
+  accForm({ title: 'Not confirmed', sub: 'These had no company and were put under the default company. Tick the right ones and confirm them where they are, or move them.', wide: true, view: true,
+    body: '<div id="co-rev"></div>', after: coReviewLoad });
+}
+async function coReviewLoad() {
+  var box = $('co-rev'); if (!box) return;
+  box.innerHTML = '<div class="sub2">Loading&hellip;</div>';
+  var r = await dbAll(CO.rev.t).select('*').eq('company_confirmed', false).limit(500);
+  CO.rev.rows = r.data || []; CO.rev.tick = {};
+  if (CO.rev.t === 'orders') CO.rev.rows.sort(function(a, b){ return String(a.style || '').localeCompare(String(b.style || '')); });
+  coReviewPaint();
+}
+function coReviewPaint() {
+  var box = $('co-rev'); if (!box) return;
+  var own = CO.reg.filter(function(x){ return x.kind === 'own' && CO.rev.counts[x.tbl]; });
+  var n = Object.keys(CO.rev.tick).filter(function(k){ return CO.rev.tick[k]; }).length, pk = (CO.owned[CO.rev.t] || {}).pk || 'id';
+  box.innerHTML = '<div class="co-btns" style="margin:0 0 8px"><select onchange="CO.rev.t=this.value;coReviewLoad()">' + own.map(function(x){ return '<option value="' + x.tbl + '"' + (x.tbl === CO.rev.t ? ' selected' : '') + '>' + htmlEsc(coCap(x.label)) + ' (' + CO.rev.counts[x.tbl] + ')</option>'; }).join('') + '</select>'
+    + '<label class="sub2"><input type="checkbox" onchange="CO.rev.rows.forEach(function(r){CO.rev.tick[r[\'' + pk + '\']]=this.checked;},this);coReviewPaint()"> tick all</label></div>'
+    + (CO.rev.rows.length ? '<div class="scroller" style="max-height:52vh"><table class="rq-t"><thead><tr><th></th><th>Record</th><th>Details</th><th>Company now</th></tr></thead><tbody>'
+      + CO.rev.rows.map(function(r){ var id = r[pk]; return '<tr><td><input type="checkbox"' + (CO.rev.tick[id] ? ' checked' : '') + ' onchange="CO.rev.tick[\'' + id + '\']=this.checked;coReviewPaint()"></td><td><b>' + htmlEsc(coRowMain(r)) + '</b></td><td class="sub2" style="white-space:normal">' + coRowDetail(r) + '</td><td>' + coTagCode(r.company, true) + '</td></tr>'; }).join('')
+      + '</tbody></table></div>' : '<div class="sub2" style="padding:12px">Nothing left here.</div>')
+    + '<div class="co-btns"><span class="sub2">' + n + ' ticked</span>'
+    + '<input id="co-rev-why" placeholder="Reason (kept in the move log)" value="' + htmlEsc(CO.rev.why || 'Checked in the review list') + '" oninput="CO.rev.why=this.value" style="min-width:240px">'
+    + '<button class="btn sm pri"' + (n ? '' : ' disabled') + ' onclick="coReviewDo(\'\')">Confirm where they are</button>'
+    + coActive().map(function(c){ return '<button class="btn sm"' + (n ? '' : ' disabled') + ' onclick="coReviewDo(\'' + htmlEsc(c.code) + '\')">Move to ' + htmlEsc(c.name) + '</button>'; }).join('') + '</div>'
+    + '<div id="co-rev-msg" class="sub2"></div>';
+}
+async function coReviewDo(to) {
+  var pk = (CO.owned[CO.rev.t] || {}).pk || 'id', why = ($('co-rev-why') && $('co-rev-why').value.trim()) || 'Checked in the review list';
+  var ids = CO.rev.rows.filter(function(r){ return CO.rev.tick[r[pk]]; });
+  if (!ids.length) return;
+  if (to && !(await appConfirm(ids.length + ' record' + (ids.length === 1 ? '' : 's') + ' and everything linked to them will move to ' + companyName(to) + '.', { title: 'Move to ' + to + '?', okText: 'Move' }))) return;
+  var ok = 0, bad = [];
+  for (var i = 0; i < ids.length; i++) {
+    var r = ids[i], m = $('co-rev-msg'); if (m) m.textContent = 'Working ' + (i + 1) + ' of ' + ids.length + '…';
+    var res = await db.rpc('erp_company_move', { p_table: CO.rev.t, p_id: String(r[pk]), p_to: to || r.company, p_reason: why, p_preview: false });
+    if (res.error) bad.push(coRowMain(r) + ': ' + res.error.message); else ok++;
+  }
+  toast(ok + ' done' + (bad.length ? ', ' + bad.length + ' not done' : ''), bad.length ? 'err' : 'ok-t');
+  if (bad.length) showSaveError('Not done:\n\n' + bad.join('\n'));
+  var c = await dbAll(CO.rev.t).select('*', { count: 'exact', head: true }).eq('company_confirmed', false); CO.rev.counts[CO.rev.t] = c.count || 0;
+  await coReviewLoad(); renderCompaniesCard();
+}
+async function coMoveLog() {
+  var r = await dbAll('erp_company_moves').select('*').order('at', { ascending: false }).limit(300);
+  var rows = r.data || [];
+  accForm({ title: 'Move log', sub: 'Every move or confirmation by Admin. Nobody can change this list.', wide: true, view: true,
+    body: rows.length ? '<div class="scroller" style="max-height:60vh"><table class="rq-t"><thead><tr><th>When</th><th>By</th><th>Record</th><th>From</th><th>To</th><th>Reason</th><th>Numbers</th></tr></thead><tbody>'
+      + rows.map(function(x){ return '<tr><td>' + htmlEsc(new Date(x.at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })) + '</td><td>' + htmlEsc(x.by_name || '') + '</td><td>' + htmlEsc(coLabelOf(x.root_table)) + ' <b>' + htmlEsc(x.root_label || '') + '</b></td><td>' + coTagCode(x.from_company) + '</td><td>' + coTagCode(x.to_company) + '</td><td style="white-space:normal">' + htmlEsc(x.reason || '') + '</td><td class="sub2">' + (x.numbers || []).map(function(n){ return htmlEsc(n.old) + ' &rarr; ' + htmlEsc(n.new); }).join('<br>') + '</td></tr>'; }).join('')
+      + '</tbody></table></div>' : '<div class="sub2" style="padding:12px">No moves yet.</div>' });
+}
 // Merchant board: the live board, scrolling, floating header, shipped / archive, trash, activity
 
 async function cleanOldArchive() {
@@ -6317,6 +6799,8 @@ async function renderBoard(uid, skipDataReload) {
   const VSTEPS = getSteps(division);
   let os = (await loadBoardOrders(uid))
     .sort((a, b) => (daysTo(a.ship_date)||999) - (daysTo(b.ship_date)||999));
+  var coTnaN = os.filter(coTnaBad).length;
+  if (S.coTnaOnly && coTnaN) os = os.filter(coTnaBad);
 
   // Load custom field values for all visible orders
   if (!skipDataReload) {
@@ -6344,6 +6828,7 @@ async function renderBoard(uid, skipDataReload) {
   let actBtns = '';
   if (canEdit) actBtns += `<button class="btn pri" onclick="openOrder('${uid}')">+ New order</button>`;
   if (canMessageThisMerchant) actBtns += `<button class="btn" onclick="openSendMessageModal('${uid}')">+ Send Message</button>`;
+  if (coTnaN) actBtns += `<button class="btn ${S.coTnaOnly ? 'pri' : 'danger'}" onclick="coTnaToggle()" title="Orders with a TNA plan date after the shipment date">${S.coTnaOnly ? 'Show all orders' : 'TNA after shipment (' + coTnaN + ')'}</button>`;
   actBtns += `<button class="btn ghost" onclick="openPrint('${uid}')">Print</button>`;
   actBtns += `<button class="btn ghost" id="mat-report-btn" onclick="openMaterialStatusReport('${uid}')" title="Printable yarn &amp; accessories status for the weekly review">&#x1F4CA; Material Report</button>`;
   actBtns += `<button class="btn ghost" id="meet-report-btn" onclick="openMeetingReportOptions('${uid}')" title="Printable order status for the weekly meeting with management">&#x1F4DD; Meeting Report</button>`;
@@ -6773,7 +7258,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
       return '<td class="' + (extraClass||'') + frozenClass(it) + wrapCls + '" style="' + style + '">' + innerHtml + '</td>';
     }
 
-    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + htmlEsc(o.style) + '</span>' + '<div class="sub2" style="margin-left:10px;font-size:8.5px;display:flex;align-items:center;gap:0;min-height:18px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order \u2014 view history">&#x1F501;</span>' : '') + noteBadge(o) + '</div>', 'cursor:pointer;');
+    if (itemByKey['_style']) cellsByKey['_style'] = singleTd('_style', 'stk-anchor', '<span class="flag ' + (ms.length?'on':'') + '">\u200b</span><span class="sty">' + htmlEsc(o.style) + '</span>' + coTag(o) + coTnaChip(o) + '<div class="sub2" style="margin-left:10px;font-size:8.5px;display:flex;align-items:center;gap:0;min-height:18px">' + (ms.length ? ms.length+'x late' : pctPacked(o)+'% packed') + (o.is_repeat ? '<span class="repeat-badge" onclick="event.stopPropagation();openRepeatHistoryModal(\'' + o.id + '\')" title="Repeat order \u2014 view history">&#x1F501;</span>' : '') + noteBadge(o) + '</div>', 'cursor:pointer;');
     if (itemByKey['_serial']) cellsByKey['_serial'] = singleTd('_serial', 'num', String(rowIdx+1), 'color:var(--muted);font-size:9.5px;');
     if (itemByKey['_confirm_date']) cellsByKey['_confirm_date'] = singleTd('_confirm_date', '', (o.confirm_date?short(o.confirm_date):'\u2014'), 'font-size:12px;font-weight:700;');
     if (itemByKey['_photo']) cellsByKey['_photo'] = singleTd('_photo', '', (getStyleImage(uid,o.style) ? '<img class="style-thumb" src="'+getStyleImage(uid,o.style)+'" onclick="event.stopPropagation();openImageModal(\'' + jsAttrEsc(getStyleImage(uid,o.style)) + '\',\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')" title="Click to view">' : (canEdit ? '<button class="photo-add-pill" onclick="event.stopPropagation();openStyleImageModal(\'' + jsAttrEsc(o.style) + '\',\'' + uid + '\')">[+] Photo</button>' : '<span class="muted-dash">\u2014</span>')), 'text-align:center;');
@@ -6973,7 +7458,7 @@ function renderArchive() {
     var notes = notesAsText(o.remarks || '');
     return '<tr id="row-' + o.id + '">'
       + '<td style="text-align:center">' + styleThumbHtml(o) + '</td>'
-      + '<td class="sty">' + E(o.style||'') + (o.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + E(o.po_number) + '</div>' : '') + '</td>'
+      + '<td class="sty">' + E(o.style||'') + coTag(o) + (o.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + E(o.po_number) + '</div>' : '') + '</td>'
       + '<td>' + E(o.buyer||'—') + '</td>' + (companyOn() ? '<td>' + companyCell(o) + '</td>' : '') + '<td>' + E(o.house||'—') + '</td>'
       + '<td class="num">' + fmt(o.qty||0) + '</td>'
       + '<td class="num">' + fmt(sq) + (shortQ ? '<div><span class="chip warn" style="font-size:10px">Short ' + fmt(shortQ) + '</span></div>' : '') + '</td>'
@@ -7156,7 +7641,7 @@ async function renderTrashPage() {
     const canRestore = can('edit', o.merchant_id);
     var purgeDate = o.deleted_at ? new Date(new Date(o.deleted_at).getTime() + 60*86400000) : null;
     return '<tr id="row-' + o.id + '">'
-      + '<td class="sty">' + htmlEsc(o.style||'') + (o.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + htmlEsc(o.po_number) + '</div>' : '') + '</td>'
+      + '<td class="sty">' + htmlEsc(o.style||'') + coTag(o) + (o.po_number ? '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">' + htmlEsc(o.po_number) + '</div>' : '') + '</td>'
       + '<td>' + htmlEsc(merch ? merch.name : '\u2014') + '</td>'
       + '<td>' + ({live:'Live Orders',laying:'Laying Goods',shipped:'Shipped'}[o.pre_trash_stage||'live'] || htmlEsc(o.pre_trash_stage)) + '</td>'
       + '<td>' + htmlEsc(o.buyer||'') + '</td>'
@@ -8068,6 +8553,7 @@ async function saveMultiPOOrders() {
     if (missing[0][0]) { var el = $(missing[0][0]); if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); } }
     return;
   }
+  if (!coTnaGuard()) return;
   if (!(await confirmNoDuplicatePO(orderForMerchant, style, rowData.map(function(rd){ return rd.po; })))) return;
   $('ord-err').style.display = 'none';
   $('save-order-btn').disabled = true;
@@ -8148,6 +8634,7 @@ async function saveMultiPOOrders() {
   if (buyerName) saveMemo('buyer', buyerName);
   await db.from('users').update({ updated_at: new Date().toISOString() }).eq('id', orderForMerchant);
 
+  if (created) coOrdDraftClear();
   closeModal('ov-order');
   if (_confirmingDevOptionId && createdIds.length) {
     try { await finalizeDevConfirm(_confirmingDevOptionId, createdIds); } catch(e) { console.error('dev confirm finalize failed:', e); }
@@ -8214,6 +8701,7 @@ async function openOrder(mid) {
     }
   }
   openModal('ov-order');
+  try { await coOrdDraftOpen(); } catch (e) { console.error('draft:', e); }
 }
 
 
@@ -8421,6 +8909,7 @@ async function saveOrderInner() {
     if (firstEl) { firstEl.scrollIntoView({behavior:'smooth', block:'center'}); firstEl.focus(); }
     return;
   }
+  if (!coTnaGuard()) return;
   var isRepeat = (document.querySelector('input[name="o_repeat"]:checked')||{}).value === 'yes';
   var repeatHistoryJSON = null;
   if (isRepeat) {
@@ -8550,6 +9039,7 @@ async function saveOrderInner() {
     // Attachment is style-wide — save it once for the whole style regardless of
     // which PO the order form happened to be opened from.
     await saveStyleAttachments(orderForMerchant, styleVal, _orderAttachments);
+    if (!_editOrderId) coOrdDraftClear();
     closeModal('ov-order');
     toast(_editOrderId ? 'Order updated' : 'Order added', 'ok-t');
     if (_editOrderId) logActivity(_editOrderId, 'Order details edited', styleVal ? ('Style ' + styleVal) : null);
@@ -8582,6 +9072,7 @@ async function editOrder(orderId) {
 
   $('ord-sub').textContent = 'Editing ' + o.style;
   setOrderCompanyField(o.company || '', o);
+  coOrderCompanyPaint(o.company || '', o); coTnaFormCheck();
   $('ord-err').style.display = 'none';
   resetMultiPOState();
   $('o_multi_po_box').style.display = 'none'; // editing is always single-order — the batch flow only applies when creating new POs together
@@ -9286,6 +9777,7 @@ async function openOrderDetail(ordId, division) {
   S.detail = { orderId: ordId, order: o, bookings: [], receipts: [], approvals: [], tab: 'details', division: division || 'sweater' };
   $('od-title').textContent = o.style + ' \u2014 ' + o.buyer;
   $('od-sub').textContent = (o.house||'') + ' \u00b7 ' + fmt(o.qty) + ' pcs \u00b7 FOB ' + (o.fob||0).toFixed(2) + ' \u00b7 Ships ' + short(o.ship_date);
+  if (CO.regOk && o.company) $('od-sub').insertAdjacentHTML('afterbegin', coTag(o) + ' ' + (S.user.role === 'admin' ? '<button class="btn sm" onclick="closeModal(\'ov-od\');coMoveOpen(\'orders\',\'' + o.id + '\',\'' + jsAttrEsc(o.style || '') + '\')">Move&hellip;</button> ' : ''));
   renderODTabs();
   openModal('ov-od');
   renderODContent();
@@ -10567,6 +11059,7 @@ function costApi(win) {
         var nid = accUuid(), thumb = pic ? await costThumb(pic) : null;
         var insRow = { id: nid, owner_id: me.id, owner_name: me.name, data: d, pic: pic, thumb: thumb, updated_at: now };
         if (COST.linkCols === true) Object.assign(insRow, costLinkCols(d));
+        if (CO.regOk && !insRow.development_id && !insRow.dev_option_id) insRow.company = ($('cost-co') && $('cost-co').value) || COST.co || CO.filter || coDefault();
         var ins = await db.from('costings').insert(insRow).select('id,updated_at').single();
         if (ins.error) throw new Error(costErr(ins.error));
         COST.rows[nid] = { owner_id: me.id };
@@ -10650,7 +11143,8 @@ async function costRender() {
   costShow(true);
   var h = COST.host, f = $('cost-frame');
   if (!f || f.dataset.uid !== S.user.id) {
-    h.innerHTML = '<iframe id="cost-frame" title="Sweater costing" style="width:100%;border:0;display:block;background:#fff;border-radius:10px"></iframe>';
+    h.innerHTML = (CO.regOk && coActive().length > 1 ? '<div class="co-costbar">New costings are saved under <select id="cost-co" onchange="COST.co=this.value">' + coActive().map(function(c){ return '<option value="' + htmlEsc(c.code) + '"' + (c.code === (COST.co || CO.filter || coDefault()) ? ' selected' : '') + '>' + htmlEsc(c.code) + ' &middot; ' + htmlEsc(c.name) + '</option>'; }).join('') + '</select><span class="sub2">a costing linked to a development takes the development&rsquo;s company</span></div>' : '')
+      + '<iframe id="cost-frame" title="Sweater costing" style="width:100%;border:0;display:block;background:#fff;border-radius:10px"></iframe>';
     f = $('cost-frame'); f.dataset.uid = S.user.id;
     f.srcdoc = COST_APP_HTML;
   } else if (COST.hiddenAt && Date.now() - COST.hiddenAt > 30000) {
@@ -10998,7 +11492,7 @@ function lgTable(orders,showM){
     var edge = dl!=null&&dl<0 ? 'r' : (dl!=null&&dl<=6) ? 'a' : (o.inspection_result==='pass' ? 'g' : 'n');
     return '<tr id="row-'+o.id+'" class="lg-row lg-e-'+edge+'">'
       +'<td class="lg-fz lg-f1" style="text-align:center">'+styleThumbHtml(o)+'</td>'
-      +'<td class="sty lg-fz lg-f2">'+htmlEsc(o.style)+noteBadge(o)+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+htmlEsc(o.po_number)+'</div>':'')+'</td>'
+      +'<td class="sty lg-fz lg-f2">'+htmlEsc(o.style)+coTag(o)+noteBadge(o)+(o.po_number?'<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+htmlEsc(o.po_number)+'</div>':'')+'</td>'
       +'<td class="lg-fz lg-f3">'+htmlEsc(o.buyer||'--')+'</td>'
       +'<td class="lg-fz lg-f4">'+short(o.ship_date)+'</td>'
       +'<td class="lg-fz lg-f5 lg-fz-last">'+dlH+'</td>'
@@ -15068,6 +15562,7 @@ function renderDevCompareTable(opts, canEdit, d) {
 async function openNewDevelopmentModal() {
   $('devnew-style').value = '';
   $('devnew-season').value = '';
+  coDevCompanyPaint();
   await probeDevUpgrade();
   $('devnew-season-wrap').style.display = S.devUpgradeMissing ? 'none' : '';
   $('devnew-photo-input').value = '';
@@ -15122,6 +15617,7 @@ async function saveNewDevelopment() {
   var isNewBuyer = buyerSelVal === '__new__';
   var newBuyerName = isNewBuyer ? $('devnew-new-buyer-name').value.trim() : '';
   if (!style || !mid || (!buyerSelVal) || (isNewBuyer && !newBuyerName)) { toast('Style, merchant and buyer are required', 'err'); return; }
+  if (CO.regOk && !coDevCompanyValue()) { toast('Choose the company', 'err'); return; }
   // The merchant id comes from a form control, so it must be validated, not
   // trusted: it has to be a real merchant, and one this user may act for.
   // Without this a JM could file a development against their own user id (or
@@ -15138,6 +15634,7 @@ async function saveNewDevelopment() {
     buyer_pending: isNewBuyer,
     created_by: S.user.name
   };
+  if (CO.regOk) _devRow.company = coDevCompanyValue();
   var _season = ($('devnew-season').value || '').trim().toUpperCase();
   if (_season && !S.devUpgradeMissing) _devRow.season = _season;
   var res = await db.from('developments').insert(_devRow).select().single();
@@ -16194,7 +16691,9 @@ async function confirmDevelopmentOptionToOrder(optionId) {
   if (o.status === 'confirmed') { toast('This option is already confirmed', 'err'); return; }
   if (o.dropped_at || d.dropped_at) { toast('This ' + (d.dropped_at ? 'style' : 'option') + ' is dropped \u2014 reopen it first', 'err'); return; }
 
+  CO.noDraft = true;
   await openOrder(d.merchant_id);
+  CO.noDraft = false;
 
   $('o_style').value = d.style;
   if (d.season) $('o_season').value = d.season;
@@ -16220,6 +16719,7 @@ async function confirmDevelopmentOptionToOrder(optionId) {
   document.querySelector('#ov-order h3').textContent = 'Confirm Order \u2014 ' + d.style;
   $('ord-sub').textContent = 'From development: ' + o.option_label;
   _confirmingDevOptionId = optionId;
+  if (d.company) coOrderCompanyPick(d.company);
 }
 
 async function finalizeDevConfirm(optionId, orderIds) {
@@ -19738,7 +20238,8 @@ function renderCommercialModal(keepFocus) {
   var who = !edit ? 'View only — the commercial team and the order’s merchant keep this up to date.'
     : (!comm ? 'You fill the AOS, the cartons / CBM and the notes. Everything else is filled by the commercial team; you can see it here.' : '');
   var stg = cmStageOf(o, rec);
-  var coLine = companyOn() ? '<div class="cm-stage">Company: ' + (S.user.role === 'admin'
+  var coLine = CO.regOk ? '<div class="cm-stage">Company: ' + coTag(o) + ' <b>' + htmlEsc(companyName(o.company)) + '</b>' + (S.user.role === 'admin' ? ' <button class="btn sm" onclick="coMoveOpen(\'orders\',\'' + o.id + '\',\'' + jsAttrEsc(o.style || '') + '\')">Move to another company&hellip;</button>' : '') + '</div>'
+    : companyOn() ? '<div class="cm-stage">Company: ' + (S.user.role === 'admin'
       ? '<select onchange="setOrderCompany(\'' + o.id + '\',this.value)" style="padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)">' + companyOptions(o.company || '', 'not set') + '</select>'
       : '<b>' + (o.company ? htmlEsc(companyName(o.company)) : 'not set') + '</b>' + (o.stage && o.stage !== 'live' ? ' <span class="adm-muted">(locked after the packing list; admin can change it)</span>' : '')) + '</div>' : '';
   $('shp-body').innerHTML = cmClashHtml(o) + (who ? '<div class="cm-hint" style="margin-bottom:8px">' + who + '</div>' : '')
@@ -20203,6 +20704,7 @@ function setOrderCompanyField(code, o) {
 function orderCompanyPatch(isNew) {
   if (!companyOn() || !$('o_company')) return {};
   var v = $('o_company').value || null;
+  if (!isNew && CO.regOk) return {};   // only Admin's move changes the company of an order that exists
   if (!isNew) {
     var o = findOrderAnywhere(_editOrderId);
     if (o && !canChangeCompany(o)) return {};
@@ -20227,23 +20729,6 @@ var COMPANY_FIELDS = [
   ['bond_licence', 'Bond licence number'], ['bank_name', 'Bank'], ['bank_branch', 'Bank branch / address'], ['bank_account', 'Bank account number'],
   ['swift', 'SWIFT'], ['invoice_prefix', 'Invoice number prefix'], ['signatory', 'Authorised signatory']
 ];
-function renderCompaniesCard() {
-  var el = $('admin-company-body'); if (!el) return;
-  if (!companyOn()) { el.innerHTML = '<div class="adm-sub">Run <b>company-migration.sql</b> (in all-updates-since-live.sql) in Supabase to switch on companies.</div>'; return; }
-  el.innerHTML = (S.companies || []).map(function(c){
-    return '<div class="co-card"><div class="co-h"><b>' + htmlEsc(c.code) + '</b> · ' + htmlEsc(c.name || '') + '</div><div class="yarn-form-grid">'
-      + COMPANY_FIELDS.map(function(f){
-          var wide = f[0] === 'address' || f[0] === 'bank_branch', id = 'co-' + htmlEsc(c.code) + '-' + f[0];
-          return '<div class="f"' + (wide ? ' style="grid-column:1/-1"' : '') + '><label>' + f[1] + '</label>'
-            + (wide ? '<textarea id="' + id + '" rows="2" style="width:100%">' + htmlEsc(c[f[0]] || '') + '</textarea>' : '<input id="' + id + '" value="' + htmlEsc(c[f[0]] || '') + '">') + '</div>';
-        }).join('')
-      + '<div class="f" style="grid-column:1/-1"><label>Signature / seal picture (printed on the commercial invoice)</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-      + (ciSigOk(c.signature_img) ? '<img src="' + c.signature_img + '" alt="" style="max-height:56px;max-width:220px;border:1px solid var(--line);border-radius:6px;padding:4px;background:#fff"><button class="btn sm" onclick="removeCompanySignature(\'' + htmlEsc(c.code) + '\')">Remove</button>' : '<span class="adm-muted">None yet. Without one the invoice has a line to sign by hand.</span>')
-      + '<input type="file" accept="image/png,image/jpeg" style="width:auto" onchange="companySignaturePick(\'' + htmlEsc(c.code) + '\',this)"></div></div>'
-      + '</div><div style="margin-top:8px"><button class="btn sm pri" onclick="saveCompany(\'' + htmlEsc(c.code) + '\')">Save ' + htmlEsc(c.code) + '</button></div></div>';
-  }).join('')
-    + '<div class="co-card"><div class="co-h">Add a company</div><div class="yarn-form-grid"><div class="f"><label>Short code (e.g. MTS)</label><input id="co-new-code" maxlength="8"></div><div class="f"><label>Legal name</label><input id="co-new-name"></div></div><div style="margin-top:8px"><button class="btn sm" onclick="addCompany()">Add company</button></div></div>';
-}
 async function saveCompany(code) {
   if (S.user.role !== 'admin') return;
   var up = {};
@@ -23397,7 +23882,7 @@ function rqRenderForm(d, editId) {
   var items = Array.isArray(r.items) && r.items.length ? r.items : [{}];
   var h = '<div class="card rq-form" id="rq-form"><div class="card-h"><h3>' + (editId ? 'Change requisition ' + rqEsc(r.job_no) : 'New ' + d.n + ' requisition') + '</h3><span class="note">' + (editId ? (r.status === 'returned' ? 'Saving sends it back to audit and management.' : 'No one has approved it yet.') : 'A job number is given when you submit.') + '</span></div><div class="m-b">'
     + '<div class="grid3">'
-    + '<div class="f"><label>Company <span class="rq-req">*</span></label><select id="rqf-company"><option value="">&mdash; Select company &mdash;</option>' + RQ_COMPANIES.map(function(c){ return '<option value="' + c.c + '"' + (r.company === c.c ? ' selected' : '') + '>' + c.n + '</option>'; }).join('') + '</select></div>'
+    + '<div class="f"><label>Company <span class="rq-req">*</span></label><select id="rqf-company"' + (r.id && CO.regOk ? ' disabled title="Only Admin can move a requisition to another company"' : '') + '><option value="">&mdash; Select company &mdash;</option>' + RQ_COMPANIES.filter(function(c){ return !c.off || r.company === c.c; }).map(function(c){ return '<option value="' + c.c + '"' + ((r.company || (!r.id && CO.filter)) === c.c ? ' selected' : '') + '>' + c.n + '</option>'; }).join('') + '</select></div>'
     + '<div class="f"><label>Date <span class="rq-req">*</span></label><input id="rqf-date" type="date" value="' + rqEsc(r.req_date || todayStr()) + '"></div>'
     + '<div class="f"><label>Priority</label><select id="rqf-priority">' + [['urgent', 'Urgent'], ['normal', 'Normal'], ['low', 'Low']].map(function(p){ return '<option value="' + p[0] + '"' + (r.priority === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></div>'
     + '</div>' + (rqtOk() ? rqtFormHtml(r) : '') + '<div class="grid2" style="margin-top:10px">'
@@ -23601,7 +24086,7 @@ function rqRenderDetail(id, withEvents) {
     + r.items.map(function(i){ return '<tr><td style="white-space:normal"><b>' + rqEsc(i.item) + '</b></td><td style="white-space:normal">' + rqEsc(i.spec || '') + '</td><td class="num">' + (i.qty == null ? '' : i.qty) + '</td><td>' + rqEsc(i.unit || '') + '</td><td class="num">' + rqMoney(i.rate) + '</td><td class="num">' + (i.qty != null && i.rate != null ? rqMoney(i.qty * i.rate) : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '';
   var ban = ''; try { ban = woDeptBannerHtml(r); } catch (e) { console.error('work order banner:', e); }
   var h = ban + '<div class="rq-grid">'
-    + rqKv('Date', rqDateTxt(r.req_date)) + rqKv('Company', rqEsc(rqCompany(r.company).n)) + rqKv('Priority', rqPriChip(r.priority))
+    + rqKv('Date', rqDateTxt(r.req_date)) + rqKv('Company', rqEsc(rqCompany(r.company).n) + (CO.regOk ? ' ' + coTag(r) : '') + (CO.regOk && S.user.role === 'admin' ? ' <button class="btn sm" onclick="closeModal(\'ov-rq\');coMoveOpen(\'rq_requisitions\',\'' + r.id + '\',\'' + jsAttrEsc(r.job_no || '') + '\')">Move&hellip;</button>' : '')) + rqKv('Priority', rqPriChip(r.priority))
     + rqKv('Building / area', rqEsc(r.location)) + rqKv('Exact location', rqEsc(r.location_detail)) + (rqtOk() ? rqKv('Type of requisition', '<b>' + rqEsc(rqtLabel(r.kind)) + '</b>') + rqKv('Type of work', rqEsc(r.work_type)) : rqKv('Type of work', rqEsc(r.work_type) + (r.kind === 'purchase' ? ' &middot; items to buy' : '')))
     + rqKv('Time required', rqEsc(rqTimeTxt(r))) + rqKv('Estimated cost', rqMoney(r.est_cost)) + rqKv('Raised by', rqEsc(r.created_by_name) + ' <span class="sub2">' + rqDateTime(r.created_at) + '</span>')
     + '</div>' + items
@@ -25625,6 +26110,7 @@ function woView(id) {
       + '</tbody>' + (tot.p && seeP ? '<tfoot><tr class="wo-ftot"><td colspan="4">Total' + (tot.all ? '' : ' (lines with a price)') + '</td><td class="num">' + accFmt(tot.p) + '</td><td></td></tr></tfoot>' : '') + '</table></div>'
       + (w.note ? '<div class="sub2" style="margin-top:8px">Note: ' + rqEsc(w.note) + '</div>' : '') + (w.status === 'cancelled' ? '<div class="rq-warn" style="margin-top:8px">Cancelled by ' + rqEsc(w.cancelled_by_name || '') + ' ' + rqDateTime(w.cancelled_at) + ': ' + rqEsc(w.cancel_reason || '') + '</div>' : ''),
     extra: '<button class="btn" onclick="woPrint(\'' + id + '\')">&#x1F5A8; Print / PDF</button>'
+      + (CO.regOk && S.user.role === 'admin' ? '<button class="btn" onclick="accClose();coMoveOpen(\'work_orders\',\'' + id + '\',\'' + jsAttrEsc(w.wo_no || '') + '\')">Move to another company&hellip;</button>' : '')
       + (canR ? '<button class="btn pri" onclick="accClose();woReceive(\'' + id + '\')">Received&hellip;</button>' : '')
       + (canC ? '<button class="btn" onclick="accClose();woForm(\'' + w.source + '\',null,woById(\'' + id + '\'))">Change</button>' : '')
       + (canX ? '<button class="btn danger" onclick="accClose();woCancel(\'' + id + '\')">Cancel work order</button>' : '') });
@@ -26341,8 +26827,8 @@ function accSuppliers(reqId) {
   (ACC.cheques || []).forEach(function(c){ add(c.payee); });
   return out.slice(0, 300);
 }
-function accBankOptions(sel) {
-  return (ACC.banks || []).filter(function(b){ return !b.hidden || b.id === sel; }).map(function(b){ return '<option value="' + b.id + '"' + (b.id === sel ? ' selected' : '') + '>' + rqEsc(accBankLabel(b)) + (b.acc_name ? ' (' + rqEsc(b.acc_name) + ')' : '') + '</option>'; }).join('');
+function accBankOptions(sel, co) {   // co: only that company's banks (and banks not confirmed yet)
+  return (ACC.banks || []).filter(function(b){ return (!b.hidden || b.id === sel) && (!co || !b.company || b.company === co || b.company_confirmed === false); }).map(function(b){ return '<option value="' + b.id + '"' + (b.id === sel ? ' selected' : '') + '>' + rqEsc(accBankLabel(b)) + (b.acc_name ? ' (' + rqEsc(b.acc_name) + ')' : '') + '</option>'; }).join('');
 }
 async function accPayForm(reqId) {
   var r = RQ.rows.find(function(x){ return x.id === reqId; });
@@ -26360,7 +26846,7 @@ async function accPayForm(reqId) {
       + '<div class="f"><label>Date</label><input id="ap-date" type="date" value="' + t + '"></div>'
       + '<div class="f"><label>Paid to</label><input id="ap-to" list="ap-sup" maxlength="160" value="' + rqEsc(sup[0] || '') + '"><datalist id="ap-sup">' + sup.map(function(x){ return '<option value="' + rqEsc(x) + '">'; }).join('') + '</datalist></div>'
       + '<div class="f"><label>Method</label><select id="ap-meth" onchange="accPayMeth()">' + accMethodsShown().map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join('') + '</select></div>'
-      + '<div class="f ap-cq"><label>Bank account</label><select id="ap-bank">' + accBankOptions() + '</select></div>'
+      + '<div class="f ap-cq"><label>Bank account</label><select id="ap-bank">' + accBankOptions(null, r.company) + '</select></div>'
       + '<div class="f ap-cq"><label>Cheque no.</label><input id="ap-cqno" maxlength="40"></div>'
       + '<div class="f ap-cq"><label>Clearance date</label><input id="ap-clear" type="date" value="' + t + '"></div>'
       + '<div class="f"><label>Reference / note</label><input id="ap-ref" maxlength="300" placeholder="e.g. bill no., advance, balance"></div>'
@@ -26672,12 +27158,15 @@ function accBankForm(id) {
     body: '<div class="acc-g2"><div class="f"><label>Bank name</label><input id="ab-bank" maxlength="120" value="' + rqEsc(b ? b.bank : '') + '" placeholder="e.g. Dutch-Bangla Bank"></div>'
       + '<div class="f"><label>Account name</label><input id="ab-name" maxlength="160" value="' + rqEsc(b ? b.acc_name || '' : '') + '" placeholder="e.g. Banga Fashion Limited"></div>'
       + '<div class="f"><label>Account number</label><input id="ab-no" maxlength="60" value="' + rqEsc(b ? b.acc_no : '') + '"></div>'
-      + '<div class="f"><label>Branch (optional)</label><input id="ab-br" maxlength="120" value="' + rqEsc(b ? b.branch || '' : '') + '"></div></div>',
+      + '<div class="f"><label>Branch (optional)</label><input id="ab-br" maxlength="120" value="' + rqEsc(b ? b.branch || '' : '') + '"></div>'
+      + (CO.regOk ? '<div class="f"><label>Company</label>' + (b ? coTag(b) + ' ' + rqEsc(companyName(b.company)) : '<select id="ab-co"><option value="">&mdash; Select company &mdash;</option>' + coActive().map(function(c){ return '<option value="' + rqEsc(c.code) + '"' + (c.code === CO.filter ? ' selected' : '') + '>' + rqEsc(c.name) + '</option>'; }).join('') + '</select>') + '</div>' : '')
+      + '</div>',
     ok: b ? 'Save' : 'Add bank account',
     onOk: async function(){
       var v = { bank: $('ab-bank').value.trim(), acc_name: $('ab-name').value.trim() || null, acc_no: $('ab-no').value.trim(), branch: $('ab-br').value.trim() || null };
       if (!v.bank) return 'Write the bank name.';
       if (!v.acc_no) return 'Write the account number.';
+      if (!b && CO.regOk) { v.company = $('ab-co').value; if (!v.company) return 'Choose the company of this bank account.'; }
       var dup = (ACC.banks || []).find(function(x){ return x.id !== id && x.bank.trim().toLowerCase() === v.bank.toLowerCase() && x.acc_no.replace(/\s/g, '') === v.acc_no.replace(/\s/g, ''); });
       if (dup) return 'This bank account is already on the list.';
       var res;
@@ -29677,14 +30166,15 @@ function backupTableList(schema) {
 // between pages; tables without that column fall back to unordered.
 async function readWholeTable(t) {
   var keys = BACKUP_KEYS[t] || ['id'];
-  try { return await fetchAllRows(function(){ var q = db.from(t).select('*'); keys.forEach(function(k){ q = q.order(k); }); return q; }); }
+  // dbAll: a backup always holds every company, whatever the Company switch at the top shows
+  try { return await fetchAllRows(function(){ var q = dbAll(t).select('*'); keys.forEach(function(k){ q = q.order(k); }); return q; }); }
   catch (e) {
     if (isTableMissing(e)) throw e;
-    return await fetchAllRows(function(){ return db.from(t).select('*'); });
+    return await fetchAllRows(function(){ return dbAll(t).select('*'); });
   }
 }
 async function countRows(t) {
-  try { var r = await db.from(t).select('*', { count: 'exact', head: true }); return r.error ? null : r.count; } catch (e) { return null; }
+  try { var r = await dbAll(t).select('*', { count: 'exact', head: true }); return r.error ? null : r.count; } catch (e) { return null; }
 }
 // The database's own description of every table (columns, types, keys), as
 // Supabase publishes it. Kept in the backup so a brand-new database can be
