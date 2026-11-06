@@ -2716,7 +2716,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.06.1</p>
+    <p class="login-ver">STAGING V.2026.11.06.2</p>
   </div></div>
 </div>
 
@@ -2760,7 +2760,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.06.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.06.2</div>
 </div>
 
 
@@ -6614,9 +6614,12 @@ async function renderCompaniesCard() {
     + (CO.addOpen ? coAddHtml() : '')
     + '<div class="adm-sub" style="margin-top:8px">Switching a company off stops new records for it; its history stays. Records with no company go to the default, marked not confirmed. "Details" has the bank, licence and signature used on documents.</div>';
 }
+// Wave 9C: the number prefix (MTSL in MTSL/CIV/26/0001) is shown once the database has it
+function coNumOn() { return (S.companies || []).some(function(c){ return c && Object.prototype.hasOwnProperty.call(c, 'doc_prefix'); }); }
+function coFieldsOf(c) { return Object.prototype.hasOwnProperty.call(c || {}, 'doc_prefix') ? [['doc_prefix', 'Number prefix (requisitions and work orders, e.g. MTSL)']].concat(COMPANY_FIELDS) : COMPANY_FIELDS; }
 function coDetailsHtml(c) {
   return '<div class="co-card"><div class="co-h"><b>' + htmlEsc(c.code) + '</b> &middot; ' + htmlEsc(c.name || '') + '</div><div class="yarn-form-grid">'
-    + COMPANY_FIELDS.map(function(f){
+    + coFieldsOf(c).map(function(f){
         var wide = f[0] === 'address' || f[0] === 'bank_branch', id = 'co-' + htmlEsc(c.code) + '-' + f[0];
         return '<div class="f"' + (wide ? ' style="grid-column:1/-1"' : '') + '><label>' + f[1] + '</label>'
           + (wide ? '<textarea id="' + id + '" rows="2" style="width:100%">' + htmlEsc(c[f[0]] || '') + '</textarea>' : '<input id="' + id + '" value="' + htmlEsc(c[f[0]] || '') + '">') + '</div>';
@@ -20733,6 +20736,8 @@ async function saveCompany(code) {
   if (S.user.role !== 'admin') return;
   var up = {};
   COMPANY_FIELDS.forEach(function(f){ var e = $('co-' + code + '-' + f[0]); if (e) up[f[0]] = e.value.trim() || null; });
+  var dpx = $('co-' + code + '-doc_prefix');
+  if (dpx) { var pv = dpx.value.trim().toUpperCase(); if (!/^[A-Z0-9]{2,8}$/.test(pv)) { toast('Number prefix: 2 to 8 capital letters or digits, e.g. MTSL', 'err'); return; } up.doc_prefix = pv; }
   if (!up.name) { toast('The legal name cannot be empty', 'err'); return; }
   var r = await db.from('companies').update(up).eq('code', code);
   if (r.error) { showSaveError('Company NOT saved.\n\nDatabase said:\n' + r.error.message); return; }
@@ -26004,8 +26009,15 @@ async function woFormSave() {
     for (var tries = 0; tries < 6 && !w0; tries++) {
       var id = accUuid(), wrow = Object.assign({ id: id, wo_no: woNoOf(yr, seq, cw.co), yr: yr, seq: seq, source: F.source, status: 'ordered', made_by: S.user.id, made_by_name: S.user.name, made_by_role: S.user.role, created_at: now }, head);
       if (cw.co) wrow.company = cw.co;
+      // Wave 9C: the work order's department is its first line's; the database gives the number (MTSL/CIV/WO/26/0001)
+      if (coNumOn()) { var dl = F.lines.find(function(l){ return l.dept; }); if (dl) wrow.dept = dl.dept; }
       var r = await db.from('work_orders').insert(wrow);
-      if (!r.error) { w0 = wrow; break; }
+      if (!r.error) {
+        // read back the number the database gave (it may differ from the one sent)
+        var rb = await db.from('work_orders').select('wo_no,seq,yr').eq('id', id).maybeSingle();
+        if (!rb.error && rb.data) Object.assign(wrow, rb.data);
+        w0 = wrow; break;
+      }
       if (!accDup(r.error)) { err = r.error; break; }
       seq++; // someone took that number a moment ago
     }
@@ -30484,7 +30496,7 @@ var SETUP_KNOWN = { // every column the app uses: for tables a backup has no row
   rq_quotations: 'amount:numeric,bytes:integer,created_at:timestamptz,created_by:text,created_by_name:text,currency:text,dept:text,id:uuid,images_deleted_at:timestamptz,keep_changed_by:text,keep_until:date,page_count:integer,pages:jsonb,req_id:uuid,supplier:text,valid_until:date',
   rq_counters: 'dept:text,last:integer,yr:integer',
   rq_settings: 'key:text,updated_at:timestamptz,updated_by:text,value:text',
-  companies: 'address:text,bank_account:text,bank_branch:text,bank_name:text,bin:text,bond_licence:text,code:text,erc:text,invoice_prefix:text,irc:text,name:text,phone:text,signatory:text,signature_img:text,sort:integer,swift:text',
+  companies: 'address:text,bank_account:text,bank_branch:text,bank_name:text,bin:text,bond_licence:text,code:text,doc_prefix:text,erc:text,invoice_prefix:text,irc:text,name:text,phone:text,signatory:text,signature_img:text,sort:integer,swift:text',
   accessories: 'booked_on:date,id:uuid,inhouse_on:date,item_name:text,item_type:text,order_id:uuid',
   accessory_bookings: 'booked_on:date,category:text,created_at:timestamptz,created_by:text,expected_note:text,expected_on:date,id:uuid,item:text,lc_number:text,merchant_id:uuid,pi_number:text,po_number:text,qty:numeric,style:text,supplier:text,updated_at:timestamptz,updated_by:text',
   accessory_checklist_items: 'category:text,created_at:timestamptz,created_by:text,id:uuid,item:text,merchant_id:uuid,sort_order:integer,style:text',
@@ -30539,7 +30551,7 @@ var SETUP_KNOWN = { // every column the app uses: for tables a backup has no row
   pnl_settings: 'key:text,updated_at:timestamptz,updated_by_name:text,value:jsonb',
   pnl_oh_months: 'actual_tk:numeric,month:text,note:text,updated_at:timestamptz,updated_by_name:text',
   wo_parties: 'address:text,contact:text,created_at:timestamptz,created_by_name:text,id:uuid,name:text,norm:text,phone:text,updated_at:timestamptz,updated_by_name:text',
-  work_orders: 'cancel_reason:text,cancelled_at:timestamptz,cancelled_by_name:text,company:text,created_at:timestamptz,deliver_by:date,deliver_to:text,id:uuid,made_by:text,made_by_name:text,made_by_role:text,note:text,party_address:text,party_id:uuid,party_name:text,party_phone:text,received_on:date,seq:integer,show_prices:boolean,source:text,status:text,updated_at:timestamptz,updated_by_name:text,wo_date:date,wo_no:text,yr:integer',
+  work_orders: 'cancel_reason:text,cancelled_at:timestamptz,cancelled_by_name:text,company:text,created_at:timestamptz,dept:text,deliver_by:date,deliver_to:text,id:uuid,made_by:text,made_by_name:text,made_by_role:text,note:text,party_address:text,party_id:uuid,party_name:text,party_phone:text,received_on:date,seq:integer,show_prices:boolean,source:text,status:text,updated_at:timestamptz,updated_by_name:text,wo_date:date,wo_no:text,yr:integer',
   work_order_lines: 'created_at:timestamptz,dept:text,id:uuid,item:text,qty:numeric,recv_on:date,recv_price:numeric,recv_qty:numeric,ref_id:uuid,ref_no:text,sort:integer,source:text,spec:text,unit:text,unit_price:numeric,wo_id:uuid',
   rq_plan_lines: 'amount:numeric,created_at:timestamptz,created_by_name:text,dept:text,description:text,id:uuid,qty:numeric,remarks:text,req_id:uuid,sort:integer,unit:text,updated_at:timestamptz,updated_by_name:text,week_start:date',
   acc_petty_cash: 'balance:numeric,created_at:timestamptz,day:date,details:text,entered_by:text,entered_by_name:text,history:jsonb,id:uuid,updated_at:timestamptz,updated_by_name:text',
