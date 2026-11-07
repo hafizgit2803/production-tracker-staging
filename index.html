@@ -2683,6 +2683,11 @@ table.wo-t-buy td{vertical-align:top}
 .co-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .co-mv-h{font-size:12px;font-weight:600;margin:10px 0 4px}.co-mv-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .co-costbar{display:flex;align-items:center;gap:10px;font-size:12.5px;margin:0 0 8px;flex-wrap:wrap}.co-costbar select{font-weight:600}
+/* Wave 14: the full description of each item, the delivery date */
+.wo-flines td.wo-desc-td{vertical-align:top;min-width:380px}.wo-flines .wo-desc-in{display:block;margin-top:5px;min-height:110px;resize:vertical;line-height:1.5;white-space:pre-wrap}
+.wo-desc-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px;font-size:11px;color:var(--muted)}
+input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
+#wo-agreed{width:100%;font:inherit;line-height:1.5;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);resize:vertical}
 </style>
 </head>
 <body>
@@ -2716,7 +2721,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.07.5</p>
+    <p class="login-ver">STAGING V.2026.11.07.6</p>
   </div></div>
 </div>
 
@@ -2760,7 +2765,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.07.5</div>
+  <div id="ver-stamp">STAGING V.2026.11.07.6</div>
 </div>
 
 
@@ -23867,7 +23872,7 @@ function rqRailHtml() {
       + item('rq:x:done', '&#x2713;', 'Completed', all.done)
       + (S.user.role === 'admin' || !rqNewDepts().length ? '' : item('rq:new', '&#x002B;', 'New requisition'))
       + item('rq:all', '&#x2630;', 'All requisitions', RQ.rows.length)
-      + (woRqCanView() && woOn() ? (function(){ var n = woToBuyN(); return item('rq:buy', '&#x1F6D2;', 'Management purchases', n, n > 0 && woRqCanEdit()); })() : '')
+      + (woRqCanView() && woOn() && woSrcOn('rq') ? (function(){ var n = woToBuyN(); return item('rq:buy', '&#x1F6D2;', 'Management purchases', n, n > 0 && woRqCanEdit()); })() : '')
       + item('rq:plan', '&#x1F4C5;', 'Weekly plans')
       + item('rq:report', '&#x25A4;', 'Monthly spend report');
     var dueQ = S.user.role === 'admin' ? rqqDueSoon(null).length : 0;
@@ -25013,7 +25018,9 @@ async function rqRenderAdminCard() {
     + '<div class="adm-form" style="grid-template-columns:repeat(4,1fr)">'
     + '<div class="adm-field" style="grid-column:span 4"><div class="sub2">The department in-charge printed on the form is the most senior person under the head in <b>Admin &rarr; Departments</b>; the company address is the one in <b>Admin &rarr; Companies</b>.</div></div>'
     + '<div class="adm-field"><label class="adm-lbl">CAO line</label><input class="adm-inp" id="rq-caoline" value="' + rqEsc(st.cao_line || '') + '" placeholder="Name, CAO"></div>'
-    + '<div class="adm-field"><label class="adm-lbl">&nbsp;</label><button class="btn pri adm-save-btn" onclick="rqSaveNames()">Save</button></div></div></div>';
+    + '<div class="adm-field"><label class="adm-lbl">&nbsp;</label><button class="btn pri adm-save-btn" onclick="rqSaveNames()">Save</button></div></div>'
+    + '<div id="admin-wo-body"></div></div>';
+  woRenderAdmin();
 }
 async function rqSetSetting(key, value) {
   var res = await db.from('rq_settings').upsert({ key: key, value: value, updated_at: new Date().toISOString(), updated_by: S.user.name });
@@ -26302,6 +26309,10 @@ function woCan(act, w) {
   return woHas(act, woTags(w));
 }
 function woOn() { return WO.ok === true; }
+// Wave 14: the agreed condition (a column on work_orders + its standard wording, Admin -> Requisitions)
+function woAgreedOn() { return WO.agreedStd != null; }
+// each way of ordering is a row of wo_sources; Admin can switch one off (the database then refuses new work orders from it)
+function woSrcOn(key) { if (!Array.isArray(WO.srcDb)) return true; var x = WO.srcDb.find(function(r){ return r.key === key; }); return !!x && x.active !== false; }
 function woMissing(e) { return !!e && (e.code === '42P01' || e.code === 'PGRST205' || e.code === '42703' || e.code === 'PGRST204' || /work_order|wo_parties|mgmt_buy|does not exist|schema cache|could not find the table/i.test(e.message || '')); }
 function woErr(e) { return woMissing(e) ? 'Work orders need shahana-one-v8-migration.sql. Run it once in Supabase, then refresh.' : 'Could not save: ' + ((e && e.message) || e); }
 // every work order and line, read at once (they are few); departments read only their own lines
@@ -26318,6 +26329,8 @@ async function woLoad(force) {
         for (var i = 0; i < ids.length; i += 150) { var r = await db.from('work_orders').select('*').in('id', ids.slice(i, i + 150)); if (r.error) throw r.error; rows = rows.concat(r.data || []); }
       } else rows = await fetchAllRows(function(){ return db.from('work_orders').select('*').order('created_at', { ascending: false }).order('id'); });
       if (WO.rights === undefined) { var rr = await db.from('wo_rights').select('action,who'); WO.rights = rr.error ? null : (rr.data || []); }
+      if (WO.agreedStd === undefined) { var ag = await db.from('erp_rule_settings').select('value').eq('key', 'wo_agreed_text').maybeSingle(); WO.agreedStd = ag.error || !ag.data ? null : ag.data.value; }
+      var sr = await db.from('wo_sources').select('key,label,active'); WO.srcDb = sr.error ? null : (sr.data || []);
       WO.rows = rows; WO.lines = lines; WO.ok = true; WO.at = Date.now();
     } catch (e) { if (woMissing(e)) { WO.ok = false; WO.rows = []; WO.lines = []; } else { console.error('work orders:', e); if (WO.ok !== true) WO.ok = null; } }
     finally { WO._p = null; }
@@ -26365,12 +26378,13 @@ function woForm(source, picks, wo) {
     var head = '<div class="acc-g2"><div class="f"><label>Party (name)</label><input id="wo-party" list="wo-party-l" maxlength="120" autocomplete="off" value="' + rqEsc(w.party_name || '') + '" placeholder="Type a name or pick a saved party" oninput="woPartyFill()"><datalist id="wo-party-l">' + WO.parties.map(function(p){ return '<option value="' + rqEsc(p.name) + '">'; }).join('') + '</datalist></div>'
       + '<div class="f"><label>Phone</label><input id="wo-phone" maxlength="60" value="' + rqEsc(w.party_phone || '') + '"></div></div>'
       + '<div class="f"><label>Address</label><input id="wo-addr" maxlength="240" value="' + rqEsc(w.party_address || '') + '"></div>'
-      + '<div class="acc-g2"><div class="f"><label>Date</label><input type="date" id="wo-date" value="' + (w.wo_date || t) + '"></div><div class="f"><label>Deliver by (optional)</label><input type="date" id="wo-by" value="' + (w.deliver_by || '') + '"></div></div>'
+      + '<div class="acc-g2"><div class="f"><label>Date</label><input type="date" id="wo-date" value="' + (w.wo_date || t) + '"></div><div class="f"><label>Deliver by (printed big on the work order)</label><input type="date" id="wo-by" class="wo-by" value="' + (w.deliver_by || '') + '"></div></div>'
       + '<div class="f"><label>Deliver to</label><input id="wo-to" maxlength="240" value="' + rqEsc(w.deliver_to != null ? w.deliver_to : def.deliverTo(lines)) + '"></div>';
     accForm({ title: wo ? 'Change ' + wo.wo_no : 'New work order', sub: (def.label || 'Items') + ' &middot; ' + lines.length + ' line' + (lines.length === 1 ? '' : 's') + '. Prices are optional; tick &ldquo;Show prices&rdquo; to print them.', wide: true,
       body: head + '<div id="wo-lines"></div><div id="wo-warn"></div>'
         + '<label class="rq-mine wo-showp"><input type="checkbox" id="wo-showp"' + (w.show_prices ? ' checked' : '') + ' onchange="woFormTotal()"> Show prices on the work order</label>'
-        + '<div class="f"><label>Note (printed)</label><input id="wo-note" maxlength="500" value="' + rqEsc(w.note || '') + '" placeholder="e.g. Deliver with invoice and challan quoting the work order number"></div>',
+        + '<div class="f"><label>Note (printed)</label><input id="wo-note" maxlength="500" value="' + rqEsc(w.note || '') + '" placeholder="e.g. Deliver with invoice and challan quoting the work order number"></div>'
+        + (woAgreedOn() ? '<div class="f"><label>Agreed condition (printed)</label><textarea id="wo-agreed" rows="3" maxlength="1500">' + rqEsc(wo ? (w.agreed_text || '') : (WO.agreedStd || '')) + '</textarea></div>' : ''),
       ok: wo ? 'Save changes' : 'Make work order',
       after: function(){ woFormLines(); setTimeout(function(){ var e = $('wo-party'); if (e) e.focus(); }, 0); },
       onOk: woFormSave });
@@ -26381,12 +26395,13 @@ function woFormLines() {
   F.lines.forEach(function(l, i){ l._i = i; var g = l.group || l.ref_id || ('x' + i); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(l); });
   var skip = F.wo ? F.wo.id : null, lx = def.leftOf ? function(l){ return l.ref_id ? def.leftOf(l, skip) : null; } : function(){ return null; };
   var hasLeft = F.lines.some(function(l){ return !!lx(l); }), n = function(v){ return v == null ? '&mdash;' : Number(v).toLocaleString('en-IN', { maximumFractionDigits: 3 }); };
-  var h = '<div class="scroller wo-flines"><table class="rq-t" data-copy-xl="1"><thead><tr><th>' + rqEsc(def.refHead || 'Ref.') + '</th><th>Item</th><th>Specification</th>' + (hasLeft ? '<th class="num">Left to order</th>' : '') + '<th class="num">Qty</th><th>Unit</th><th class="num">Unit price (Tk)</th><th class="num">Amount</th><th></th></tr></thead><tbody>';
+  var h = '<div class="scroller wo-flines"><table class="rq-t" data-copy-xl="1"><thead><tr><th>' + rqEsc(def.refHead || 'Ref.') + '</th><th>Item and full description</th>' + (hasLeft ? '<th class="num">Left to order</th>' : '') + '<th class="num">Qty</th><th>Unit</th><th class="num">Unit price (Tk)</th><th class="num">Amount</th><th></th></tr></thead><tbody>';
   order.forEach(function(g){
     groups[g].forEach(function(l, k){
       h += '<tr><td>' + (k === 0 ? '<span class="rq-job">' + rqEsc(l.ref_no || '') + '</span>' : '') + '</td>'
-        + '<td><input class="wo-in' + (def.lockItem && l.ref_id ? ' wo-ro" readonly tabindex="-1" title="As approved"' : '"') + ' data-i="' + l._i + '" data-k="item" maxlength="160" value="' + rqEsc(l.item || '') + '"></td>'
-        + '<td><input class="wo-in" data-i="' + l._i + '" data-k="spec" maxlength="240" value="' + rqEsc(l.spec || '') + '"></td>'
+        + '<td class="wo-desc-td"><input class="wo-in' + (def.lockItem && l.ref_id ? ' wo-ro" readonly tabindex="-1" title="As approved"' : '"') + ' data-i="' + l._i + '" data-k="item" maxlength="160" value="' + rqEsc(l.item || '') + '">'
+          + '<textarea class="wo-in wo-desc-in" data-i="' + l._i + '" data-k="spec" maxlength="' + WO_DESC_MAX + '" rows="6" placeholder="Full description the party must follow: material, type, brand, size, colour, finish, standard" oninput="woDescCount(' + l._i + ')">' + rqEsc(l.spec || '') + '</textarea>'
+          + '<div class="wo-desc-bar"><button type="button" class="btn sm" tabindex="-1" onclick="woDescGuide(' + l._i + ')">Add guide</button><span>The party sees all of this on the work order. <b id="wo-dc-' + l._i + '">' + woWords(l.spec) + ' words</b></span></div></td>'
         + (hasLeft ? (function(){ var x = lx(l); return x ? '<td class="num wo-left"><b>' + (x.left == null ? 'whole job' : n(x.left)) + '</b>' + (x.approved != null ? '<div class="sub2">of ' + n(x.approved) + ' approved' + (x.before ? ', ' + n(x.before) + ' ordered' : '') + '</div>' : '') + '</td>' : '<td></td>'; })() : '')
         + '<td><input class="wo-in num" data-i="' + l._i + '" data-k="qty" inputmode="decimal" value="' + rqEsc(l.qty == null ? '' : l.qty) + '" oninput="woFormTotal()"></td>'
         + '<td><input class="wo-in" data-i="' + l._i + '" data-k="unit" maxlength="20" style="width:70px" value="' + rqEsc(l.unit || '') + '"></td>'
@@ -26397,6 +26412,16 @@ function woFormLines() {
   });
   $('wo-lines').innerHTML = h + '</tbody><tfoot><tr class="wo-ftot"><td colspan="' + (hasLeft ? 7 : 6) + '">Total</td><td class="num" id="wo-ftot"></td><td></td></tr></tfoot></table></div>';
   woFormTotal();
+}
+// the full description of each item (Wave 14): long, line breaks kept, printed in full
+var WO_DESC_MAX = 3000;
+var WO_DESC_GUIDE = 'Material: \nType / grade: \nBrand: \nSize / dimensions: \nColour / finish: \nOther conditions: ';
+function woWords(t) { t = String(t || '').trim(); return t ? t.split(/\s+/).length : 0; }
+function woDescCount(i) { var e = document.querySelector('#wo-lines textarea[data-i="' + i + '"]'), c = $('wo-dc-' + i); if (e && c) c.textContent = woWords(e.value) + ' words'; }
+function woDescGuide(i) {
+  var e = document.querySelector('#wo-lines textarea[data-i="' + i + '"]'); if (!e) return;
+  if (e.value.indexOf('Material:') === -1) e.value = (e.value.trim() ? e.value.replace(/\s+$/, '') + '\n' : '') + WO_DESC_GUIDE;
+  e.focus(); var at = e.value.indexOf('Material: ') + 10; e.setSelectionRange(at, at); woDescCount(i);
 }
 function woFormRead() { // the boxes back into WO.form.lines; returns an error text or ''
   var F = WO.form, bad = '';
@@ -26454,6 +26479,7 @@ async function woFormSave() {
   var now = new Date().toISOString();
   var head = { party_id: pid, party_name: name, party_address: addr || null, party_phone: phone || null, deliver_to: $('wo-to').value.trim() || null, wo_date: day, deliver_by: by || null,
     show_prices: $('wo-showp').checked, note: $('wo-note').value.trim() || null, updated_at: now, updated_by_name: S.user.name };
+  if (woAgreedOn() && $('wo-agreed')) head.agreed_text = $('wo-agreed').value.trim() || null;
   var rows = function(woId){ return F.lines.map(function(l, i){ return { id: accUuid(), wo_id: woId, sort: i + 1, source: F.source, ref_id: l.ref_id || null, ref_no: l.ref_no || null, dept: l.dept || null, item: l.item, spec: l.spec || null, qty: l.qty, unit: l.unit || null, unit_price: l.price_p == null ? null : accAmtVal(l.price_p) }; }); };
   if (wo) { // change: lines replaced (nothing received yet, checked again on the server row)
     var fr = await db.from('work_orders').select('status').eq('id', wo.id).maybeSingle();
@@ -26597,18 +26623,22 @@ function woStatusTxt(w) {
   return d ? 'Part received (' + d + ' of ' + ls.length + ')' : 'Ordered, waiting';
 }
 // ─── the printed work order ───
-function woDocCss() { // clear lines all round (thin, so little ink): boxes, a full grid on the items, signature boxes
+function woDocCss() { // template A (Wave 14): one strong black frame, clear lines between every part, big signature boxes
   return accDocCss() + lowInkCss()
-    + '.wo-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}.wo-hd .addr{font-size:8.6px;color:#555;margin-top:4px;line-height:1.5}'
-    + '.wo-meta{border:1px solid #7d786f;padding:6px 10px;font-size:10px;line-height:1.7;min-width:150px}.wo-meta div{display:flex;justify-content:space-between;gap:14px}.wo-meta b{font-family:Menlo,Consolas,monospace;font-size:11px}'
-    + '.wo-box{display:grid;grid-template-columns:1fr 1fr;border:1px solid #7d786f;margin:14px 0 12px}.wo-box div{padding:8px 11px;font-size:10.5px;line-height:1.55}.wo-box div+div{border-left:1px solid #7d786f}'
-    + '.wo-box span,.wo-note span{display:block;font-size:8px;letter-spacing:.12em;color:#666;font-weight:700;margin-bottom:3px;text-transform:uppercase}'
-    + 'table.wo-t{width:100%;border-collapse:collapse;border:1px solid #7d786f}table.wo-t th{font-size:8px;letter-spacing:.08em;color:#333;text-transform:uppercase;text-align:left;border:1px solid #7d786f;border-bottom:1.4px solid #1c1c1c;padding:6px 6px;background:none}'
-    + 'table.wo-t td{padding:6px 6px;border:.8px solid #b3ada2;vertical-align:top;font-size:10.5px}table.wo-t .num{text-align:right;font-family:Menlo,Consolas,monospace}table.wo-t th.num{text-align:right}table.wo-t small{display:block;color:#777;font-size:8.6px;margin-top:1px}'
-    + 'table.wo-t tr{break-inside:avoid}table.wo-t tr.tot td{font-weight:700;border-top:1.4px solid #1c1c1c}.wo-words{font-size:9.6px;color:#333;margin-top:5px}'
-    + '.wo-note{margin-top:12px;font-size:10px;line-height:1.6;border:1px solid #7d786f;padding:7px 11px}'
-    + '.wo-sig{display:grid;grid-template-columns:1fr 1fr;border:1px solid #7d786f;margin-top:22px;break-inside:avoid}.wo-sig>div{padding:8px 12px 7px;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end;text-align:center;font-size:9.6px}.wo-sig>div+div{border-left:1px solid #7d786f}'
-    + '.wo-sig .cap{font-size:8px;letter-spacing:.12em;color:#666;font-weight:700;text-transform:uppercase;text-align:left;margin-bottom:auto}.wo-sig .ln{border-top:1px solid #1c1c1c;padding-top:4px;margin:0 14px}.wo-sig img{max-height:48px;max-width:180px;display:block;margin:4px auto 2px}';
+    + '.wo-fr{border:2px solid #111}.wo-fr .k{font-size:8.5px;letter-spacing:.14em;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:3px}'
+    + '.wo-hd{display:flex;justify-content:space-between;align-items:stretch;border-bottom:2px solid #111}.wo-hd .l{padding:13px 17px}'
+    + '.wo-hd .cn{font-size:10px;letter-spacing:.22em;font-weight:700;color:#333;text-transform:uppercase}.wo-hd h1{margin:2px 0 4px;font-size:28px;letter-spacing:-.02em}.wo-hd .ad{font-size:9.6px;color:#333;line-height:1.5}'
+    + '.wo-hd .r{border-left:2px solid #111;min-width:235px}.wo-hd .r div{display:flex;justify-content:space-between;gap:12px;padding:8px 13px;border-bottom:1.5px solid #111;font-size:10.5px}.wo-hd .r div:last-child{border-bottom:0}.wo-hd .r b{font-family:Menlo,Consolas,monospace}'
+    + '.wo-hd .r .cx{color:#B42318;justify-content:center;letter-spacing:.2em}'
+    + '.wo-two{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid #111}.wo-two>div{padding:9px 15px;line-height:1.6;font-size:10.5px}.wo-two>div+div{border-left:2px solid #111}.wo-two .pn{font-size:12.5px}'
+    + '.wo-due{display:flex;align-items:center;gap:16px;border-bottom:2px solid #111;padding:9px 15px;background:#f1efea}.wo-due .k{margin:0}.wo-due b{font-size:16px}.wo-due i{font-style:normal;margin-left:auto;font-size:9.2px;color:#444;max-width:300px;text-align:right}'
+    + 'table.wo-t{width:100%;border-collapse:collapse}table.wo-t th{background:#e9e6df;font-size:8.2px;letter-spacing:.09em;text-transform:uppercase;text-align:left;padding:7px 7px;border-bottom:2px solid #111;border-right:1.5px solid #111;color:#111}'
+    + 'table.wo-t td{padding:8px 7px;vertical-align:top;border-right:1.5px solid #111;border-bottom:1.5px solid #111;font-size:10.5px}table.wo-t th:last-child,table.wo-t td:last-child{border-right:0}'
+    + 'table.wo-t .num{text-align:right;font-family:Menlo,Consolas,monospace}table.wo-t th.num{text-align:right}table.wo-t .c{text-align:center}table.wo-t tr{break-inside:avoid}'
+    + 'table.wo-t .d{margin-top:5px;line-height:1.6;color:#222;white-space:pre-wrap;word-break:break-word}table.wo-t tr.tot td{font-weight:700;background:#f7f6f2;border-bottom:2px solid #111}'
+    + '.wo-words,.wo-note,.wo-agree{padding:8px 15px;border-bottom:2px solid #111;font-size:10.2px;line-height:1.6}.wo-agree{white-space:pre-wrap}'
+    + '.wo-sig{display:grid;grid-template-columns:1fr 1fr;break-inside:avoid}.wo-sig>div{height:132px;padding:9px 15px;position:relative}.wo-sig>div+div{border-left:2px solid #111}'
+    + '.wo-sig img{position:absolute;left:50%;top:30px;transform:translateX(-50%);max-height:60px;max-width:70%}.wo-sig .ln{position:absolute;left:15px;right:15px;bottom:11px;border-top:1.5px solid #111;padding-top:5px;text-align:center;font-size:10.2px}';
 }
 // the signature printed for the person who made it: their own (Admin -> Users), or for
 // Management the picture set in Admin -> Requisitions (the same rule as the requisition print)
@@ -26616,21 +26646,27 @@ function woSigOf(w) { return sigImg(w.made_by) || (w.made_by_role === 'managemen
 function woDocHtml(w, ls) {
   var show = !!w.show_prices && woCan('see_prices', w), tot = woTotal(ls), E = rqEsc, def = WO.src[w.source] || {};
   var qt = ls.reduce(function(s, l){ return s + Number(l.qty || 0); }, 0), oneUnit = ls.every(function(l){ return (l.unit || '') === (ls[0].unit || ''); });
-  var sig = woSigOf(w);
+  var sig = woSigOf(w), co = w.company ? rqCompany(w.company) : null, coName = co ? co.n : coList().map(function(c){ return c.name; }).join(' · ');
+  var addr = w.company ? rqCoAddr(RQ.settings, w.company) : '', dp = w.dept ? rqDept(w.dept) : null;
   var rows = ls.map(function(l, i){ var a = woLineAmt(l);
-    return '<tr><td>' + (i + 1) + '</td><td><b>' + E(l.item) + '</b>' + (l.spec ? '<small>' + E(l.spec) + '</small>' : '') + '</td><td>' + E(l.ref_no || '') + '</td><td class="num">' + woQtyTxt(l.qty, l.unit) + '</td>'
+    return '<tr><td class="c">' + (i + 1) + '</td><td><b>' + E(l.item) + '</b>' + (l.spec ? '<div class="d">' + E(l.spec) + '</div>' : '') + '</td><td>' + E(l.ref_no || '') + '</td><td class="num">' + woQtyTxt(l.qty, l.unit) + '</td>'
       + (show ? '<td class="num">' + (l.unit_price != null ? accFmt(accP(l.unit_price)) : '&mdash;') + '</td><td class="num">' + (a == null ? '&mdash;' : accFmt(a)) + '</td>' : '') + '</tr>'; }).join('');
-  return '<div class="top"></div><div class="wo-hd"><div><div class="co">Shahana Group</div><h1>Work Order</h1><div class="addr">' + (w.company ? '<b>' + E(rqCompany(w.company).n) + '</b>' : 'M.T. Sweaters Ltd &middot; Banga Fashion Ltd &middot; Banga Knitwear Ltd') + '<br>Gacha, Gazipur, Bangladesh</div></div>'
-    + '<div class="wo-meta"><div><span>No.</span><b>' + E(w.wo_no) + '</b></div><div><span>Date</span><b>' + rqDateTxt(w.wo_date) + '</b></div>' + (w.deliver_by ? '<div><span>Deliver by</span><b>' + rqDateTxt(w.deliver_by) + '</b></div>' : '') + (w.status === 'cancelled' ? '<div><b>CANCELLED</b></div>' : '') + '</div></div>'
-    + '<div class="wo-box"><div><span>To</span><b>' + E(w.party_name) + '</b>' + (w.party_address ? '<br>' + E(w.party_address) : '') + (w.party_phone ? '<br>Phone ' + E(w.party_phone) : '') + '</div>'
-    + '<div><span>Deliver to</span>' + E(w.deliver_to || '') + '</div></div>'
-    + '<table class="wo-t"><thead><tr><th style="width:5%">SN</th><th>Item / description</th><th style="width:15%">' + E(def.refHead || 'Ref.') + '</th><th class="num" style="width:11%">Qty</th>' + (show ? '<th class="num" style="width:13%">Unit price</th><th class="num" style="width:15%">Amount (Tk)</th>' : '') + '</tr></thead><tbody>' + rows
+  var dueTxt = w.deliver_by ? new Date(w.deliver_by + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  return '<div class="wo-fr"><div class="wo-hd"><div class="l"><div class="cn">' + E(coName || '') + '</div><h1>Work Order</h1>' + (addr ? '<div class="ad">' + E(addr) + '</div>' : '') + '</div>'
+    + '<div class="r"><div><span>Work order no.</span><b>' + E(w.wo_no) + '</b></div><div><span>Date</span><b>' + rqDateTxt(w.wo_date) + '</b></div>'
+    + (dp ? '<div><span>Department</span><b>' + E(dp.code || dp.n) + '</b></div>' : '') + (w.status === 'cancelled' ? '<div class="cx"><b>CANCELLED</b></div>' : '') + '</div></div>'
+    + '<div class="wo-two"><div><div class="k">To (party)</div><b class="pn">' + E(w.party_name) + '</b>' + (w.party_address ? '<br>' + E(w.party_address) : '') + (w.party_phone ? '<br>Phone ' + E(w.party_phone) : '') + '</div>'
+    + '<div><div class="k">Deliver to</div>' + E(w.deliver_to || '') + '</div></div>'
+    + (dueTxt ? '<div class="wo-due"><div class="k">Deliver by</div><b>' + E(dueTxt) + '</b><i>With invoice and challan quoting this work order number.</i></div>' : '')
+    + '<table class="wo-t"><thead><tr><th class="c" style="width:5%">SN</th><th>Item and full description</th><th style="width:15%">' + E(def.refHead || 'Ref.') + '</th><th class="num" style="width:9%">Qty</th>' + (show ? '<th class="num" style="width:11%">Unit price</th><th class="num" style="width:13%">Amount (Tk)</th>' : '') + '</tr></thead><tbody>' + rows
     + '<tr class="tot"><td></td><td>Total</td><td></td><td class="num">' + (oneUnit ? woQtyTxt(qt, ls[0] && ls[0].unit) : '') + '</td>' + (show ? '<td></td><td class="num">' + (tot.p ? accFmt(tot.p) : '&mdash;') + '</td>' : '') + '</tr></tbody></table>'
     + (show && tot.p && tot.all ? '<div class="wo-words">In words: ' + woTkWords(tot.p) + '.</div>' : '')
-    + (w.note ? '<div class="wo-note"><span>Note</span>' + E(w.note) + '</div>' : '')
-    + '<div class="wo-sig"><div><div class="cap">Received by the party</div><div class="ln">Name, signature and date</div></div><div><div class="cap">For Shahana Group</div>' + (sig ? '<img src="' + sig + '" alt="">' : '') + '<div class="ln"><b>' + E(w.made_by_name || '') + '</b><br>' + E(woRoleTxt(w.made_by_role)) + '</div></div></div>';
+    + (w.note ? '<div class="wo-note"><div class="k">Note</div>' + E(w.note) + '</div>' : '')
+    + (w.agreed_text ? '<div class="wo-agree"><div class="k">Agreed condition</div>' + E(w.agreed_text) + '</div>' : '')
+    + '<div class="wo-sig"><div><div class="k">Received by the party</div><div class="ln">Name, signature and date</div></div><div><div class="k">For ' + E(co ? co.n : 'Shahana Group') + '</div>' + (sig ? '<img src="' + sig + '" alt="">' : '')
+    + '<div class="ln"><b>' + E(w.made_by_name || '') + '</b>' + (woRoleTxt(w.made_by_role, w) ? ' &middot; ' + E(woRoleTxt(w.made_by_role, w)) : '') + '</div></div></div></div>';
 }
-function woRoleTxt(r) { return r === 'admin' ? 'Admin' : r === 'management' ? 'Management' : (r || ''); }
+function woRoleTxt(r, w) { if (r === 'dept') { var d = w && w.dept ? rqDept(w.dept) : null; return d ? d.n + ' Department' : 'Department'; } return r === 'admin' ? 'Admin' : r === 'management' ? 'Management' : (r || ''); }
 async function woPrint(id) {
   var w = woById(id); if (!w) return;
   await sigNeed([w.made_by]);
@@ -26719,8 +26755,9 @@ function woPrintList(source) {
 }
 
 // ─── B. SOURCE: REQUISITIONS MANAGEMENT BUYS ITSELF ───
-function woRqCanEdit() { return !!S.user && ['management', 'admin'].indexOf(S.user.role) !== -1; }
-function woRqCanView() { return !!S.user && ['management', 'admin', 'audit'].indexOf(S.user.role) !== -1; }
+// Management purchases: who may make / see them comes from wo_rights (role tags); before Wave 6B, the old fixed roles
+function woRqCanEdit() { if (!S.user) return false; if (woRightsOn()) return woHas('make', ['role:' + S.user.role]); return ['management', 'admin'].indexOf(S.user.role) !== -1; }
+function woRqCanView() { if (!S.user) return false; if (woRightsOn()) return woHas('see', ['role:' + S.user.role]) && woHas('see_prices', ['role:' + S.user.role]); return ['management', 'admin', 'audit'].indexOf(S.user.role) !== -1; }
 // approved, Management buys it, not on a live work order yet
 function woRqOpen(r) { return !!r && r.mgmt_buy === true && r.mgmt_status === 'approved' && (r.status === 'wip' || r.status === 'hold'); }
 function woRqLinesOf(id) { return woActiveLines('rq').filter(function(l){ return l.ref_id === id; }); }
@@ -26822,7 +26859,7 @@ function woRqCompanyOf(l) { var r = l && l.ref_id ? RQ.rows.find(function(x){ re
 function woToBuyN() { return woOn() && woRqCanView() ? woGroups(WO.src.rq.candidates()).length : 0; }
 // ─── on the requisition ───
 // the tick in Management's approval box
-function woBuyTickHtml() { return woOn() ? '<label class="rq-mine wo-buytick"><input type="checkbox" id="rq-m-buy"> Management will buy this <span class="sub2">(no payment approval, not sent to Accounts)</span></label>' : ''; }
+function woBuyTickHtml() { return woOn() && woSrcOn('rq') ? '<label class="rq-mine wo-buytick"><input type="checkbox" id="rq-m-buy"> Management will buy this <span class="sub2">(no payment approval, not sent to Accounts)</span></label>' : ''; }
 function woBuyTicked() { var e = $('rq-m-buy'); return !!(woOn() && e && e.checked); }
 // small chip in the lists
 function woReqChip(r) {
@@ -26874,6 +26911,36 @@ async function woSetBuy(id, on) {
   toast(r.job_no + (on ? ': Management will buy it' : ': Accounts will pay it'), 'ok-t');
   renderRail(); rqRender(S.view); await rqLoadEvents(id); rqRenderDetail(id, true);
 }
+
+// ─── Admin -> Requisitions: work orders (Wave 14) ───
+// the standard wording of the agreed condition, and which ways of ordering are on
+async function woRenderAdmin() {
+  var box = $('admin-wo-body'); if (!box || !S.user || S.user.role !== 'admin') return;
+  WO.agreedStd = undefined; await woLoad(true);
+  if (!woOn()) { box.innerHTML = ''; return; }
+  var h = '<div class="sec-h" style="margin:18px 0 6px"><b>Work orders</b></div>';
+  if (woAgreedOn()) h += '<div class="adm-field"><label class="adm-lbl">Agreed condition: standard wording (printed on every new work order; can be changed on each one)</label>'
+    + '<textarea class="adm-inp" id="wo-adm-agreed" rows="3" maxlength="1500" style="width:100%">' + rqEsc(WO.agreedStd) + '</textarea>'
+    + '<div style="margin-top:6px"><button class="btn pri" onclick="woSaveAgreedStd()">Save wording</button></div></div>';
+  else h += '<div class="sub2">Run <b>shahana-one-v29-wave14-work-orders.sql</b> to print an agreed condition on work orders.</div>';
+  if (Array.isArray(WO.srcDb) && WO.srcDb.length) h += '<div class="adm-lbl" style="margin-top:12px">Ways of making a work order</div>'
+    + WO.srcDb.map(function(x){ return '<label class="rq-mine" style="display:block;margin:4px 0"><input type="checkbox"' + (x.active !== false ? ' checked' : '') + ' onchange="woSetSrc(\'' + jsAttrEsc(x.key) + '\',this.checked,this)"> ' + rqEsc(x.label) + '</label>'; }).join('')
+    + '<div class="sub2">Switched off: no new work orders from it. Work orders already made stay as they are.</div>';
+  box.innerHTML = h;
+}
+async function woSaveAgreedStd() {
+  var v = ($('wo-adm-agreed') || {}).value; v = String(v || '').trim();
+  if (!v) { toast('Write the wording first', 'err'); return; }
+  var r = await db.from('erp_rule_settings').update({ value: v, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('key', 'wo_agreed_text').select();
+  if (r.error || !r.data || !r.data.length) { showSaveError('Could not save the wording', r.error || { message: 'Only Admin can change it' }); return; }
+  WO.agreedStd = v; toast('Standard wording saved: new work orders start from it', 'ok-t');
+}
+async function woSetSrc(key, on, el) {
+  var r = await db.from('wo_sources').update({ active: !!on }).eq('key', key).select();
+  if (r.error || !r.data || !r.data.length) { if (el) el.checked = !on; showSaveError('Could not save', r.error || { message: 'Only Admin can change it' }); return; }
+  (WO.srcDb || []).forEach(function(x){ if (x.key === key) x.active = !!on; });
+  renderRail(); toast((on ? 'On: ' : 'Off: ') + r.data[0].label, 'ok-t');
+}
 // Work orders made from a requisition by the people who raised it (Wave 5, widened in Wave 6). The second way into the
 // general work-order engine (woSource): once Management has approved a requisition whose type allows a work order,
 // the person who raised it (or Management) orders it from the party; one requisition can go to several parties, never
@@ -26883,7 +26950,7 @@ async function woSetBuy(id, on) {
 // Before Wave 6B (no rights rows), the Wave 5 rule stays: the department orders once Management has approved the payment.
 
 // on once the database has work orders, company numbering (Wave 5A) and payment approvals
-function woDeptOn() { return woOn() && woCoOn() && apOn(); }
+function woDeptOn() { return woOn() && woCoOn() && apOn() && woSrcOn('rqd'); }
 function woDeptCanEdit() { return !!S.user && (S.user.role === 'admin' || (rqIsDeptUser() && !!WO.dept && rqCanWork(WO.dept))); }
 function woDeptCanView() { return !!S.user && (S.user.role === 'admin' || RQ_SEE_ALL.indexOf(S.user.role) !== -1 || (!!WO.dept && (rqInMyDepts(WO.dept) || rqCanRaise(WO.dept)))); }
 // approved, the work is on, its type allows a work order, something is still to order
