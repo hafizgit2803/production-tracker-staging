@@ -2716,7 +2716,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.07.3</p>
+    <p class="login-ver">STAGING V.2026.11.07.5</p>
   </div></div>
 </div>
 
@@ -2760,7 +2760,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.07.3</div>
+  <div id="ver-stamp">STAGING V.2026.11.07.5</div>
 </div>
 
 
@@ -23567,20 +23567,13 @@ function docViewClose() { closeModal('ov-qv'); }
 // who belongs to a department that uses requisitions (Admin -> Departments,
 // 235-rq-departments.js). Seen by admin, management, audit, CAO, the heads, the
 // department heads and the department staff (their own department).
-// RQ_DEPTS below is the built-in list, replaced by the departments in the
-// database once they are set up. Nothing here reads or writes order data.
+// Departments, companies, work types, types of requisition, approval steps and
+// documents all come from the database (Wave 13: no built-in lists). Nothing
+// here reads or writes order data.
 // ═══════════════════════════════════════════════════════════════════════════
 var SG_MARK_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAB4CAMAAABsOSjPAAAAYFBMVEUREREREREREREREREREREREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzGYEmAAAAIHRSTlP2AHGMTNEurwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALdgqc4AAAQsSURBVHja1dzZYuMgDAVQrI3//+NJJ3HqJbUEXAjmpX2YsU+J2AQkLRfFhN6Fi0vOsn+amSDKsqS/wEJZU1PhjVm49Wmb5/6BFm5+Bdv7aZQTsnxGU3ul/EaGsabUHS2Al9D7YTnBSz6hEW/RNTKsA/kDmiEPBT7MR0NqhnEtI4JGRPM7nHNKI9CScGbRbuZd7yEJFxuU0hC0JVwb7Grehgfk87SevcYZDXmRDKjnDRoY0JJGoXHBYWkUGhIchPvzI70HpHZ0RCPcoHEV3T84VjTmTdZ38D6ioxWth3LuOop6O60pSV/oSNtRso8rX3mtfaWoFWomsaWu2P+FbaBjPayr/yqxjyxTrXctKfCqIDlU0cqt4ic6vODzSiCiEeQftAQXfICKzhDyD5pQZvL7qgWFziCz20fLgkOrP0EOFYkMPiC0Qdqg298p0LwkcedAkGYoCxJNoIqWhPrIAmgGhWEOJZ36o4uiI6HCLPKujKkfGRccD7Ri0DywomHoPLCiUWgbWdGXaMWENOHRGTIi8JjxO4KOT8t0WB/tDi4JgZYOaELMgG1odDjo6BtpaHQ4U9NoB8IDlivxRUCwonhoSHvLraBah4a0u7B9RIg0oZcuaD/96CZrbOQY/kzWBDKdTiZLqqJrcwKmrFiKpjpV86ciDpqr+nYn5RXNml7W5DfQ1IqmmileI7qlqrPTTfdDyx3RDTtF2VlrPdECRXNqPJ0RQ+uHrFg72rQTWl51cla3o6vVUfRZ3RzT9eow+qQG1HRtXGsYfZyGYNBVg0wB+jAPAaFrjkuVoPdjOgpd0WEXoXfLGBx6McaiaYfeNkYgupSdi9DbsIaiH48rOPAcQ/OHdS4Y/XRrF7R2RK8H7LUVzcf2TX3R6+WDyzsMVorWxiE4gG7eBsinnlQ2FWK2+XVfLrpfDJpL0OHkHvVFk5f34JqcU2e0eHlXqtnO+DZaapK/ndHm7dtITXqvM/oqB8FntEyPzuePguZAu6cCtGJzoDeavKDOE6LF2yGjCdHu1rhNiF5ySXzMgqaSbPAsaHN3UHU+9GWK+9gUp0GzW9V5thHRycsfRkWbBX29BbKbNekyDZr9cwE81dTU37fZrrpoHrSTKd6sym0itJMopvUf6TIR2tuNfO1zKU+F9nLyTy3gjgES7W78Fl6+GIP2N355PnRgq0kJFR4tx4xsk5GL7bGH75pdoU3rLtntLvflssvXyvyg/1meX/OSL9CY28cca4uYd6HQr/mm3Qut9Ruo30OvAZJvhV5nb3or9Gv6ZvdCv/Zj5VbodU0it0IPUnPCdlK5dY/wG+j3qjXfCf1W821iequmO6Hf6m7fxdQD/Xt+hu8S0zt1n69x64PeHjWgrHdB75awRsSB8y7xmVkv9Id8AejLNkUs/dTD+YtA665FbP7v48fSrfwD4T80Pr5dGscAAAAASUVORK5CYII=';
-var RQ_DEPTS = [
-  { k: 'maint', n: 'Maintenance', code: 'MNT', types: ['Machine repair', 'Electrical', 'Generator', 'Boiler / compressor', 'Water / plumbing', 'Fire safety', 'AC / ventilation', 'Other'] },
-  { k: 'civil', n: 'Civil', code: 'CIV', types: ['Repair', 'New construction', 'Painting', 'Plumbing / drainage', 'Roof', 'Floor', 'Furniture / fixtures', 'Other'] },
-  { k: 'it', n: 'IT', code: 'IT', types: ['Hardware purchase', 'Hardware repair', 'Network / internet', 'CCTV', 'Software / licence', 'Printer / scanner', 'Telephone / PABX', 'Other'] }
-];
-var RQ_COMPANIES = [
-  { c: 'MTS', n: 'M.T. Sweaters Limited' },
-  { c: 'BFL', n: 'Banga Fashion Limited' },
-  { c: 'BKL', n: 'Banga Knitwear Limited' }
-];
+var RQ_DEPTS = [];     // the departments switched on, from the database (Admin -> Departments; filled by rqdLoad)
+var RQ_COMPANIES = []; // the companies, from the database (Admin -> Companies; filled by coSyncRq)
 var RQ_TABS = [
   { k: 'pending', n: 'Approval pending' },
   { k: 'wip', n: 'Work in progress' },
@@ -23929,6 +23922,11 @@ function rqRender(view) {
     return;
   }
   document.body.classList.remove('rq-form-phone');
+  if (RQD.ok === false && S.user.role !== 'accounts') {
+    rqSetHead('Requisitions', 'Requisitions', '', '');
+    $('content').innerHTML = '<div class="card"><div class="empty"><h4>The departments could not be read</h4>Requisitions need the list of departments from the database (Admin &rarr; Departments). Check the connection and press Refresh. If it keeps happening, tell Admin.<div style="margin-top:12px"><button class="btn pri" onclick="rqdLoad(true).then(function(){ rqRender(S.view); })">Refresh</button></div></div></div>';
+    return;
+  }
   var p = String(view).split(':');
   if (p[1] === 'acc') return accRender(p);
   if (S.user.role === 'accounts' && p[1] !== 'all') { setView(rqHomeView()); return; }
@@ -24223,21 +24221,7 @@ async function rqSubmitForm(dk) {
   };
   v.items = rqReadItems();
   if (!v.items.length) v.items = null;
-  if (!v.kind) return fail('Choose the type of requisition.');
-  if (!v.company) return fail('Choose the company.');
-  if (!v.req_date) return fail('Enter the date.');
-  if (!v.location) return fail('Enter the building / area.');
-  if (!v.location_detail) return fail('Enter the exact location.');
-  if (!v.work_type) return fail($('rqf-type').value === 'Other' ? 'Describe the type of work.' : 'Choose the type of work.');
-  if (v.time_value != null && (isNaN(v.time_value) || v.time_value < 0)) return fail('Time required cannot be negative.');
-  if (v.est_cost == null || isNaN(v.est_cost)) return fail('Enter the estimated cost (0 if there is no cost).');
-  if (v.est_cost < 0) return fail('Estimated cost cannot be negative.');
-  if (rqKindPurchase(v.kind)) {
-    if (!v.items || !v.items.length) return fail('Add the items to buy.');
-  }
-  if (v.items && v.items.some(function(i){ return !i.item; })) return fail('Every line needs the ' + (rqKindPurchase(v.kind) ? 'item' : 'work') + ' filled in.');
-  if (v.items && v.items.some(function(i){ return (i.qty != null && i.qty < 0) || (i.rate != null && i.rate < 0); })) return fail('Quantities and rates cannot be negative.');
-  if (!v.remarks) return fail('Write the detailed remarks.');
+  var chk = rqRaiseCheck(v, $('rqf-type').value === 'Other'); if (chk) return fail(chk);
   var bWarn = rqbCheck(v.kind);
   if (bWarn && !(await appConfirm(bWarn + ' Send it without the bill?', { title: 'No bill attached', okText: 'Send without bill' }))) return;
   if (v.req_date > rqAddDays(todayStr(), 1) && !(await appConfirm('The date is in the future (' + rqDateTxt(v.req_date) + '). Submit anyway?', { title: 'Check the date', okText: 'Submit' }))) return;
@@ -24247,29 +24231,9 @@ async function rqSubmitForm(dk) {
   } finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
 }
 async function rqCreate(d, v) {
-  var yr = new Date().getFullYear();
-  // The number comes from the database counter. If that function is missing
-  // (e.g. a database rebuilt from a backup), fall back to the highest number
-  // used + 1; the database still refuses a duplicate, so retry on a clash.
-  var res = null;
-  for (var attempt = 0; attempt < 6; attempt++) {
-    var seq = null;
-    var seqRes = await db.rpc('rq_next_seq', { p_dept: d.k, p_year: yr });
-    if (!seqRes.error && seqRes.data != null) seq = Number(seqRes.data);
-    else {
-      var mx = await db.from('rq_requisitions').select('seq').eq('dept', d.k).eq('yr', yr).order('seq', { ascending: false }).limit(1);
-      if (mx.error) { showSaveError('Could not get a job number', seqRes.error || mx.error); return; }
-      seq = ((mx.data && mx.data[0] && Number(mx.data[0].seq)) || 0) + 1 + attempt;
-    }
-    var row = Object.assign({}, v, {
-      dept: d.k, yr: yr, seq: seq, job_no: d.code + '/' + v.company + '/' + String(yr).slice(2) + '/' + String(seq).padStart(4, '0'),
-      status: 'pending', created_by: S.user.id, created_by_name: S.user.name, updated_by: S.user.name
-    });
-    res = await db.from('rq_requisitions').insert(row).select().single();
-    if (!res.error || res.error.code !== '23505') break;
-  }
-  if (res.error) { showSaveError('Could not save the requisition', res.error); return; }
-  await rqEvent(res.data.id, 'created', { amount: v.est_cost });
+  var out = await rqRaiseRow(d, v);
+  if (out.error) { showSaveError(out.error.title, out.error.e); return; }
+  var res = { data: out.row };
   RQ.rows.unshift(res.data);
   var qErr = await rqqUploadForm(res.data);
   _rqFormStart = null;
@@ -24277,6 +24241,24 @@ async function rqCreate(d, v) {
   setView('rq:' + d.k + ':pending');
   rqOpen(res.data.id);
   if (qErr) setTimeout(function(){ toast(qErr, 'err'); }, 50);
+}
+// the number, the row and its "created" line: used by the form and by rqRaise (other modules)
+async function rqRaiseRow(d, v) {
+  // The database gives the job number (MTSL/IT/26/0013); the page never makes one. Numbers already given are not changed.
+  var noNum = { title: 'The job number could not be given', e: { message: 'Nothing was saved. Check that the company has a number prefix in Admin \u2192 Companies, then try again.' } };
+  if (!coNumOn()) return { error: noNum };
+  var row = Object.assign({}, v, { dept: d.k, yr: new Date().getFullYear(), status: 'pending', created_by: S.user.id, created_by_name: S.user.name, updated_by: S.user.name });
+  delete row.job_no; delete row.seq;
+  var res = await db.from('rq_requisitions').insert(row).select().single();
+  if (res.error) return { error: { title: 'Could not save the requisition', e: res.error } };
+  if (!res.data || !res.data.job_no) {
+    // should never happen; take it back out (or, if that is not allowed, close it) so no record without a number is left
+    if (res.data && res.data.id) { var del = await db.from('rq_requisitions').delete().eq('id', res.data.id).select();
+      if (del.error || !del.data || !del.data.length) await db.from('rq_requisitions').update({ status: 'cancelled', updated_by: S.user.name }).eq('id', res.data.id); }
+    return { error: noNum };
+  }
+  await rqEvent(res.data.id, 'created', { amount: v.est_cost });
+  return { row: res.data };
 }
 async function rqSaveEdit(d, v) {
   var r = RQ.rows.find(function(x){ return x.id === RQ.editId; });
@@ -24327,7 +24309,7 @@ async function rqOpen(id) {
   if (RQ.openId === id) rqRenderDetail(id, true);
 }
 function rqKv(k, v) { return '<div class="rq-kv"><div class="k">' + k + '</div><div class="v">' + (v == null || v === '' ? '&mdash;' : v) + '</div></div>'; }
-var RQ_EVENT_TXT = { mgmt_buy: 'Management will buy it', mgmt_buy_off: 'Accounts will pay it', wo_ordered: 'Put on a work order', wo_cancelled: 'Off the work order', wo_received: 'Received (bought by Management)', asked: 'Question / change asked', answered: 'Answered', created: 'Raised the requisition', edited: 'Changed the requisition', resubmitted: 'Changed it and sent it again', hod_approved: 'HOD approved', cao_approved: 'CAO approved', audit_approved: 'Audit approved', mgmt_approved: 'Management approved', returned: 'Returned for changes', rejected: 'Rejected', progress: 'Progress update', hold: 'Put on hold', resumed: 'Work resumed', cost: 'Cost spent', quote_added: 'Quotation added', quote_removed: 'Quotation removed', done: 'Marked the work complete', reopened: 'Reopened', cancelled: 'Cancelled', paid: 'Payment recorded', pay_reversed: 'Payment reversed (admin)', cheque_cleared: 'Cheque cleared', cheque_bounced: 'Cheque bounced', cheque_cancelled: 'Cheque cancelled (admin)', pay_ok: 'Payment approved by Management', pay_ok_withdrawn: 'Payment approval withdrawn', pay_asked: 'Accounts asked for payment approval' };
+var RQ_EVENT_TXT = { mgmt_buy: 'Management will buy it', mgmt_buy_off: 'Accounts will pay it', wo_ordered: 'Put on a work order', wo_cancelled: 'Off the work order', wo_received: 'Received (bought by Management)', asked: 'Question / change asked', answered: 'Answered', created: 'Raised the requisition', edited: 'Changed the requisition', resubmitted: 'Changed it and sent it again', hod_approved: 'HOD approved', cao_approved: 'CAO approved', audit_approved: 'Audit approved', mgmt_approved: 'Management approved', returned: 'Returned for changes', rejected: 'Rejected', progress: 'Progress update', hold: 'Put on hold', resumed: 'Work resumed', cost: 'Cost spent', quote_added: 'Quotation added', bill_added: 'Bill added', doc_added: 'Document added', quote_removed: 'Quotation removed', done: 'Marked the work complete', reopened: 'Reopened', cancelled: 'Cancelled', paid: 'Payment recorded', pay_reversed: 'Payment reversed (admin)', cheque_cleared: 'Cheque cleared', cheque_bounced: 'Cheque bounced', cheque_cancelled: 'Cheque cancelled (admin)', pay_ok: 'Payment approved by Management', pay_ok_withdrawn: 'Payment approval withdrawn', pay_asked: 'Accounts asked for payment approval' };
 function rqRenderDetail(id, withEvents) {
   var r = RQ.rows.find(function(x){ return x.id === id; });
   if (!r) { closeModal('ov-rq'); return; }
@@ -24750,7 +24732,7 @@ async function rqPrint(id, mode) {
   var st = {};
   try { st = await rqLoadSettings(true); } catch (e) {}
   var ev = RQ.events[id] || await rqLoadEvents(id);
-  var _hu = sigUserByName(st['dept_head_' + r.dept]);
+  var _hu = rqDeptInCharge(r.dept);
   await sigNeed([r.created_by, r.hod_by, r.cao_by, r.audit_by, r.mgmt_by, _hu && _hu.id, S.user.id]);
   openReportPreview((mode === 'form' ? 'Requisition form ' : 'Requisition ') + r.job_no, rqPrintHtml(r, st, ev, mode === 'form'));
 }
@@ -24801,12 +24783,8 @@ function rqBrandHtml(st, coName) {
 // lines, small colour tick bars only: kind to the printer.
 // formOnly: empty boxes for signing on paper. Full record: adds the approvals,
 // the work record, and the audit seal / management signature once approved.
-var RQ_CO_ADDR = {
-  MTS: 'Gacha, Plot # 1703-1704, Post: Gacha, Gazipur Sadar, Gazipur, Bangladesh',
-  BFL: 'Gacha, Plot # 1595, Post: Gacha, Gazipur Sadar, Gazipur, Bangladesh',
-  BKL: 'Gacha, Gazipur Sadar, Gazipur, Bangladesh'
-};
-function rqCoAddr(st, c) { return (st && st['co_addr_' + c]) || RQ_CO_ADDR[c] || ''; }
+// the company's address from Admin -> Companies (before Wave 13 copied them there: the one typed in requisition settings)
+function rqCoAddr(st, c) { var co = coList().find(function(x){ return x.code === c; }); return (co && String(co.address || '').trim()) || (st && st['co_addr_' + c]) || ''; }
 function rqFormCss() {
   return '@page{size:A4 portrait;margin:0}*{box-sizing:border-box;margin:0;padding:0}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + 'body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#111;font-size:9px;line-height:1.4;background:#d9d8d3;padding:18px}'
@@ -24841,7 +24819,7 @@ function rqPrintHtml(r, st, ev, formOnly) {
   var items = Array.isArray(r.items) ? r.items : [];
   var purchase = rqIsPurchase(r);
   var started = !formOnly && ['wip', 'hold', 'done'].indexOf(r.status) !== -1;
-  var head = st['dept_head_' + r.dept] || '';
+  var headU = rqDeptInCharge(r.dept), head = headU ? headU.name : '';
   var hodLine = rqPrintHeadLine(r);
   var status = { pending: 'Approval pending', returned: 'Returned for changes', rejected: 'Rejected', wip: 'Approved · in progress', hold: 'Approved · on hold', done: 'Completed', cancelled: 'Cancelled' }[r.status] || r.status;
   function tick(pct, col) { pct = Math.max(0, Math.min(100, Math.round(pct))); return '<div class="bar"><div class="tk" style="--c:' + col + ';width:' + pct + '%"></div><div class="tk" style="--c:#dededb;width:' + (100 - pct) + '%"></div></div>'; }
@@ -24902,7 +24880,7 @@ function rqPrintHtml(r, st, ev, formOnly) {
   }
   var sigs = '<div class="sigs">'
     + sig('Prepared by', E(r.created_by_name || ''), sigImg(r.created_by), 'sign')
-    + sig('Department head', head ? E(head) : E(d.n), !formOnly && head && sigUserByName(head) ? sigImg(sigUserByName(head).id) : '', 'sign')
+    + sig('Department in-charge', head ? E(head) : E(d.n), !formOnly && headU ? sigImg(headU.id) : '', 'sign')
     + sig('HOD', hodOk ? E(r.hod_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.hod_at))) : E(hodLine), hodOk ? sigImg(r.hod_by) : '', 'sign')
     + sig('CAO', caoOk ? E(r.cao_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.cao_at))) : (st.cao_line ? E(st.cao_line) : 'Date:'), caoOk ? (sigImg(r.cao_by) || st.cao_sign) : '', 'sign')
     + sig('Audit', auditOk ? E(r.audit_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.audit_at))) : 'Date:', auditOk ? [st.audit_seal, sigImg(r.audit_by)] : '', 'seal')
@@ -24934,13 +24912,19 @@ function rqReportData(month, co) {
   var sum = function(l, f){ return l.reduce(function(s, r){ return s + (Number(f(r)) || 0); }, 0); };
   var fc = function(r){ return r.final_cost != null ? r.final_cost : r.approved_cost; };
   function by(keyFn, list, valFn) { var o = {}; list.forEach(function(r){ var k = keyFn(r); o[k] = (o[k] || 0) + (Number(valFn(r)) || 0); }); return o; }
+  // every department switched on, and any other (switched off since) that has spending in the month; the same for companies
+  var depts = RQ_DEPTS.slice(), cos = RQ_COMPANIES.slice();
+  done.forEach(function(r){
+    if (!depts.some(function(x){ return x.k === r.dept; })) depts.push(rqDept(r.dept) || { k: r.dept, n: r.dept });
+    if (r.company && !cos.some(function(x){ return x.c === r.company; })) cos.push(rqCompany(r.company));
+  });
   var grid = {};
-  RQ_COMPANIES.forEach(function(c){ grid[c.c] = {}; RQ_DEPTS.forEach(function(dd){ grid[c.c][dd.k] = 0; }); });
+  cos.forEach(function(c){ grid[c.c] = {}; depts.forEach(function(dd){ grid[c.c][dd.k] = 0; }); });
   done.forEach(function(r){ if (grid[r.company]) grid[r.company][r.dept] = (grid[r.company][r.dept] || 0) + (Number(fc(r)) || 0); });
   var types = by(function(r){ return (rqDept(r.dept) || {}).n + ' · ' + (r.work_type || 'Other'); }, done, fc);
   var over = done.filter(function(r){ return Number(r.approved_cost) > 0 && Number(r.final_cost) > Number(r.approved_cost) * 1.1; });
   return {
-    month: month, co: co, raised: raised, approved: approved, done: done, open: open, rejected: rejected, grid: grid, over: over,
+    month: month, co: co, raised: raised, approved: approved, done: done, open: open, rejected: rejected, grid: grid, over: over, depts: depts, cos: cos,
     types: Object.keys(types).map(function(k){ return [k, types[k]]; }).sort(function(a, b){ return b[1] - a[1]; }),
     tot: { raisedEst: sum(raised, function(r){ return r.est_cost; }), approved: sum(approved, function(r){ return r.approved_cost; }), spent: sum(done, fc),
       openCommitted: sum(open, function(r){ return r.approved_cost; }), openSpent: sum(open, function(r){ return r.spent; }), doneApproved: sum(done, function(r){ return r.approved_cost; }) },
@@ -24961,10 +24945,10 @@ function rqRenderReport() {
     + '<div class="stat"><div class="k">Raised this month</div><div class="v" style="font-size:22px">' + D.raised.length + '</div><div class="n">' + rqMoney(T.raisedEst) + ' estimated</div></div>'
     + '<div class="stat' + (D.open.length ? ' alert' : '') + '"><div class="k">Still open (committed)</div><div class="v" style="font-size:22px">' + rqMoney(T.openCommitted) + '</div><div class="n">' + D.open.length + ' jobs, ' + rqMoney(T.openSpent) + ' spent so far</div></div>'
     + '<div class="stat"><div class="k">Average days to finish</div><div class="v" style="font-size:22px">' + (D.days == null ? '&mdash;' : D.days) + '</div><div class="n">' + (T.doneApproved ? 'Final cost ' + Math.round(T.spent / T.doneApproved * 100) + '% of approved' : '') + '</div></div></div>';
-  var cos = D.co ? [rqCompany(D.co)] : RQ_COMPANIES;
-  var grid = '<table class="rq-t"><thead><tr><th>Company</th>' + RQ_DEPTS.map(function(d){ return '<th class="num">' + d.n + '</th>'; }).join('') + '<th class="num">Total</th></tr></thead><tbody>'
-    + cos.map(function(c){ var g = D.grid[c.c] || {}, t = 0; return '<tr><td><b>' + E(c.n) + '</b></td>' + RQ_DEPTS.map(function(d){ t += g[d.k] || 0; return '<td class="num">' + (g[d.k] ? rqMoney(g[d.k]) : '&mdash;') + '</td>'; }).join('') + '<td class="num"><b>' + rqMoney(t) + '</b></td></tr>'; }).join('')
-    + '<tr><td><b>Total</b></td>' + RQ_DEPTS.map(function(d){ var t = cos.reduce(function(s, c){ return s + ((D.grid[c.c] || {})[d.k] || 0); }, 0); return '<td class="num"><b>' + rqMoney(t) + '</b></td>'; }).join('') + '<td class="num"><b>' + rqMoney(T.spent) + '</b></td></tr></tbody></table>';
+  var cos = D.co ? [rqCompany(D.co)] : D.cos;
+  var grid = '<table class="rq-t"><thead><tr><th>Company</th>' + D.depts.map(function(d){ return '<th class="num">' + d.n + '</th>'; }).join('') + '<th class="num">Total</th></tr></thead><tbody>'
+    + cos.map(function(c){ var g = D.grid[c.c] || {}, t = 0; return '<tr><td><b>' + E(c.n) + '</b></td>' + D.depts.map(function(d){ t += g[d.k] || 0; return '<td class="num">' + (g[d.k] ? rqMoney(g[d.k]) : '&mdash;') + '</td>'; }).join('') + '<td class="num"><b>' + rqMoney(t) + '</b></td></tr>'; }).join('')
+    + '<tr><td><b>Total</b></td>' + D.depts.map(function(d){ var t = cos.reduce(function(s, c){ return s + ((D.grid[c.c] || {})[d.k] || 0); }, 0); return '<td class="num"><b>' + rqMoney(t) + '</b></td>'; }).join('') + '<td class="num"><b>' + rqMoney(T.spent) + '</b></td></tr></tbody></table>';
   var types = D.types.length ? '<table class="rq-t"><thead><tr><th>Department &middot; type of work</th><th class="num">Spent</th><th style="width:40%"></th></tr></thead><tbody>' + D.types.map(function(t){
     return '<tr><td>' + E(t[0]) + '</td><td class="num">' + rqMoney(t[1]) + '</td><td><div class="rq-bar" style="width:100%"><i style="width:' + (T.spent ? Math.round(t[1] / T.spent * 100) : 0) + '%"></i></div></td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty" style="padding:16px">No work finished this month.</div>';
   var doneList = D.done.slice().sort(function(a, b){ return (Number(b.final_cost) || 0) - (Number(a.final_cost) || 0); });
@@ -24980,7 +24964,7 @@ async function rqPrintReport() {
   var st = {}; try { st = await rqLoadSettings(true); } catch (e) {}
   var D = rqReportData(RQ.reportMonth || todayStr().slice(0, 7), RQ.filter.co);
   var E = rqEsc, T = D.tot, m = function(n){ return E(rqMoneyTxt(n) || 'Tk 0'); };
-  var cos = D.co ? [rqCompany(D.co)] : RQ_COMPANIES;
+  var cos = D.co ? [rqCompany(D.co)] : D.cos;
   var maxType = D.types.length ? D.types[0][1] : 0;
   var palette = ['#9aa05a', '#4f7fa8', '#8f84cf', '#c9925b', '#5fa59b', '#b07aa1'];
   var tile = function(k, big, pct, col, l, r){ return '<div class="card tile"><div class="k">' + k + '</div><div class="big">' + big + '</div>' + rqTicks(pct, col) + '<div class="row"><span>' + l + '</span><span>' + r + '</span></div></div>'; };
@@ -24993,9 +24977,9 @@ async function rqPrintReport() {
     + tile('Raised this month', String(D.raised.length), D.raised.length ? 100 : 0, '#8f84cf', m(T.raisedEst) + ' est.', D.rejected.length + ' rejected')
     + tile('Still open', m(T.openCommitted), T.openCommitted ? Math.min(100, T.openSpent / T.openCommitted * 100) : 0, '#e0a33c', D.open.length + ' jobs', m(T.openSpent) + ' spent')
     + '</div>'
-    + '<div class="card mt"><div class="h">Spent by company and department</div><table><tr><th>Company</th>' + RQ_DEPTS.map(function(d){ return '<th class="num">' + d.n + '</th>'; }).join('') + '<th class="num">Total</th></tr>'
-    + cos.map(function(c){ var g = D.grid[c.c] || {}, t = 0; return '<tr><td>' + E(c.n) + '</td>' + RQ_DEPTS.map(function(d){ t += g[d.k] || 0; return '<td class="num">' + (g[d.k] ? m(g[d.k]) : '&mdash;') + '</td>'; }).join('') + '<td class="num"><b>' + m(t) + '</b></td></tr>'; }).join('')
-    + '<tr class="t"><td>Total</td>' + RQ_DEPTS.map(function(d){ return '<td class="num">' + m(cos.reduce(function(s, c){ return s + ((D.grid[c.c] || {})[d.k] || 0); }, 0)) + '</td>'; }).join('') + '<td class="num">' + m(T.spent) + '</td></tr></table></div>'
+    + '<div class="card mt"><div class="h">Spent by company and department</div><table><tr><th>Company</th>' + D.depts.map(function(d){ return '<th class="num">' + d.n + '</th>'; }).join('') + '<th class="num">Total</th></tr>'
+    + cos.map(function(c){ var g = D.grid[c.c] || {}, t = 0; return '<tr><td>' + E(c.n) + '</td>' + D.depts.map(function(d){ t += g[d.k] || 0; return '<td class="num">' + (g[d.k] ? m(g[d.k]) : '&mdash;') + '</td>'; }).join('') + '<td class="num"><b>' + m(t) + '</b></td></tr>'; }).join('')
+    + '<tr class="t"><td>Total</td>' + D.depts.map(function(d){ return '<td class="num">' + m(cos.reduce(function(s, c){ return s + ((D.grid[c.c] || {})[d.k] || 0); }, 0)) + '</td>'; }).join('') + '<td class="num">' + m(T.spent) + '</td></tr></table></div>'
     + '<div class="card mt"><div class="h">Where the money went</div>' + (D.types.length ? D.types.slice(0, 12).map(function(t, i){
       return '<div style="display:grid;grid-template-columns:42% 1fr 22%;gap:10px;align-items:center;padding:3px 0"><span>' + E(t[0]) + '</span>' + rqTicks(maxType ? t[1] / maxType * 100 : 0, palette[i % palette.length]) + '<span class="num">' + m(t[1]) + '</span></div>'; }).join('') : '<div class="mut">No work finished this month.</div>') + '</div>'
     + '<div class="card mt grow"><div class="h">Completed jobs <span class="mut" style="font-weight:500">' + doneList.length + (D.over.length ? ' &middot; ' + D.over.length + ' over approved by 10%+' : '') + '</span></div>'
@@ -25027,8 +25011,7 @@ async function rqRenderAdminCard() {
     + img('group_logo', 'Shahana Group logo', 'Printed at the top of every requisition form.')
     + '</div><div class="sub2" style="margin:8px 0 12px">A photo of a stamp or signature on white paper works: the paper is made see-through automatically.</div>'
     + '<div class="adm-form" style="grid-template-columns:repeat(4,1fr)">'
-    + RQ_DEPTS.map(function(d){ return '<div class="adm-field"><label class="adm-lbl">' + d.n + ' head (name)</label><input class="adm-inp" id="rq-head-' + d.k + '" value="' + rqEsc(st['dept_head_' + d.k] || '') + '" placeholder="Printed under Department Head"></div>'; }).join('')
-    + RQ_COMPANIES.map(function(c){ return '<div class="adm-field" style="grid-column:span 2"><label class="adm-lbl">' + c.n + ' address</label><input class="adm-inp" id="rq-addr-' + c.c + '" value="' + rqEsc(rqCoAddr(st, c.c)) + '"></div>'; }).join('')
+    + '<div class="adm-field" style="grid-column:span 4"><div class="sub2">The department in-charge printed on the form is the most senior person under the head in <b>Admin &rarr; Departments</b>; the company address is the one in <b>Admin &rarr; Companies</b>.</div></div>'
     + '<div class="adm-field"><label class="adm-lbl">CAO line</label><input class="adm-inp" id="rq-caoline" value="' + rqEsc(st.cao_line || '') + '" placeholder="Name, CAO"></div>'
     + '<div class="adm-field"><label class="adm-lbl">&nbsp;</label><button class="btn pri adm-save-btn" onclick="rqSaveNames()">Save</button></div></div></div>';
 }
@@ -25041,9 +25024,7 @@ async function rqSetSetting(key, value) {
 async function rqSaveNames() {
   if (S.user.role !== 'admin') return;
   var ok = true;
-  for (var i = 0; i < RQ_DEPTS.length; i++) ok = (await rqSetSetting('dept_head_' + RQ_DEPTS[i].k, $('rq-head-' + RQ_DEPTS[i].k).value.trim())) && ok;
   if ($('rq-caoline')) ok = (await rqSetSetting('cao_line', $('rq-caoline').value.trim())) && ok;
-  for (var j = 0; j < RQ_COMPANIES.length; j++) { var ae = $('rq-addr-' + RQ_COMPANIES[j].c); if (ae) ok = (await rqSetSetting('co_addr_' + RQ_COMPANIES[j].c, ae.value.trim())) && ok; }
   if (ok) toast('Requisition names saved', 'ok-t');
 }
 function rqImgAllowed(key) { return S.user.role === 'admin' || (String(key).indexOf('acc_seal_') === 0 && accIsHead()); }
@@ -25930,8 +25911,8 @@ async function rqtSave(key) {
   return true;
 }
 // Requisitions for every department (Wave 5): the departments, their job-number codes, their heads and who works where
-// come from the database (Admin -> Departments). Until the Wave 5A update is run, the three built-in departments
-// (Maintenance, Civil, IT) work exactly as before.
+// come from the database (Admin -> Departments). There is no built-in list (Wave 13): if the departments cannot be
+// read, the requisition screens say so instead of showing a wrong list.
 
 // logins that see every department's requisitions (never "department staff" for requisitions)
 var RQ_SEE_ALL = ['admin', 'management', 'audit', 'cao', 'accounts'];
@@ -25953,8 +25934,8 @@ async function rqdLoad(force) {
   RQD._p = (async function(){
     try {
       var r = await db.rpc('erp_rq_setup');
-      // not set up yet (or not readable just now): the built-in departments, exactly as before
-      if (r.error || !r.data) { if (r.error && !/erp_rq_setup|schema cache|does not exist|PGRST202/i.test((r.error.message || '') + ' ' + (r.error.code || ''))) console.warn('departments not read, using the built-in ones:', r.error.message || r.error); RQD.ok = false; return; }
+      // not readable just now: RQD.ok stays false and the requisition screens say so (no built-in list)
+      if (r.error || !r.data) { if (r.error && !/erp_rq_setup|schema cache|does not exist|PGRST202/i.test((r.error.message || '') + ' ' + (r.error.code || ''))) console.warn('departments not read:', r.error.message || r.error); RQD.ok = false; return; }
       RQD.all = (r.data.depts || []).map(rqdNorm).filter(Boolean);
       RQD.members = (r.data.members || []).filter(function(m){ return m && m.p && m.k; });
       RQD.ok = true;
@@ -26030,9 +26011,23 @@ function rqAccNarrow() {
 }
 
 // the name printed in the HOD box before the head approves: the head of the requisition's department (Admin -> Departments)
+// the head of a department, as set in Admin -> Departments (the first, if there are two): { id, name } or null
+function rqDeptHead(k) {
+  var ids = rqdOk() ? rqdHeads(k) : [];
+  for (var i = 0; i < ids.length; i++) { var u = (S.users || []).find(function(x){ return x.id === ids[i]; }); if (u) return { id: u.id, name: u.name }; }
+  return null;
+}
+// the department in-charge for the printed form: the most senior person under the head (HOD) in Admin -> Departments
+// (Manager, else Officer, else Junior; if two share that level, the first by name): { id, name } or null
+function rqDeptInCharge(k) {
+  if (!rqdOk()) return null;
+  var c = RQD.members.filter(function(m){ return m.k === k && Number(m.l) >= 1 && Number(m.l) < 4; }).map(function(m){
+    var u = (S.users || []).find(function(x){ return x.id === m.p; }); return u ? { id: u.id, name: u.name, l: Number(m.l) } : null; }).filter(Boolean);
+  c.sort(function(a, b){ return b.l - a.l || String(a.name).localeCompare(String(b.name)); });
+  return c.length ? { id: c[0].id, name: c[0].name } : null;
+}
 function rqPrintHeadLine(r) {
-  var d = rqDept(r.dept), dn = d ? d.n : r.dept;
-  var ids = rqdOk() ? rqdHeads(r.dept) : [], u = ids.length ? (S.users || []).find(function(x){ return x.id === ids[0]; }) : null;
+  var d = rqDept(r.dept), dn = d ? d.n : r.dept, u = rqDeptHead(r.dept);
   return u ? u.name + ', Head of ' + dn : 'Head of ' + dn;
 }
 
@@ -26197,6 +26192,77 @@ function rqbAdd(reqId) {
 }
 // the payment approval line: say when it came with Management's approval of the requisition
 function rqbApprovedWith(a) { return !!a && a.note === RQB_MARK; }
+// ═══════════════════════════════════════════════════════════════════
+// RAISING A REQUISITION FROM ANYWHERE (Wave 13)
+// rqRaiseCheck: the rules every requisition must meet (the form uses it too).
+// rqRaise: one call for any module to raise a requisition, with documents (bill, quotation, ...):
+//   var out = await rqRaise({ dept: 'it', company: 'MTS', kind: 'payment', work_type: 'Bill payment',
+//     location: 'Office', location_detail: 'Ground floor', remarks: 'Electricity, October',
+//     est_cost: 6150,                                 // may be left out when the documents carry amounts
+//     documents: [{ kind: 'bill', values: { party: 'Palli Bidyut', amount: 6150, doc_no: 'PB-10', doc_date: '2026-11-03' }, pages: pages }] });
+//   out = { row } (and docErrors when a document could not be uploaded), or { error: 'message' }
+// The same rules apply as in the form: the person must be allowed to raise for that department, the company and
+// the type must be switched on, and the database checks everything again.
+// ═══════════════════════════════════════════════════════════════════
+function rqRaiseCheck(v, otherChosen) {
+  if (!v.kind) return 'Choose the type of requisition.';
+  if (!v.company) return 'Choose the company.';
+  if (!v.req_date) return 'Enter the date.';
+  if (!v.location) return 'Enter the building / area.';
+  if (!v.location_detail) return 'Enter the exact location.';
+  if (!v.work_type) return otherChosen ? 'Describe the type of work.' : 'Choose the type of work.';
+  if (v.time_value != null && (isNaN(v.time_value) || v.time_value < 0)) return 'Time required cannot be negative.';
+  if (v.est_cost == null || isNaN(v.est_cost)) return 'Enter the estimated cost (0 if there is no cost).';
+  if (v.est_cost < 0) return 'Estimated cost cannot be negative.';
+  if (rqKindPurchase(v.kind) && (!v.items || !v.items.length)) return 'Add the items to buy.';
+  if (v.items && v.items.some(function(i){ return !i.item; })) return 'Every line needs the ' + (rqKindPurchase(v.kind) ? 'item' : 'work') + ' filled in.';
+  if (v.items && v.items.some(function(i){ return (i.qty != null && i.qty < 0) || (i.rate != null && i.rate < 0); })) return 'Quantities and rates cannot be negative.';
+  if (!v.remarks) return 'Write the detailed remarks.';
+  return null;
+}
+async function rqRaise(o) {
+  o = o || {};
+  try { await rqdLoad(); await rqtLoad(); if (docOn() === false || DOC.on === null) await docInit(); } catch (e) {}
+  if (!rqdOk()) return { error: 'The departments could not be read. Try again.' };
+  var d = RQ_DEPTS.find(function(x){ return x.k === o.dept; });
+  if (!d) return { error: 'Unknown department, or requisitions are switched off for it: ' + (o.dept || '(none)') };
+  if (!rqCanRaise(d.k)) return { error: 'You cannot raise requisitions for ' + d.n + '.' };
+  var docs = Array.isArray(o.documents) ? o.documents : [];
+  var docSum = docs.reduce(function(s, x){ return s + (Number(x && x.values && x.values.amount) || 0); }, 0);
+  var v = {
+    company: o.company || coDefault(), req_date: o.req_date || todayStr(), priority: o.priority || 'normal',
+    location: String(o.location || '').trim(), location_detail: String(o.location_detail || '').trim(),
+    work_type: String(o.work_type || '').trim(), kind: o.kind || '',
+    time_value: o.time_value == null || o.time_value === '' ? null : Number(o.time_value), time_unit: o.time_unit || 'days',
+    est_cost: o.est_cost == null || o.est_cost === '' ? (docSum ? docSum : null) : Number(o.est_cost),
+    remarks: String(o.remarks || '').trim(), items: Array.isArray(o.items) && o.items.length ? o.items : null
+  };
+  var co = coList().find(function(c){ return c.code === v.company; });
+  if (!co || co.active === false) return { error: 'Unknown or switched-off company: ' + (v.company || '(none)') };
+  var t = rqtOk() ? rqtGet(v.kind) : null;
+  if (rqtOk() && (!t || t.active === false)) return { error: 'Unknown or switched-off type of requisition: ' + (v.kind || '(none)') };
+  for (var i = 0; i < docs.length; i++) {
+    var dk = docs[i] && docs[i].kind;
+    if (!dk || !(docs[i].pages || []).length) return { error: 'Each document needs its kind and at least one page.' };
+    if (dk !== 'quotation' && !docOn()) return { error: 'Documents other than quotations need the Wave 12 update in the database.' };
+    if (docOn()) { var k = docKind(dk); if (!k || !k.active || k.owner_type !== 'requisition') return { error: 'Unknown or switched-off kind of document: ' + dk }; }
+  }
+  var chk = rqRaiseCheck(v, false); if (chk) return { error: chk };
+  var out = await rqRaiseRow(d, v);
+  if (out.error) return { error: out.error.title + ' (' + ((out.error.e && out.error.e.message) || 'network') + ')' };
+  var row = out.row;
+  if (!RQ.rows.some(function(x){ return x.id === row.id; })) RQ.rows.unshift(row);
+  var bad = [];
+  for (var j = 0; j < docs.length; j++) {
+    var x = docs[j], val = x.values || {};
+    var sv = { doc_kind: x.kind, supplier: val.party || '', amount: val.amount == null ? null : Number(val.amount), currency: val.currency || 'BDT',
+      valid_until: val.valid_until || null, bill_no: val.doc_no || null, bill_date: val.doc_date || null };
+    var res = await rqqSaveOne(row, sv, x.pages);
+    if (typeof res === 'string') { bad.push(docKindLabel(x.kind) + ': ' + res); continue; }
+    await rqEvent(row.id, x.kind === 'bill' ? 'bill_added' : x.kind === 'quotation' ? 'quote_added' : 'doc_added', { note: (x.kind === 'bill' || x.kind === 'quotation' ? '' : docKindLabel(x.kind) + ': ') + sv.supplier + (sv.bill_no ? ' bill ' + sv.bill_no : ''), amount: sv.amount });
+  }
+  return bad.length ? { row: row, docErrors: bad } : { row: row };
+}
 // Work orders: general work orders, management purchases from requisitions
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -26277,19 +26343,7 @@ function woLineAmt(l, recv) { var p = recv && l.recv_price != null ? l.recv_pric
 function woTotal(lines, recv) { var t = 0, all = true; lines.forEach(function(l){ var a = woLineAmt(l, recv); if (a == null) all = false; else t += a; }); return { p: t, all: all }; }
 function woQtyTxt(q, u) { return q == null || q === '' ? '' : Number(q).toLocaleString('en-IN', { maximumFractionDigits: 3 }) + (u ? ' ' + rqEsc(u) : ''); }
 function woTkWords(p) { var w = Math.floor(Math.abs(p) / 100), c = Math.abs(p) % 100; return 'Taka ' + ciWords(w) + (c ? ' and Paisa ' + ciWords(c) : '') + ' only'; }
-// numbers: per company and year (WO/MTS/26/0001) once the database has the company column (Wave 5A); before, one
-// series per year (WO-26-0001) as it always was
 function woCoOn() { return rqdOk(); }
-function woNoOf(yr, seq, co) { return co ? 'WO/' + co + '/' + String(yr).slice(-2) + '/' + String(seq).padStart(4, '0') : 'WO-' + String(yr).slice(-2) + '-' + String(seq).padStart(4, '0'); }
-// next number: the database counts every work order of that company and year (a department sees only its own);
-// the unique index stops two people taking the same one
-async function woNextSeq(yr, co) {
-  if (co) { var c = await db.rpc('erp_wo_next_seq', { p_company: co, p_year: yr }); if (!c.error && c.data != null) return Number(c.data); }
-  var q = db.from('work_orders').select('seq').eq('yr', yr); if (co) q = q.eq('company', co);
-  var r = await q.order('seq', { ascending: false }).limit(1);
-  if (r.error) throw r.error;
-  return (r.data && r.data.length ? Number(r.data[0].seq) || 0 : 0) + 1;
-}
 // the company a work order is for: the one company of its lines (each source says which line is which company)
 function woCompanyOf(def, lines) {
   if (!woCoOn() || !def.companyOf) return { co: null };
@@ -26418,21 +26472,17 @@ async function woFormSave() {
     toast(wo.wo_no + ' saved', 'ok-t');
   } else {
     var cw = woCompanyOf(def, F.lines); if (cw.err) return cw.err;
-    var yr = Number(day.slice(0, 4)), seq = await woNextSeq(yr, cw.co), w0 = null, err = null;
-    for (var tries = 0; tries < 6 && !w0; tries++) {
-      var id = accUuid(), wrow = Object.assign({ id: id, wo_no: woNoOf(yr, seq, cw.co), yr: yr, seq: seq, source: F.source, status: 'ordered', made_by: S.user.id, made_by_name: S.user.name, made_by_role: S.user.role, created_at: now }, head);
-      if (cw.co) wrow.company = cw.co;
-      // Wave 9C: the work order's department is its first line's; the database gives the number (MTSL/CIV/WO/26/0001)
-      if (coNumOn()) { var dl = F.lines.find(function(l){ return l.dept; }); if (dl) wrow.dept = dl.dept; }
-      var r = await db.from('work_orders').insert(wrow);
-      if (!r.error) {
-        // read back the number the database gave (it may differ from the one sent)
-        var rb = await db.from('work_orders').select('wo_no,seq,yr').eq('id', id).maybeSingle();
-        if (!rb.error && rb.data) Object.assign(wrow, rb.data);
-        w0 = wrow; break;
-      }
-      if (!accDup(r.error)) { err = r.error; break; }
-      seq++; // someone took that number a moment ago
+    // the database gives the work order number (MTSL/CIV/WO/26/0004); the page never makes one
+    var id = accUuid(), wrow = Object.assign({ id: id, yr: Number(day.slice(0, 4)), source: F.source, status: 'ordered', made_by: S.user.id, made_by_name: S.user.name, made_by_role: S.user.role, created_at: now }, head), w0 = null, err = null;
+    if (!coNumOn()) return 'The work order number could not be given, so nothing was saved. Check that the company has a number prefix in Admin \u2192 Companies, then try again.';
+    if (cw.co) wrow.company = cw.co;
+    var dl = F.lines.find(function(l){ return l.dept; }); if (dl) wrow.dept = dl.dept;
+    var r = await db.from('work_orders').insert(wrow);
+    if (r.error) err = r.error;
+    else {
+      var rb = await db.from('work_orders').select('wo_no,seq,yr').eq('id', id).maybeSingle();
+      if (!rb.error && rb.data && rb.data.wo_no) { Object.assign(wrow, rb.data); w0 = wrow; }
+      else { await db.from('work_orders').delete().eq('id', id); return 'The work order number could not be given, so nothing was saved. Check that the company has a number prefix in Admin \u2192 Companies, then try again.'; }
     }
     if (!w0) return err ? woErr(err) : 'Could not get a work order number, try again.';
     var nl2 = rows(w0.id), li = await db.from('work_order_lines').insert(nl2);
