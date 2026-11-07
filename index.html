@@ -2716,7 +2716,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.07.2</p>
+    <p class="login-ver">STAGING V.2026.11.07.3</p>
   </div></div>
 </div>
 
@@ -2760,7 +2760,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.07.2</div>
+  <div id="ver-stamp">STAGING V.2026.11.07.3</div>
 </div>
 
 
@@ -23389,6 +23389,175 @@ async function apeState(kind, id) {
   var r = await db.rpc('erp_approval_state', { p_type: kind, p_id: String(id) });
   return r.error ? [] : (r.data || []);
 }
+// ═══════════════════════════════════════════════════════════════════
+// DOCUMENTS ENGINE (doc*), Wave 12: one way to attach a paper (photo or PDF) to anything.
+// The kinds (quotation, bill, ...) are rows of erp_document_kinds: label, what they attach to, which details
+// they ask for (party, amount, number, date, valid until), how many, how many pages, how long pages are kept.
+// A module uses: docCapture (camera / file -> form -> pages), docSave, docFetch / docLoad, docView,
+// docDelete, docKeep, docPurge. Pages taken here go to the "erp-documents" file store; older pages stay in
+// the store they were uploaded to (the row says which). Until Wave 12 is in the database, docOn() is false
+// and the modules keep their old way.
+// ═══════════════════════════════════════════════════════════════════
+var DOC = { on: null, kinds: [], _p: null };
+var DOC_BUCKET = 'erp-documents';
+var DOC_CURRENCIES = ['BDT', 'USD', 'EUR', 'CNY', 'INR', 'GBP'];
+var DOC_COLS = 'id,owner_type,owner_id,kind,dept,party,amount,currency,doc_no,doc_date,valid_until,bucket,pages,page_count,bytes,created_at,created_by,created_by_name,keep_until,keep_changed_by,images_deleted_at';
+function docOn() { return DOC.on === true; }
+function docEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function docMissing(e) { return !!e && (e.code === '42P01' || e.code === 'PGRST205' || /erp_document|does not exist|schema cache|could not find the table/i.test(e.message || '')); }
+// loads the kinds once; tells whether the engine is in the database
+async function docInit(force) {
+  if (DOC.on !== null && !force) return DOC.on;
+  if (DOC._p) return DOC._p;
+  DOC._p = (async function(){
+    try {
+      var r = await db.from('erp_document_kinds').select('*').order('sort').order('key');
+      if (r.error) { DOC.on = docMissing(r.error) ? false : DOC.on; if (!docMissing(r.error)) console.error('docInit:', r.error); DOC.kinds = DOC.kinds || []; return DOC.on === true; }
+      DOC.kinds = r.data || []; DOC.on = true; return true;
+    } catch (e) { console.error('docInit:', e); return DOC.on === true; }
+    finally { DOC._p = null; }
+  })();
+  return DOC._p;
+}
+function docKind(k) { return (DOC.kinds || []).find(function(x){ return x.key === k; }) || null; }
+function docKindLabel(k) { var x = docKind(k); return x ? x.label : String(k || 'document'); }
+function docMaxPer(k, dflt) { var x = docKind(k); return x ? x.max_per_owner : dflt; }
+function docMaxPages(k, dflt) { var x = docKind(k); return x ? x.max_pages : dflt; }
+function docKeepYears(k) { var x = docKind(k); return x ? x.keep_years : 2; }
+function docAddYears(d, n) { var p = String(d || todayStr()).slice(0, 10).split('-'); var y = +p[0] + n, m = p[1], dd = p[2]; if (m === '02' && dd === '29') dd = '28'; return y + '-' + m + '-' + dd; }
+function docStore(b) { return db.storage.from(b || 'erp-documents'); } // (the name is written out so backups find this file store)
+function docUrl(d, path) { return docStore(d && d.bucket).getPublicUrl(path).data.publicUrl; }
+function docMoney(n, cur) { if (n == null || n === '' || isNaN(Number(n))) return '&mdash;'; return (cur && cur !== 'BDT' ? docEsc(cur) + ' ' : 'Tk ') + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+
+// ── reading ──
+async function docLoad(ownerType, narrow) {
+  return await fetchAllRows(function(){ var qq = db.from('erp_documents').select(DOC_COLS).eq('owner_type', ownerType); if (narrow) qq = narrow(qq); return qq.order('created_at').order('id'); });
+}
+async function docFetch(ownerType, ownerId) {
+  var r = await db.from('erp_documents').select(DOC_COLS).eq('owner_type', ownerType).eq('owner_id', ownerId).order('created_at');
+  return r.error ? null : (r.data || []);
+}
+
+// ── the form, built from the kind's settings ──
+function docFormHtml(kind, v) {
+  var k = docKind(kind) || {}; v = v || {};
+  var h = '<div class="ds-fgrid">';
+  if (k.party_label) h += '<div class="f ds-wide"><label for="docf-party">' + docEsc(k.party_label) + ' <span class="rq-req">*</span></label><input id="docf-party" maxlength="120" autocomplete="off" value="' + docEsc(v.party || '') + '"></div>';
+  if (k.ask_number) h += '<div class="f"><label for="docf-no">' + docEsc(k.label) + ' number</label><input id="docf-no" maxlength="60" autocomplete="off" value="' + docEsc(v.doc_no || '') + '"></div>';
+  if (k.ask_date) h += '<div class="f"><label for="docf-date">' + docEsc(k.label) + ' date <span class="rq-req">*</span></label><input id="docf-date" type="date" value="' + docEsc(v.doc_date || todayStr()) + '"></div>';
+  if (k.ask_amount) h += '<div class="f"><label for="docf-amount">Total amount <span class="rq-req">*</span></label><input id="docf-amount" type="number" inputmode="decimal" min="0" step="any" value="' + docEsc(v.amount == null ? '' : v.amount) + '"></div>'
+    + '<div class="f"><label for="docf-currency">Currency</label><select id="docf-currency">' + DOC_CURRENCIES.map(function(c){ return '<option' + ((v.currency || 'BDT') === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select></div>';
+  if (k.ask_valid_until) h += '<div class="f ds-wide"><label for="docf-valid">Valid until</label><input id="docf-valid" type="date" value="' + docEsc(v.valid_until || '') + '"></div>';
+  return h + '</div>';
+}
+function docReadForm(kind) {
+  var k = docKind(kind) || {}, val = function(id){ var el = $(id); return el ? String(el.value || '').trim() : ''; };
+  var v = { party: null, amount: null, currency: null, doc_no: null, doc_date: null, valid_until: null };
+  if (k.party_label) { v.party = val('docf-party').replace(/\s+/g, ' '); if (!v.party) return 'Enter the ' + k.party_label.toLowerCase() + '.'; }
+  if (k.ask_number) v.doc_no = val('docf-no') || null;
+  if (k.ask_date) {
+    v.doc_date = val('docf-date');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v.doc_date)) return 'Enter the ' + k.label.toLowerCase() + ' date.';
+    if (v.doc_date > rqAddDays(todayStr(), 1)) return 'The ' + k.label.toLowerCase() + ' date cannot be in the future.';
+  }
+  if (k.ask_amount) {
+    var a = val('docf-amount'); v.amount = a === '' ? null : Number(a); v.currency = val('docf-currency') || 'BDT';
+    if (v.amount == null || isNaN(v.amount)) return 'Enter the total amount.';
+    if (v.amount <= 0) return 'The amount must be more than 0.';
+    if (v.amount > 1e12) return 'That amount is too large.';
+  }
+  if (k.ask_valid_until) { v.valid_until = val('docf-valid') || null; if (v.valid_until && !/^\d{4}-\d{2}-\d{2}$/.test(v.valid_until)) return 'Check the "valid until" date.'; }
+  return v;
+}
+// camera / file -> the kind's form -> onSave(v, pages): return true, or a message to show
+function docCapture(o) {
+  var k = docKind(o.kind), lbl = docKindLabel(o.kind);
+  dsOpen({ title: o.title || ('Add ' + lbl.toLowerCase()), what: lbl.toLowerCase(), maxPages: docMaxPages(o.kind, 10), formHtml: docFormHtml(o.kind, o.values), saveText: o.saveText || ('Save ' + lbl.toLowerCase()),
+    onSave: async function(pages){ var v = docReadForm(o.kind); if (typeof v === 'string') return v; return await o.onSave(v, pages, k); } });
+  if (o.pick) setTimeout(function(){ dsPick(o.pick); }, 0);
+}
+
+// ── writing: pages first, then the row; pages already uploaded are removed again if the row fails ──
+async function docSave(owner, kind, v, pages) {
+  var lbl = docKindLabel(kind).toLowerCase();
+  var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+  var folder = id || ('d' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+  var done = [], meta = [];
+  for (var i = 0; i < pages.length; i++) {
+    var p = pages[i], ext = p.type === 'image/jpeg' ? 'jpg' : 'webp';
+    var path = owner.type + '/' + owner.id + '/' + folder + '/p' + (i + 1) + '.' + ext;
+    var up = await docStore(DOC_BUCKET).upload(path, p.blob, { contentType: p.type || 'image/webp', upsert: false });
+    if (up.error) { if (done.length) await docStore(DOC_BUCKET).remove(done); return 'The pages could not be uploaded (' + (up.error.message || 'network') + '). Nothing was saved; try again.'; }
+    done.push(path); meta.push({ path: path, w: p.w, h: p.h, bytes: p.bytes });
+  }
+  var row = { owner_type: owner.type, owner_id: owner.id, kind: kind, dept: owner.dept || null, party: v.party || null, amount: v.amount == null ? null : v.amount,
+    currency: v.amount == null ? null : (v.currency || 'BDT'), doc_no: v.doc_no || null, doc_date: v.doc_date || null, valid_until: v.valid_until || null,
+    bucket: DOC_BUCKET, pages: meta, page_count: meta.length, bytes: meta.reduce(function(s, m){ return s + (m.bytes || 0); }, 0),
+    created_by: S.user.id, created_by_name: S.user.name, keep_until: docAddYears(todayStr(), docKeepYears(kind)) };
+  if (id) row.id = id;
+  var ins = await db.from('erp_documents').insert(row).select(DOC_COLS).single();
+  if (ins.error) { if (done.length) await docStore(DOC_BUCKET).remove(done); return 'The ' + lbl + ' could not be saved (' + (ins.error.message || 'network') + '). Try again.'; }
+  return ins.data;
+}
+// removes the row, then its pages; returns an error or null
+async function docDelete(d) {
+  var del = await db.from('erp_documents').delete().eq('id', d.id).select('id');
+  if (del.error) return del.error;
+  if (!del.data || !del.data.length) return { message: 'not allowed or already removed' };
+  var paths = (d.pages || []).map(function(p){ return p.path; }).filter(Boolean);
+  if (paths.length) { try { await docStore(d.bucket).remove(paths); } catch (e) {} }
+  return null;
+}
+async function docKeep(d, until) {
+  var r = await db.from('erp_documents').update({ keep_until: until, keep_changed_by: S.user.name }).eq('id', d.id).select(DOC_COLS);
+  if (r.error || !r.data || !r.data.length) return { error: r.error || { message: 'not found' } };
+  return { row: r.data[0] };
+}
+// pages past their keeping date go (Admin); rows stay. In groups of 40 per file store.
+async function docPurge(rows) {
+  var today = todayStr(), due = (rows || []).filter(function(d){ return !d.images_deleted_at && d.keep_until && d.keep_until < today; }), got = [];
+  var byStore = {};
+  due.forEach(function(d){ var b = d.bucket || DOC_BUCKET; (byStore[b] = byStore[b] || []).push(d); });
+  for (var b in byStore) {
+    var list = byStore[b];
+    for (var i = 0; i < list.length; i += 40) {
+      var grp = list.slice(i, i + 40), paths = [];
+      grp.forEach(function(d){ (d.pages || []).forEach(function(pg){ if (pg && pg.path) paths.push(pg.path); }); });
+      if (paths.length) { var rm = await docStore(b).remove(paths); if (rm.error) { console.error('document pages not removed:', rm.error); continue; } }
+      var up = await db.from('erp_documents').update({ pages: [], images_deleted_at: new Date().toISOString() }).in('id', grp.map(function(d){ return d.id; })).is('images_deleted_at', null).lt('keep_until', today).select(DOC_COLS);
+      if (!up.error && up.data) got = got.concat(up.data);
+    }
+  }
+  return got;
+}
+
+// ── the viewer: any document, page by page ──
+var DOCV = { d: null, i: 0, title: '' };
+function docView(d, i, titleHtml) {
+  if (!d || !(d.pages || []).length) return;
+  if (!$('ov-qv')) {
+    var ov = document.createElement('div'); ov.className = 'ov qv-ov'; ov.id = 'ov-qv';
+    ov.innerHTML = '<div class="qv-top"><div id="qv-t"></div><div class="qv-nav"><button class="btn sm" onclick="docViewGo(-1)" aria-label="Previous page">&#x2039;</button><span id="qv-n"></span><button class="btn sm" onclick="docViewGo(1)" aria-label="Next page">&#x203A;</button><a class="btn sm" id="qv-open" target="_blank" rel="noopener">Open</a><button class="btn sm" onclick="docViewClose()">&#x2715; Close</button></div></div><div class="qv-img" onclick="if(event.target===this)docViewClose()"><img id="qv-img" alt=""></div>';
+    document.body.appendChild(ov);
+    document.addEventListener('keydown', function(e){
+      if (!$('ov-qv') || !$('ov-qv').classList.contains('open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); docViewClose(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); docViewGo(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); docViewGo(-1); }
+    }, true);
+  }
+  DOCV.d = d; DOCV.title = titleHtml || ('<b>' + docEsc(docKindLabel(d.kind)) + '</b>'); DOCV.i = Math.max(0, Math.min(d.pages.length - 1, i || 0));
+  docViewDraw(); openModal('ov-qv');
+}
+function docViewDraw() {
+  var d = DOCV.d; if (!d) return docViewClose();
+  var p = d.pages[DOCV.i]; if (!p) return;
+  $('qv-t').innerHTML = DOCV.title;
+  $('qv-n').textContent = 'Page ' + (DOCV.i + 1) + ' of ' + d.pages.length;
+  var u = docUrl(d, p.path); $('qv-img').src = u; $('qv-open').href = u;
+}
+function docViewGo(n) { var d = DOCV.d; if (!d) return; var j = DOCV.i + n; if (j < 0 || j >= d.pages.length) return; DOCV.i = j; docViewDraw(); }
+function docViewClose() { closeModal('ov-qv'); }
 // Requisitions (every department; Maintenance, Civil and IT first): requests, questions, quotations, prints, weekly budget plans
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -23959,7 +24128,7 @@ function rqRenderForm(d, editId) {
   r = r || { company: '', req_date: todayStr(), kind: rqtOk() ? '' : 'work', priority: 'normal', time_unit: 'days', items: [] };
   var locs = {}; RQ.rows.forEach(function(x){ if (x.location) locs[x.location] = 1; });
   var types = d.types.slice(); var isOther = r.work_type && types.indexOf(r.work_type) === -1;
-  (RQ.formQuotes || []).forEach(function(q){ (q.pages || []).forEach(dsFreePage); }); RQ.formQuotes = []; // a fresh form starts with no quotations
+  (RQ.formQuotes || []).forEach(function(q){ (q.pages || []).forEach(dsFreePage); }); RQ.formQuotes = []; rqbFormReset(); // a fresh form starts with no quotations
   var items = Array.isArray(r.items) && r.items.length ? r.items : [{}];
   var h = '<div class="card rq-form" id="rq-form"><div class="card-h"><h3>' + (editId ? 'Change requisition ' + rqEsc(r.job_no) : 'New ' + d.n + ' requisition') + '</h3><span class="note">' + (editId ? (r.status === 'returned' ? 'Saving sends it back to audit and management.' : 'No one has approved it yet.') : 'A job number is given when you submit.') + '</span></div><div class="m-b">'
     + '<div class="grid3">'
@@ -23981,7 +24150,7 @@ function rqRenderForm(d, editId) {
     + items.map(rqItemRow).join('') + '</tbody></table><button class="btn sm" type="button" onclick="rqAddItem()" style="margin-top:6px">&#x002B; Add item</button></div>'
     + '<div class="grid3" style="margin-top:12px"><div class="f"><label>Estimated cost (Tk) <span class="rq-req">*</span></label><input id="rqf-cost" type="number" inputmode="decimal" min="0" step="1" value="' + rqEsc(r.est_cost == null ? '' : r.est_cost) + '"><div class="sub2" id="rqf-cost-note"></div></div></div>'
     + '<div class="f" style="margin-top:12px"><label>Detailed remarks <span class="rq-req">*</span></label><textarea id="rqf-remarks" rows="5" placeholder="What is wrong or what is needed, why, and anything the approvers should know">' + rqEsc(r.remarks || '') + '</textarea></div>'
-    + rqqFormSection(editId ? r : null)
+    + rqqFormSection(editId ? r : null) + rqbFormSection(editId ? r : null)
     + '<div class="adm-err" id="rqf-err" style="display:none;margin-top:10px"></div>'
     + '</div><div class="m-f"><button class="btn" onclick="rqCancelForm(\'' + d.k + '\')">Cancel</button><button class="btn pri" id="rqf-save" onclick="rqSubmitForm(\'' + d.k + '\')">' + (editId ? (r.status === 'returned' ? 'Save and send again' : 'Save changes') : 'Submit requisition') + '</button></div></div>';
   rqSetHead('Requisitions › ' + d.n, editId ? 'Change ' + r.job_no : 'New requisition', d.n + ' department', '');
@@ -24004,7 +24173,7 @@ function rqKindChange() {
   var pur = rqKindPurchase(rqFormKind());
   $('rqf-items-lbl').firstChild.textContent = pur ? 'Items required ' : 'Work required ';
   $('rqf-items-h').textContent = pur ? 'Item' : 'Work';
-  rqItemsChanged();
+  rqItemsChanged(); rqbFormRedraw();
 }
 function rqReadItems() {
   var tb = $('rqf-items'); if (!tb) return [];
@@ -24069,6 +24238,8 @@ async function rqSubmitForm(dk) {
   if (v.items && v.items.some(function(i){ return !i.item; })) return fail('Every line needs the ' + (rqKindPurchase(v.kind) ? 'item' : 'work') + ' filled in.');
   if (v.items && v.items.some(function(i){ return (i.qty != null && i.qty < 0) || (i.rate != null && i.rate < 0); })) return fail('Quantities and rates cannot be negative.');
   if (!v.remarks) return fail('Write the detailed remarks.');
+  var bWarn = rqbCheck(v.kind);
+  if (bWarn && !(await appConfirm(bWarn + ' Send it without the bill?', { title: 'No bill attached', okText: 'Send without bill' }))) return;
   if (v.req_date > rqAddDays(todayStr(), 1) && !(await appConfirm('The date is in the future (' + rqDateTxt(v.req_date) + '). Submit anyway?', { title: 'Check the date', okText: 'Submit' }))) return;
   btn.disabled = true;
   try {
@@ -24173,7 +24344,7 @@ function rqRenderDetail(id, withEvents) {
     + '</div>' + items
     + '<div class="rq-sec"><div class="rq-sec-h">Detailed remarks</div><div class="rq-remarks">' + rqEsc(r.remarks || '') + '</div></div>'
     + plReqDetailHtml(r)
-    + rqqDetailHtml(r)
+    + rqbDetailHtml(r) + rqqDetailHtml(r)
     + '<div class="rq-sec"><div class="rq-sec-h">Approval</div><div class="rq-appr rq-appr-' + rqStagesFor(r).length + '">'
     + rqStagesFor(r).map(function(st, i){
         var v = r[st.k + '_status'];
@@ -24926,13 +25097,16 @@ function rqUploadImg(key, input) {
 var RQQ_MAX = 5, RQQ_MAX_PAGES = 10, RQQ_CURRENCIES = ['BDT', 'USD', 'EUR', 'CNY', 'INR', 'GBP'];
 var RQQ_COLS = 'id,req_id,dept,supplier,amount,currency,valid_until,pages,page_count,bytes,created_at,created_by,created_by_name,keep_until,keep_changed_by,images_deleted_at';
 function rqqOn() { return RQ.qtOk === true; }
-function rqqList(reqId) { return (RQ.quotes || []).filter(function(q){ return q.req_id === reqId; }).sort(function(a, b){ return String(a.created_at).localeCompare(String(b.created_at)); }); }
+function rqqList(reqId) { return (RQ.quotes || []).filter(function(q){ return q.req_id === reqId && !rqbIsBill(q); }).sort(function(a, b){ return String(a.created_at).localeCompare(String(b.created_at)); }); }
 function rqqAddYears(d, n) { var p = String(d || todayStr()).slice(0, 10).split('-'); var y = +p[0] + n, m = p[1], dd = p[2]; if (m === '02' && dd === '29') dd = '28'; return y + '-' + m + '-' + dd; }
-function rqqUrl(path) { return db.storage.from('rq-quotations').getPublicUrl(path).data.publicUrl; }
+function rqqUrl(path, q) { return docUrl({ bucket: (q && q.bucket) || 'rq-quotations' }, path); } // each row says which file store its pages are in
 function rqqMoney(n, cur) { if (n == null || n === '' || isNaN(Number(n))) return '&mdash;'; return (cur && cur !== 'BDT' ? rqEsc(cur) + ' ' : 'Tk ') + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 async function rqqLoad() {
   var res;
-  try { res = await fetchAllRows(function(){ var qq = db.from('rq_quotations').select(RQQ_COLS); if (rqIsDeptUser()) qq = rqDeptFilter(qq); return qq.order('id'); }); }
+  try {
+    if (await docInit()) res = (await docLoad('requisition', function(qq){ return rqIsDeptUser() ? rqDeptFilter(qq) : qq; })).map(rqqFromDoc);
+    else res = await fetchAllRows(function(){ var qq = db.from('rq_quotations').select(rqqCols()); if (rqIsDeptUser()) qq = rqDeptFilter(qq); return qq.order('id'); });
+  }
   catch (e) {
     RQ.qtOk = !(e && (e.code === '42P01' || e.code === 'PGRST205' || /rq_quotations|does not exist|schema cache/i.test(e.message || '')));
     if (RQ.qtOk) console.error('rqqLoad:', e);
@@ -24944,9 +25118,10 @@ async function rqqLoad() {
 }
 async function rqqRefresh(reqId) {
   if (!rqqOn()) return;
-  var r = await db.from('rq_quotations').select(RQQ_COLS).eq('req_id', reqId);
-  if (r.error) return;
-  RQ.quotes = (RQ.quotes || []).filter(function(q){ return q.req_id !== reqId; }).concat(r.data || []);
+  var list;
+  if (docOn()) { var dl = await docFetch('requisition', reqId); if (!dl) return; list = dl.map(rqqFromDoc); }
+  else { var r = await db.from('rq_quotations').select(rqqCols()).eq('req_id', reqId); if (r.error) return; list = r.data || []; }
+  RQ.quotes = (RQ.quotes || []).filter(function(q){ return q.req_id !== reqId; }).concat(list);
 }
 // which quotations are the cheapest / how far above it (same currency only)
 function rqqCompare(list) {
@@ -24987,6 +25162,14 @@ function rqqReadForm() {
 }
 // upload the pages, then the row. Pages that were uploaded are removed again if the row fails.
 async function rqqSaveOne(r, v, pages) {
+  if (docOn()) {
+    var d = await docSave({ type: 'requisition', id: r.id, dept: r.dept }, v.doc_kind || 'quotation',
+      { party: v.supplier, amount: v.amount, currency: v.currency, doc_no: v.bill_no, doc_date: v.bill_date, valid_until: v.valid_until }, pages);
+    if (typeof d === 'string') return d;
+    var nq = rqqFromDoc(d);
+    RQ.quotes = (RQ.quotes || []).filter(function(q){ return q.id !== nq.id; }).concat([nq]);
+    return nq;
+  }
   var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
   var done = [], meta = [];
   for (var i = 0; i < pages.length; i++) {
@@ -25000,7 +25183,7 @@ async function rqqSaveOne(r, v, pages) {
     pages: meta, page_count: meta.length, bytes: meta.reduce(function(s, m){ return s + (m.bytes || 0); }, 0),
     created_by: S.user.id, created_by_name: S.user.name, keep_until: rqqAddYears(todayStr(), 2) };
   if (!row.id) delete row.id;
-  var ins = await db.from('rq_quotations').insert(row).select(RQQ_COLS).single();
+  var ins = await db.from('rq_quotations').insert(row).select(rqqCols()).single();
   if (ins.error) { await db.storage.from('rq-quotations').remove(done); return 'The quotation could not be saved (' + (ins.error.message || 'network') + '). Try again.'; }
   RQ.quotes = (RQ.quotes || []).filter(function(q){ return q.id !== ins.data.id; }).concat([ins.data]);
   return ins.data;
@@ -25015,16 +25198,16 @@ function rqqFormSection(r) {
   var allRows = saved.map(function(q){ return { q: q, saved: true }; }).concat(RQ.formQuotes.map(function(q, i){ return { q: q, i: i }; }));
   var cmp = rqqCompare(allRows.map(function(x){ return x.q; }));
   var cards = allRows.map(function(x){
-    var q = x.q, thumb = x.saved ? (q.pages && q.pages[0] ? rqqUrl(q.pages[0].path) : '') : (q.pages[0] && q.pages[0].url);
+    var q = x.q, thumb = x.saved ? (q.pages && q.pages[0] ? rqqUrl(q.pages[0].path, q) : '') : (q.pages[0] && q.pages[0].url);
     var low = cmp.count > 1 && (q.currency || 'BDT') === cmp.cur && Number(q.amount) === cmp.low;
     return '<div class="rqq-card">' + (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="rqq-noimg">&#x1F5CE;</div>')
       + '<div class="rqq-cm"><b>' + rqEsc(q.supplier) + '</b><div class="sub2">' + (q.valid_until ? 'Valid until ' + rqDateTxt(q.valid_until) + ' &middot; ' : '') + (x.saved ? (q.page_count || 0) : q.pages.length) + ' page' + ((x.saved ? q.page_count : q.pages.length) === 1 ? '' : 's') + (x.saved ? ' &middot; saved' : ' &middot; ' + dsKB(q.pages.reduce(function(s, p){ return s + p.bytes; }, 0))) + '</div>' + (low ? '<span class="rqq-low">Lowest</span>' : '') + '</div>'
       + '<div class="rqq-amt">' + rqqMoney(q.amount, q.currency) + '</div>'
       + (x.saved ? '' : '<button type="button" class="btn sm ghost" title="Remove" onclick="rqqFormRemove(' + x.i + ')">&#x2715;</button>') + '</div>';
   }).join('');
-  return '<div class="rqq-sec" id="rqq-formsec"><div class="rqq-h"><span>Quotations <span style="font-weight:400">(optional)</span></span><span class="sub2">' + all + ' of ' + RQQ_MAX + '</span></div>'
+  return '<div class="rqq-sec" id="rqq-formsec"><div class="rqq-h"><span>Quotations <span style="font-weight:400">(optional)</span></span><span class="sub2">' + all + ' of ' + rqqMax() + '</span></div>'
     + cards
-    + (all < RQQ_MAX ? '<div class="rqq-add"><button type="button" class="btn rqq-big" onclick="rqqFormAdd(\'cam\')"><span>&#x1F4F7;</span>Take photo</button><button type="button" class="btn rqq-big" onclick="rqqFormAdd(\'file\')"><span>&#x1F4C4;</span>Choose file<small>photo or PDF</small></button></div>' : '')
+    + (all < rqqMax() ? '<div class="rqq-add"><button type="button" class="btn rqq-big" onclick="rqqFormAdd(\'cam\')"><span>&#x1F4F7;</span>Take photo</button><button type="button" class="btn rqq-big" onclick="rqqFormAdd(\'file\')"><span>&#x1F4C4;</span>Choose file<small>photo or PDF</small></button></div>' : '')
     + '<div class="sub2" style="margin-top:6px">You can also add quotations later, until the requisition is approved. Pages are kept for 2 years.</div>'
     + (r && r.id && saved.length ? '<div class="sub2">Saved quotations are changed from the requisition window.</div>' : '') + '</div>';
 }
@@ -25035,9 +25218,8 @@ function rqqFormRedraw() {
 }
 function rqqFormAdd(kind) {
   var r = RQ.editId ? RQ.rows.find(function(x){ return x.id === RQ.editId; }) : null;
-  if ((r ? rqqList(r.id).length : 0) + RQ.formQuotes.length >= RQQ_MAX) { toast('Up to ' + RQQ_MAX + ' quotations per requisition', 'err'); return; }
-  dsOpen({ title: 'Add quotation', what: 'quotation', maxPages: RQQ_MAX_PAGES, formHtml: rqqFormHtml(), saveText: 'Add quotation', onSave: async function(pages){
-    var v = rqqReadForm(); if (typeof v === 'string') return v;
+  if ((r ? rqqList(r.id).length : 0) + RQ.formQuotes.length >= rqqMax()) { toast('Up to ' + rqqMax() + ' quotations per requisition', 'err'); return; }
+  rqqCapture('quotation', { title: 'Add quotation', saveText: 'Add quotation', onSave: async function(v, pages){
     RQ.formQuotes.push(Object.assign(v, { pages: pages }));
     rqqFormRedraw(); toast('Quotation added. It is saved with the requisition.', 'ok-t');
     return true;
@@ -25051,7 +25233,8 @@ async function rqqFormRemove(i) {
 }
 // after the requisition is created / saved: upload what was added in the form
 async function rqqUploadForm(r) {
-  if (!rqqOn() || !RQ.formQuotes.length || !r) { RQ.formQuotes = []; return null; }
+  var bErr = await rqbUploadForm(r);
+  if (!rqqOn() || !RQ.formQuotes.length || !r) { RQ.formQuotes = []; return bErr; }
   var list = RQ.formQuotes.slice(), bad = [];
   RQ.formQuotes = [];
   for (var i = 0; i < list.length; i++) {
@@ -25061,20 +25244,20 @@ async function rqqUploadForm(r) {
     else await rqEvent(r.id, 'quote_added', { note: list[i].supplier, amount: list[i].amount });
     (list[i].pages || []).forEach(dsFreePage);
   }
-  return bad.length ? bad.length + ' quotation' + (bad.length === 1 ? '' : 's') + ' could not be uploaded (' + bad.join(', ') + '). The requisition is saved: open it and add ' + (bad.length === 1 ? 'it' : 'them') + ' again.' : null;
+  return bad.length ? bad.length + ' quotation' + (bad.length === 1 ? '' : 's') + ' could not be uploaded (' + bad.join(', ') + '). The requisition is saved: open it and add ' + (bad.length === 1 ? 'it' : 'them') + ' again.' + (bErr ? ' ' + bErr : '') : bErr;
 }
 
 // ── in the requisition window ──
 function rqqDetailHtml(r) {
   if (!rqqOn()) return '';
   var list = rqqList(r.id), cmp = rqqCompare(list), today = todayStr();
-  var add = rqqCanAdd(r) && list.length < RQQ_MAX ? '<button class="btn sm" onclick="rqqAdd(\'' + r.id + '\')">&#x002B; Add quotation</button>' : '';
+  var add = rqqCanAdd(r) && list.length < rqqMax() ? '<button class="btn sm" onclick="rqqAdd(\'' + r.id + '\')">&#x002B; Add quotation</button>' : '';
   if (!list.length && !add) return '';
   var rows = list.map(function(q){
     var low = cmp.count > 1 && (q.currency || 'BDT') === cmp.cur && Number(q.amount) === cmp.low;
     var diff = cmp.low && (q.currency || 'BDT') === cmp.cur && q.amount != null && Number(q.amount) !== cmp.low ? '+' + (Math.round((Number(q.amount) - cmp.low) / cmp.low * 1000) / 10) + '%' : '';
     var gone = !!q.images_deleted_at || !(q.pages && q.pages.length);
-    var thumb = gone ? '<div class="rqq-noimg" title="Pages deleted after 2 years">&#x2014;</div>' : '<img src="' + rqqUrl(q.pages[0].path) + '" alt="" loading="lazy">';
+    var thumb = gone ? '<div class="rqq-noimg" title="Pages deleted after 2 years">&#x2014;</div>' : '<img src="' + rqqUrl(q.pages[0].path, q) + '" alt="" loading="lazy">';
     var exp = q.valid_until && q.valid_until < today;
     var soon = !gone && q.keep_until && q.keep_until <= rqAddDays(today, 30);
     return '<tr class="' + (low ? 'rqq-lowrow' : '') + '"><td class="rqq-th" onclick="' + (gone ? '' : 'rqqView(\'' + q.id + '\',0)') + '">' + thumb + (q.page_count > 1 ? '<span class="sub2">+' + (q.page_count - 1) + '</span>' : '') + '</td>'
@@ -25105,13 +25288,12 @@ async function rqqFresh(reqId) {
 function rqqAdd(reqId) {
   var r = RQ.rows.find(function(x){ return x.id === reqId; });
   if (!rqqCanAdd(r)) { toast('Quotations can no longer be added to this requisition', 'err'); return; }
-  if (rqqList(reqId).length >= RQQ_MAX) { toast('Up to ' + RQQ_MAX + ' quotations per requisition', 'err'); return; }
-  dsOpen({ title: 'Add quotation — ' + r.job_no, what: 'quotation', maxPages: RQQ_MAX_PAGES, formHtml: rqqFormHtml(), saveText: 'Save quotation', onSave: async function(pages){
-    var v = rqqReadForm(); if (typeof v === 'string') return v;
+  if (rqqList(reqId).length >= rqqMax()) { toast('Up to ' + rqqMax() + ' quotations per requisition', 'err'); return; }
+  rqqCapture('quotation', { title: 'Add quotation — ' + r.job_no, saveText: 'Save quotation', onSave: async function(v, pages){
     var fresh = await rqqFresh(reqId); // someone may have approved it meanwhile
     if (!fresh || !rqqCanAdd(fresh)) return 'This requisition has just been approved or closed, so quotations can no longer be added.';
     await rqqRefresh(reqId);
-    if (rqqList(reqId).length >= RQQ_MAX) return 'This requisition already has ' + RQQ_MAX + ' quotations.';
+    if (rqqList(reqId).length >= rqqMax()) return 'This requisition already has ' + rqqMax() + ' quotations.';
     var res = await rqqSaveOne(fresh, v, pages);
     if (typeof res === 'string') return res;
     await rqEvent(reqId, 'quote_added', { note: v.supplier, amount: v.amount });
@@ -25128,10 +25310,13 @@ async function rqqRemove(qid) {
   if (!rqqCanRemove(r, q)) { toast('You cannot remove this quotation', 'err'); return; }
   if (!(await appConfirm('Remove the quotation from ' + q.supplier + ' (' + rqqMoney(q.amount, q.currency).replace(/&mdash;/, '-') + ')? Its pages are deleted too.', { title: 'Remove quotation', okText: 'Remove', danger: true }))) return;
   if (S.user.role !== 'admin') { var fresh = await rqqFresh(q.req_id); if (!fresh || !rqqCanRemove(fresh, q)) { toast('This requisition has just been approved, so its quotations are locked', 'err'); if (RQ.openId === q.req_id) rqRenderDetail(q.req_id, true); return; } }
-  var del = await db.from('rq_quotations').delete().eq('id', qid).select('id');
-  if (del.error) { showSaveError('Could not remove the quotation', del.error); return; }
-  var paths = (q.pages || []).map(function(p){ return p.path; }).filter(Boolean);
-  if (paths.length) { try { await db.storage.from('rq-quotations').remove(paths); } catch (e) {} }
+  if (docOn()) { var de = await docDelete(q); if (de) { showSaveError('Could not remove the ' + docKindLabel(q.doc_kind).toLowerCase(), de); return; } }
+  else {
+    var del = await db.from('rq_quotations').delete().eq('id', qid).select('id');
+    if (del.error) { showSaveError('Could not remove the quotation', del.error); return; }
+    var paths = (q.pages || []).map(function(p){ return p.path; }).filter(Boolean);
+    if (paths.length) { try { await db.storage.from('rq-quotations').remove(paths); } catch (e) {} }
+  }
   RQ.quotes = RQ.quotes.filter(function(x){ return x.id !== qid; });
   await rqEvent(q.req_id, 'quote_removed', { note: q.supplier, amount: q.amount });
   toast('Quotation removed', 'ok-t');
@@ -25143,9 +25328,14 @@ async function rqqKeep(qid) {
   var q = (RQ.quotes || []).find(function(x){ return x.id === qid; }); if (!q) return;
   var from = q.keep_until && q.keep_until > todayStr() ? q.keep_until : todayStr(), nu = rqqAddYears(from, 1);
   if (!(await appConfirm('Keep the pages of ' + q.supplier + '’s quotation until ' + rqDateTxt(nu) + '?', { title: 'Keep one more year', okText: 'Keep' }))) return;
-  var res = await db.from('rq_quotations').update({ keep_until: nu, keep_changed_by: S.user.name }).eq('id', qid).select(RQQ_COLS);
-  if (res.error || !res.data || !res.data.length) { showSaveError('Could not save', res.error || { message: 'not found' }); return; }
-  RQ.quotes = RQ.quotes.map(function(x){ return x.id === qid ? res.data[0] : x; });
+  var nr;
+  if (docOn()) { var kr = await docKeep(q, nu); if (kr.error) { showSaveError('Could not save', kr.error); return; } nr = rqqFromDoc(kr.row); }
+  else {
+    var res = await db.from('rq_quotations').update({ keep_until: nu, keep_changed_by: S.user.name }).eq('id', qid).select(rqqCols());
+    if (res.error || !res.data || !res.data.length) { showSaveError('Could not save', res.error || { message: 'not found' }); return; }
+    nr = res.data[0];
+  }
+  RQ.quotes = RQ.quotes.map(function(x){ return x.id === qid ? nr : x; });
   toast('Pages kept until ' + rqDateTxt(nu), 'ok-t');
   if (RQ.openId === q.req_id) rqRenderDetail(q.req_id, true);
   if (S.view === 'rq:quotes') rqRender(S.view);
@@ -25160,11 +25350,17 @@ async function rqqPurgeExpired() {
   try {
     var today = todayStr(), due = (RQ.quotes || []).filter(function(q){ return !q.images_deleted_at && q.keep_until && q.keep_until < today; });
     var n = 0;
+    if (docOn()) {
+      var gone = (await docPurge(due)).map(rqqFromDoc), byId = {};
+      gone.forEach(function(x){ byId[x.id] = x; }); n = gone.length;
+      RQ.quotes = RQ.quotes.map(function(x){ return byId[x.id] || x; });
+      due = [];
+    }
     for (var i = 0; i < due.length; i += 40) {
       var grp = due.slice(i, i + 40), paths = [];
       grp.forEach(function(q){ (q.pages || []).forEach(function(pg){ if (pg && pg.path) paths.push(pg.path); }); });
       if (paths.length) { var rm = await db.storage.from('rq-quotations').remove(paths); if (rm.error) { console.error('quotation pages not removed:', rm.error); continue; } }
-      var up = await db.from('rq_quotations').update({ pages: [], images_deleted_at: new Date().toISOString() }).in('id', grp.map(function(q){ return q.id; })).is('images_deleted_at', null).lt('keep_until', today).select(RQQ_COLS);
+      var up = await db.from('rq_quotations').update({ pages: [], images_deleted_at: new Date().toISOString() }).in('id', grp.map(function(q){ return q.id; })).is('images_deleted_at', null).lt('keep_until', today).select(rqqCols());
       if (!up.error && up.data) { n += up.data.length; var got = {}; up.data.forEach(function(x){ got[x.id] = x; }); RQ.quotes = RQ.quotes.map(function(x){ return got[x.id] || x; }); }
     }
     if (n) toast(n + ' quotation' + (n === 1 ? '' : 's') + ' older than 2 years: pages deleted (supplier and amount kept)', 'ok-t');
@@ -25196,33 +25392,13 @@ function rqqRenderDue() {
     + (due.length ? '<div class="scroller"><table class="rq-t"><thead><tr><th>Job no.</th><th>Department</th><th>Supplier</th><th class="num">Total</th><th>Uploaded</th><th>Pages deleted on</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty"><h4>Nothing due</h4>No quotation pages are due to be deleted in the next 30 days.</div>') + '</div>';
 }
 
-// ── viewer ──
-var RQQV = { id: null, i: 0 };
+// ── viewer: the Documents engine's ──
 function rqqView(qid, i) {
   var q = (RQ.quotes || []).find(function(x){ return x.id === qid; }); if (!q || !(q.pages || []).length) return;
-  if (!$('ov-qv')) {
-    var ov = document.createElement('div'); ov.className = 'ov qv-ov'; ov.id = 'ov-qv';
-    ov.innerHTML = '<div class="qv-top"><div id="qv-t"></div><div class="qv-nav"><button class="btn sm" onclick="rqqViewGo(-1)" aria-label="Previous page">&#x2039;</button><span id="qv-n"></span><button class="btn sm" onclick="rqqViewGo(1)" aria-label="Next page">&#x203A;</button><a class="btn sm" id="qv-open" target="_blank" rel="noopener">Open</a><button class="btn sm" onclick="rqqViewClose()">&#x2715; Close</button></div></div><div class="qv-img" onclick="if(event.target===this)rqqViewClose()"><img id="qv-img" alt=""></div>';
-    document.body.appendChild(ov);
-    document.addEventListener('keydown', function(e){
-      if (!$('ov-qv') || !$('ov-qv').classList.contains('open')) return;
-      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); rqqViewClose(); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); rqqViewGo(1); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); rqqViewGo(-1); }
-    }, true);
-  }
-  RQQV.id = qid; RQQV.i = Math.max(0, Math.min(q.pages.length - 1, i || 0));
-  rqqViewDraw(); openModal('ov-qv');
+  var bill = rqbIsBill(q);
+  docView(q, i, '<b>' + rqEsc(q.supplier) + '</b> &middot; ' + rqqMoney(q.amount, q.currency)
+    + (bill ? (q.bill_no ? ' &middot; bill ' + rqEsc(q.bill_no) : '') + (q.bill_date ? ' &middot; ' + rqDateTxt(q.bill_date) : '') : (q.valid_until ? ' &middot; valid until ' + rqDateTxt(q.valid_until) : '')));
 }
-function rqqViewDraw() {
-  var q = (RQ.quotes || []).find(function(x){ return x.id === RQQV.id; }); if (!q) return rqqViewClose();
-  var p = q.pages[RQQV.i]; if (!p) return;
-  $('qv-t').innerHTML = '<b>' + rqEsc(q.supplier) + '</b> &middot; ' + rqqMoney(q.amount, q.currency) + (q.valid_until ? ' &middot; valid until ' + rqDateTxt(q.valid_until) : '');
-  $('qv-n').textContent = 'Page ' + (RQQV.i + 1) + ' of ' + q.pages.length;
-  var u = rqqUrl(p.path); $('qv-img').src = u; $('qv-open').href = u;
-}
-function rqqViewGo(d) { var q = (RQ.quotes || []).find(function(x){ return x.id === RQQV.id; }); if (!q) return; var n = RQQV.i + d; if (n < 0 || n >= q.pages.length) return; RQQV.i = n; rqqViewDraw(); }
-function rqqViewClose() { closeModal('ov-qv'); }
 
 // (2. petty cash: pcBoxHtml / pcSave in the V.2026.10.24.1 block now show just the number)
 
@@ -25663,7 +25839,7 @@ function rqtHint(k) {
   return '<b>' + rqEsc(t.label) + ':</b> '
     + (t.can_wo ? 'after Management approves, you can make the work order yourself.' : 'no work order; after approval it goes to Accounts for payment.')
     + (t.can_wo ? (t.to_accounts !== false ? ' Paid through Accounts.' : ' Management buys and pays it itself.') : '')
-    + (t.needs_quotation ? ' Attach supplier quotations.' : '')
+    + (t.needs_quotation ? ' Attach supplier quotations.' : '') + (t.needs_bill ? ' Attach the bill.' : '') + (t.pay_on_approval ? ' Management\u2019s approval is also the payment approval.' : '')
     + ' The lines below are written as <b>' + (t.form_style === 'purchase' ? 'Items required' : 'Work required') + '</b>.';
 }
 function rqtFormHtml(r) {
@@ -25720,6 +25896,7 @@ function rqtEdit(key) {
       + ck('rqt-wo', v.can_wo, 'A work order can be made after approval')
       + ck('rqt-acc', v.to_accounts !== false, 'Paid through Accounts')
       + ck('rqt-quo', v.needs_quotation, 'Quotations needed')
+      + (rqbOn() ? ck('rqt-bill', v.needs_bill, 'Bill photo needed') + ck('rqt-pay', v.pay_on_approval, 'Payment approved with the requisition <span class="sub2">(Management\u2019s approval is also the payment approval for the approved amount; Accounts pays without a second step)</span>') : '')
       + ck('rqt-mb', v.mgmt_buy_default, 'Management usually buys it')
       + ck('rqt-pick', v.in_picker !== false, 'Offered when raising a requisition'),
     ok: t ? 'Save' : 'Add type',
@@ -25739,6 +25916,7 @@ async function rqtSave(key) {
   if (RQT.rows.some(function(t){ return t.key !== key && t.label.toLowerCase() === label.toLowerCase(); })) return 'There is already a type called ' + label + '.';
   var row = { label: label, example: $('rqt-ex').value.trim() || null, form_style: $('rqt-style').value,
     can_wo: $('rqt-wo').checked, to_accounts: $('rqt-acc').checked, needs_quotation: $('rqt-quo').checked, mgmt_buy_default: $('rqt-mb').checked, in_picker: $('rqt-pick').checked };
+  if (rqbOn()) { row.needs_bill = $('rqt-bill').checked; row.pay_on_approval = $('rqt-pay').checked; }
   var r;
   if (key) r = await db.from('rq_types').update(row).eq('key', key).select();
   else {
@@ -25889,6 +26067,136 @@ async function rqOpenFromNotice(id) {
   if (!r) { toast('This requisition is no longer open to you', 'err'); return; }
   rqOpen(id);
 }
+// Requisition documents and money requests (Wave 12). Quotations and bills are kinds of the Documents engine
+// (226-documents.js); the requisition keeps them in RQ.quotes in its own shape (rqqFromDoc). A requisition type
+// can ask for the bill ("Bill photo needed" in Admin -> Requisition types: a reminder, it does not block), and
+// Management's approval can be the payment approval ("Payment approved with the requisition"; the database
+// records it). Before Wave 12 is in the database, quotations work the old way and none of the rest shows.
+var RQB_MARK = 'Included in the Management approval of the requisition';
+RQ.formBills = [];
+// a document of the engine, in the shape the requisition screens use
+function rqqFromDoc(d) {
+  return { id: d.id, req_id: d.owner_id, dept: d.dept, doc_kind: d.kind, supplier: d.party || '', amount: d.amount, currency: d.currency || 'BDT', valid_until: d.valid_until,
+    bill_no: d.doc_no, bill_date: d.doc_date, bucket: d.bucket, pages: d.pages || [], page_count: d.page_count, bytes: d.bytes, created_at: d.created_at,
+    created_by: d.created_by, created_by_name: d.created_by_name, keep_until: d.keep_until, keep_changed_by: d.keep_changed_by, images_deleted_at: d.images_deleted_at };
+}
+function rqqMax() { return docOn() ? docMaxPer('quotation', RQQ_MAX) : RQQ_MAX; }
+// camera / file -> form -> onSave(v, pages) with v in the requisition shape (supplier, amount, ..., bill_no, bill_date)
+function rqqCapture(kind, o) {
+  if (docOn()) {
+    docCapture({ kind: kind, title: o.title, saveText: o.saveText, onSave: function(v, pages){
+      return o.onSave({ doc_kind: kind, supplier: v.party, amount: v.amount, currency: v.currency || 'BDT', valid_until: v.valid_until, bill_no: v.doc_no, bill_date: v.doc_date }, pages);
+    } });
+    return;
+  }
+  dsOpen({ title: o.title, what: kind, maxPages: RQQ_MAX_PAGES, formHtml: rqqFormHtml(), saveText: o.saveText, onSave: async function(pages){
+    var v = rqqReadForm(); if (typeof v === 'string') return v;
+    return o.onSave(v, pages);
+  } });
+}
+function rqbDb() { return docOn() && rqtOk() && RQT.rows.some(function(t){ return Object.prototype.hasOwnProperty.call(t, 'needs_bill'); }); } // Wave 12 is in the database
+function rqbOn() { return rqbDb() && rqqOn(); }
+function rqbIsBill(q) { return !!q && q.doc_kind === 'bill'; }
+function rqbNeeds(k) { if (!rqbOn()) return false; var t = rqtGet(k); return !!(t && t.needs_bill); }
+function rqbPaysOnApproval(k) { if (!rqbOn()) return false; var t = rqtGet(k); return !!(t && t.pay_on_approval); }
+function rqbList(reqId) { return (RQ.quotes || []).filter(function(q){ return q.req_id === reqId && rqbIsBill(q); }).sort(function(a, b){ return String(a.created_at).localeCompare(String(b.created_at)); }); }
+function rqqCols() { return RQQ_COLS; } // the old table (before Wave 12)
+
+function rqbCard(q, saved, i) {
+  var thumb = saved ? (q.pages && q.pages[0] && !q.images_deleted_at ? rqqUrl(q.pages[0].path, q) : '') : (q.pages[0] && q.pages[0].url);
+  var n = saved ? (q.page_count || 0) : q.pages.length;
+  return '<div class="rqq-card">' + (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="rqq-noimg">&#x2014;</div>')
+    + '<div class="rqq-cm"><b>' + rqEsc(q.supplier) + '</b><div class="sub2">' + (q.bill_no ? 'Bill ' + rqEsc(q.bill_no) + ' &middot; ' : '') + rqDateTxt(q.bill_date) + ' &middot; ' + n + ' page' + (n === 1 ? '' : 's') + (saved ? ' &middot; saved' : ' &middot; ' + dsKB(q.pages.reduce(function(s, p){ return s + p.bytes; }, 0))) + '</div></div>'
+    + '<div class="rqq-amt">' + rqqMoney(q.amount, q.currency) + '</div>'
+    + (saved ? (rqqView ? '<button type="button" class="btn sm" onclick="rqqView(\'' + q.id + '\',0)">View</button>' : '') : '<button type="button" class="btn sm ghost" title="Remove" onclick="rqbFormRemove(' + i + ')">&#x2715;</button>') + '</div>';
+}
+// in the New / Change requisition form: shown only for a type that needs the bill
+function rqbFormSection(r) {
+  if (!rqbOn()) return '<div id="rqb-formsec"></div>';
+  var k = rqFormKind();
+  if (!rqbNeeds(k)) return '<div id="rqb-formsec"></div>';
+  var saved = r && r.id ? rqbList(r.id) : [];
+  var cards = saved.map(function(q){ return rqbCard(q, true); }).concat(RQ.formBills.map(function(q, i){ return rqbCard(q, false, i); })).join('');
+  var total = saved.concat(RQ.formBills).reduce(function(s, q){ return s + (Number(q.amount) || 0); }, 0);
+  return '<div class="rqq-sec" id="rqb-formsec"><div class="rqq-h"><span>Bill</span><span class="sub2">' + (total ? 'Total ' + rqqMoney(total, 'BDT') : 'attach the bill for this type') + '</span></div>'
+    + cards
+    + '<div class="rqq-add"><button type="button" class="btn rqq-big" onclick="rqbFormAdd(\'cam\')"><span>&#x1F4F7;</span>Take photo</button><button type="button" class="btn rqq-big" onclick="rqbFormAdd(\'file\')"><span>&#x1F4C4;</span>Choose file<small>photo or PDF</small></button></div>'
+    + '<div class="sub2" style="margin-top:6px">No work order for this type. After Management approves, it goes straight to Accounts for payment' + (rqbPaysOnApproval(k) ? ' (no separate payment approval)' : '') + '. Bill pages are kept for ' + docKeepYears('bill') + ' years.</div></div>';
+}
+function rqbFormRedraw() {
+  var el = $('rqb-formsec'); if (!el) return;
+  var r = RQ.editId ? RQ.rows.find(function(x){ return x.id === RQ.editId; }) : null;
+  el.outerHTML = rqbFormSection(r);
+}
+function rqbFormReset() { (RQ.formBills || []).forEach(function(q){ (q.pages || []).forEach(dsFreePage); }); RQ.formBills = []; }
+function rqbFormAdd(kind) {
+  if ((RQ.editId ? rqbList(RQ.editId).length : 0) + RQ.formBills.length >= docMaxPer('bill', 5)) { toast('Up to ' + docMaxPer('bill', 5) + ' bills per requisition', 'err'); return; }
+  rqqCapture('bill', { title: 'Add bill', saveText: 'Add bill', onSave: async function(v, pages){
+    RQ.formBills.push(Object.assign(v, { pages: pages }));
+    // the estimate follows the bills while it is empty or was filled from them
+    var est = $('rqf-cost'), sum = RQ.formBills.reduce(function(s, q){ return s + (Number(q.amount) || 0); }, 0);
+    if (est && (est.value === '' || est.dataset.fromBill === '1')) { est.value = String(sum); est.dataset.fromBill = '1'; }
+    rqbFormRedraw(); toast('Bill added. It is saved with the requisition.', 'ok-t');
+    return true;
+  } });
+  setTimeout(function(){ dsPick(kind); }, 0);
+}
+async function rqbFormRemove(i) {
+  var q = RQ.formBills[i]; if (!q) return;
+  if (!(await appConfirm('Remove the bill from ' + q.supplier + '?', { title: 'Remove bill', okText: 'Remove', danger: true }))) return;
+  (q.pages || []).forEach(dsFreePage); RQ.formBills.splice(i, 1); rqbFormRedraw();
+}
+// before sending: a reminder (not a block) when a type that asks for the bill has none
+function rqbCheck(kind) {
+  if (!rqbNeeds(kind)) return null;
+  var saved = RQ.editId ? rqbList(RQ.editId).length : 0;
+  return saved + RQ.formBills.length ? null : 'No bill is attached. This type of requisition usually has the bill (photo or PDF); you can also add it later from the requisition.';
+}
+// after the requisition is saved: upload the bills added in the form
+async function rqbUploadForm(r) {
+  if (!rqbOn() || !RQ.formBills.length || !r) { rqbFormReset(); return null; }
+  var list = RQ.formBills.slice(), bad = [];
+  RQ.formBills = [];
+  for (var i = 0; i < list.length; i++) {
+    toast('Saving bill ' + (i + 1) + ' of ' + list.length + '…');
+    var res = await rqqSaveOne(r, list[i], list[i].pages);
+    if (typeof res === 'string') bad.push(list[i].supplier);
+    else await rqEvent(r.id, 'bill_added', { note: list[i].supplier + (list[i].bill_no ? ' bill ' + list[i].bill_no : ''), amount: list[i].amount });
+    (list[i].pages || []).forEach(dsFreePage);
+  }
+  return bad.length ? 'The bill could not be uploaded (' + bad.join(', ') + '). The requisition is saved: open it and add the bill again.' : null;
+}
+// in the requisition window (everyone who sees the requisition, Accounts too)
+function rqbDetailHtml(r) {
+  if (!rqbOn() || !r) return '';
+  var list = rqbList(r.id), need = rqbNeeds(r.kind);
+  if (!list.length && !need) return '';
+  var add = rqqCanAdd(r) && list.length < docMaxPer('bill', 5) ? '<button class="btn sm" onclick="rqbAdd(\'' + r.id + '\')">&#x002B; Add bill</button>' : '';
+  var rows = list.map(function(q){
+    var gone = !!q.images_deleted_at || !(q.pages && q.pages.length);
+    return '<tr><td class="rqq-th" onclick="' + (gone ? '' : 'rqqView(\'' + q.id + '\',0)') + '">' + (gone ? '<div class="rqq-noimg">&#x2014;</div>' : '<img src="' + rqqUrl(q.pages[0].path, q) + '" alt="" loading="lazy">') + '</td>'
+      + '<td><b>' + rqEsc(q.supplier) + '</b>' + (gone ? '<div class="sub2">Pages deleted after 2 years</div>' : '') + '</td><td>' + rqEsc(q.bill_no || '') + '</td><td>' + rqDateTxt(q.bill_date) + '</td>'
+      + '<td class="num"><b>' + rqqMoney(q.amount, q.currency) + '</b></td><td class="sub2">' + rqEsc(q.created_by_name || '') + '</td>'
+      + '<td style="white-space:nowrap">' + (gone ? '' : '<button class="btn sm" onclick="rqqView(\'' + q.id + '\',0)">View bill</button> ') + (rqqCanRemove(r, q) ? '<button class="btn sm danger" onclick="rqqRemove(\'' + q.id + '\')">Remove</button>' : '') + '</td></tr>';
+  }).join('');
+  return '<div class="rq-sec rqq-dsec"><div class="rq-sec-h" style="display:flex;justify-content:space-between;align-items:center">Bill' + (list.length > 1 ? 's (' + list.length + ')' : '') + add + '</div>'
+    + (list.length ? '<div class="scroller"><table class="rq-t rqq-t"><thead><tr><th>Pages</th><th>Paid to</th><th>Bill no.</th><th>Bill date</th><th class="num">Amount</th><th>Added by</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '<div class="rqq-warn">No bill attached yet.</div>') + '</div>';
+}
+function rqbAdd(reqId) {
+  var r = RQ.rows.find(function(x){ return x.id === reqId; });
+  if (!rqqCanAdd(r)) { toast('Bills can no longer be added to this requisition', 'err'); return; }
+  rqqCapture('bill', { title: 'Add bill — ' + r.job_no, saveText: 'Save bill', onSave: async function(v, pages){
+    var fresh = await rqqFresh(reqId);
+    if (!rqqCanAdd(fresh)) return 'This requisition was approved or closed meanwhile; the bill was not added.';
+    var res = await rqqSaveOne(fresh, v, pages); if (typeof res === 'string') return res;
+    await rqEvent(reqId, 'bill_added', { note: v.supplier + (v.bill_no ? ' bill ' + v.bill_no : ''), amount: v.amount });
+    toast('Bill saved', 'ok-t'); await rqLoadEvents(reqId); rqRenderDetail(reqId, true);
+    return true;
+  } });
+}
+// the payment approval line: say when it came with Management's approval of the requisition
+function rqbApprovedWith(a) { return !!a && a.note === RQB_MARK; }
 // Work orders: general work orders, management purchases from requisitions
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -27877,7 +28185,7 @@ function apLineHtml(r) {
   var s = accSum(r), a = apInfo(r), h;
   if (a.list.length) {
     var last = a.list[a.list.length - 1];
-    h = '<b>Payment approval:</b> ' + accTk(a.approved) + ' approved' + (a.list.length > 1 ? ' (' + a.list.length + ' times)' : '') + ' &middot; last by ' + rqEsc(last.by_name || '') + ', ' + rqDateTime(last.created_at)
+    h = '<b>Payment approval:</b> ' + accTk(a.approved) + ' approved' + (rqbApprovedWith(last) && a.list.length === 1 ? ' with the requisition by ' + rqEsc(last.by_name || '') + ', ' + rqDateTime(last.created_at) : (a.list.length > 1 ? ' (' + a.list.length + ' times)' : '') + ' &middot; last by ' + rqEsc(last.by_name || '') + ', ' + rqDateTime(last.created_at))
       + ' &middot; <b>' + accTk(Math.max(0, a.avail)) + '</b> can still be paid';
   } else h = '<b>Payment approval:</b> not approved for payment yet' + (a.ask ? ' &middot; Accounts asked ' + rqDateTime(a.ask.created_at) : '');
   var btn = apCanApprove() && ((s.bal > 0 && a.avail < s.bal) || a.ask) ? ' <button class="btn sm pri" style="margin-left:6px" onclick="apApproveOne(\'' + r.id + '\')">Approve payment</button>' : '';
@@ -30224,7 +30532,7 @@ var BACKUP_TABLES = [ // known tables, parents before children (restore goes in 
   'developments','development_options','development_samples','dev_colour_approvals','dev_price_history','order_commercial','commercial_payments',
   'buyer_invoice_details',
   'buyer_logos','buyer_team','buyer_contacts','buyer_notes','buyer_payment','buyer_banking','buyer_bank_changes','buyer_addresses','buyer_change_log',
-  'rq_settings','rq_counters','rq_requisitions','rq_events','rq_quotations','rq_queries',
+  'rq_settings','rq_counters','rq_requisitions','rq_events','rq_quotations','rq_queries','erp_document_kinds','erp_documents',
   'acc_banks','acc_iou_people','acc_cheques','acc_payments','acc_iou_entries','acc_pay_approvals',
   'pos_parties','pos_items','pos_weeks','pos_vals','costing_settings','costings','costing_history','acc_petty_cash','rq_plan_lines','wo_parties','work_orders','work_order_lines','pnl_orders','pnl_settings','pnl_oh_months',
   'erp_departments','erp_people','erp_memberships' // the organisation (Admin -> Departments): departments and people before who-belongs-where
@@ -30239,7 +30547,7 @@ var BACKUP_KEYS = {
   buyer_field_visibility: ['buyer_id', 'field_key'], memo: ['field', 'value'], order_commercial: ['order_id'],
   style_attachments: ['merchant_id', 'style'], style_images: ['merchant_id', 'style'], order_field_values: ['order_id', 'field_key'],
   user_password_view: ['user_id'], user_signatures: ['user_id'],
-  rq_settings: ['key'], rq_counters: ['dept', 'yr'], costing_settings: ['id'], pnl_settings: ['key'], pnl_oh_months: ['month'],
+  erp_document_kinds: ['key'], rq_settings: ['key'], rq_counters: ['dept', 'yr'], costing_settings: ['id'], pnl_settings: ['key'], pnl_oh_months: ['month'],
   buyer_logos: ['buyer_id'], buyer_payment: ['buyer_id'], buyer_banking: ['buyer_id'], erp_memberships: ['person_id', 'dept_id']
 };
 function backupStamp() { var d = new Date(); function z(n){ return String(n).padStart(2,'0'); } return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes()); }
@@ -30630,6 +30938,8 @@ var SETUP_KNOWN = { // every column the app uses: for tables a backup has no row
   acc_iou_entries: 'cr:numeric,created_at:timestamptz,created_by:text,created_by_name:text,dr:numeric,entry_date:date,id:uuid,import_key:text,kind:text,note:text,person_id:uuid,reverse_reason:text,reversed_at:timestamptz,reversed_by_name:text',
   rq_requisitions: 'hod_at:timestamptz,hod_by:text,hod_by_name:text,hod_note:text,hod_status:text,cao_at:timestamptz,cao_by:text,cao_by_name:text,cao_note:text,cao_status:text,approved_cost:numeric,audit_at:timestamptz,audit_by:text,audit_by_name:text,audit_note:text,audit_status:text,company:text,completed_at:timestamptz,completion_note:text,created_at:timestamptz,created_by:text,created_by_name:text,dept:text,est_cost:numeric,final_cost:numeric,id:uuid,items:jsonb,job_no:text,kind:text,location:text,location_detail:text,mgmt_at:timestamptz,mgmt_buy:boolean,mgmt_by:text,mgmt_by_name:text,mgmt_note:text,mgmt_status:text,priority:text,progress:integer,remarks:text,req_date:date,seq:integer,spent:numeric,started_at:timestamptz,status:text,target_date:date,time_unit:text,time_value:numeric,updated_at:timestamptz,updated_by:text,work_type:text,yr:integer',
   rq_events: 'amount:numeric,at:timestamptz,by_id:text,by_name:text,id:uuid,kind:text,note:text,pct:integer,req_id:uuid',
+  erp_document_kinds: 'active:boolean,ask_amount:boolean,ask_date:boolean,ask_number:boolean,ask_valid_until:boolean,keep_years:integer,key:text,label:text,max_pages:integer,max_per_owner:integer,owner_type:text,party_label:text,sort:integer',
+  erp_documents: 'amount:numeric,bucket:text,bytes:bigint,company:text,company_confirmed:boolean,created_at:timestamptz,created_by:uuid,created_by_name:text,currency:text,dept:text,doc_date:date,doc_no:text,id:uuid,images_deleted_at:timestamptz,keep_changed_by:text,keep_until:date,kind:text,owner_id:uuid,owner_type:text,page_count:integer,pages:jsonb,party:text,valid_until:date',
   rq_quotations: 'amount:numeric,bytes:integer,created_at:timestamptz,created_by:text,created_by_name:text,currency:text,dept:text,id:uuid,images_deleted_at:timestamptz,keep_changed_by:text,keep_until:date,page_count:integer,pages:jsonb,req_id:uuid,supplier:text,valid_until:date',
   rq_counters: 'dept:text,last:integer,yr:integer',
   rq_settings: 'key:text,updated_at:timestamptz,updated_by:text,value:text',
@@ -30823,6 +31133,10 @@ function buildSetupSql(b) {
   out.push("  INSERT INTO storage.buckets (id, name, public) VALUES ('rq-quotations', 'rq-quotations', true) ON CONFLICT (id) DO NOTHING;");
   [['read', 'SELECT', 'USING'], ['upload', 'INSERT', 'WITH CHECK'], ['change', 'UPDATE', 'USING'], ['remove', 'DELETE', 'USING']].forEach(function(p){
     out.push("  BEGIN EXECUTE 'CREATE POLICY \"quotation pages " + p[0] + "\" ON storage.objects FOR " + p[1] + ' ' + p[2] + " (bucket_id = ''rq-quotations'')'; EXCEPTION WHEN duplicate_object THEN NULL; END;");
+  });
+  out.push("  INSERT INTO storage.buckets (id, name, public) VALUES ('erp-documents', 'erp-documents', true) ON CONFLICT (id) DO NOTHING;");
+  [['read', 'SELECT', 'USING'], ['upload', 'INSERT TO authenticated', 'WITH CHECK'], ['remove', 'DELETE TO authenticated', 'USING']].forEach(function(p){
+    out.push("  BEGIN EXECUTE 'CREATE POLICY \"document pages " + p[0] + "\" ON storage.objects FOR " + p[1] + ' ' + p[2] + " (bucket_id = ''erp-documents'')'; EXCEPTION WHEN duplicate_object THEN NULL; END;");
   });
   out.push('END IF; END $$;');
   out.push('');
