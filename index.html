@@ -2716,7 +2716,7 @@ table.wo-t-buy td{vertical-align:top}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.07.1</p>
+    <p class="login-ver">STAGING V.2026.11.07.2</p>
   </div></div>
 </div>
 
@@ -2760,7 +2760,7 @@ table.wo-t-buy td{vertical-align:top}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.07.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.07.2</div>
 </div>
 
 
@@ -5567,7 +5567,7 @@ function viewAsEnter(target, reason, until) {
 }
 // Nothing can be saved while viewing as someone: every write is stopped here, before it leaves the browser.
 // (The database refuses them too for every table protected by the new rules.)
-var VIEWAS_READ_RPC = { erp_my_login_state: 1, erp_view_as_end: 1, erp_login_names: 1, erp_my_role: 1, erp_rq_setup: 1 }; // reads only: the database refuses every change during view-as anyway
+var VIEWAS_READ_RPC = { erp_my_login_state: 1, erp_view_as_end: 1, erp_login_names: 1, erp_my_role: 1, erp_rq_setup: 1, erp_approval_state: 1 }; // reads only: the database refuses every change during view-as anyway
 function viewAsGuard() {
   if (db.__viewAsGuarded) return; db.__viewAsGuarded = true;
   var blocked = function () {
@@ -23348,6 +23348,47 @@ async function deleteStyleImage() {
   }
   toast('Photo deleted', 'ok-t');
 }
+// Approval engine (Wave 11): one place for every approval step, for any kind of record.
+// The database keeps the steps of each kind of record (erp_approval_stages: order, label, who holds it) and one row
+// per decision (erp_approvals). A module plugs in by its kind name, e.g. 'requisition':
+//   apeLoad(kind)                         the steps, in order (read once, kept in APE.stages[kind])
+//   apeAct(kind, id, step, status, note)  record a decision; the database checks who may, in their own name,
+//                                         never on a record they raised, only while the record is open
+//   apeState(kind, id)                    every step of one record with its decision
+// Before Wave 11 is in the database every call says so (APE.ok[kind] === false) and the module keeps its own way.
+var APE = { stages: {}, ok: {} };
+
+function apeMissing(e) { return !!e && (e.code === '42P01' || e.code === '42883' || e.code === 'PGRST202' || e.code === 'PGRST205' || /does not exist|schema cache|could not find the (table|function)/i.test(e.message || '')); }
+
+async function apeLoad(kind, force) {
+  if (APE.ok[kind] !== undefined && !force) return APE.stages[kind] || [];
+  var r;
+  try { r = await db.from('erp_approval_stages').select('stage,seq,label,holder,holder_label,can_return').eq('subject_type', kind).order('seq'); }
+  catch (e) { r = { error: e }; }
+  if (r.error) { if (!apeMissing(r.error)) console.error('approval steps:', r.error); APE.ok[kind] = false; APE.stages[kind] = []; return []; }
+  APE.ok[kind] = (r.data || []).length > 0;
+  APE.stages[kind] = r.data || [];
+  return APE.stages[kind];
+}
+function apeOn(kind) { return APE.ok[kind] === true; }
+function apeStage(kind, stage) { return (APE.stages[kind] || []).find(function(s){ return s.stage === stage; }) || null; }
+// the login role that holds a step ('head' steps are held by the record's department head, not a role)
+function apeHolderRole(s) { return s && /^role:/.test(s.holder) ? s.holder.slice(5) : null; }
+
+async function apeAct(kind, id, stage, status, note) {
+  var r;
+  try { r = await db.rpc('erp_approval_act', { p_type: kind, p_id: String(id), p_stage: stage, p_status: status, p_note: note || null }); }
+  catch (e) { r = { error: e }; }
+  if (r.error && apeMissing(r.error)) { APE.ok[kind] = false; r.missing = true; }
+  // "someone has already recorded" / "no longer open": the caller shows the latest instead of an error
+  if (r.error && (r.error.code === '40001' || /already recorded|no longer open/i.test(r.error.message || ''))) r.stale = true;
+  return r;
+}
+
+async function apeState(kind, id) {
+  var r = await db.rpc('erp_approval_state', { p_type: kind, p_id: String(id) });
+  return r.error ? [] : (r.data || []);
+}
 // Requisitions (every department; Maintenance, Civil and IT first): requests, questions, quotations, prints, weekly budget plans
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -23394,12 +23435,24 @@ function rqOnlyUser() { return !!S.user && (S.user.role === 'dept' || S.user.rol
 // a requisition they raised. The HOD is whoever heads the requisition's
 // department (Admin -> Departments; see rqHasStage).
 var RQ_STAGES = [
-  { k: 'hod', role: 'hod', n: 'HOD', full: 'Head of department (HOD)', reject: false, note: 'rq-hod-note' },
+  { k: 'hod', role: 'hod', head: true, n: 'HOD', full: 'Head of department (HOD)', reject: false, note: 'rq-hod-note' },
   { k: 'cao', role: 'cao', n: 'CAO', full: 'CAO', reject: false, note: 'rq-cao-note' },
   { k: 'audit', role: 'audit', n: 'Audit', full: 'Audit', reject: true, note: 'rq-a-note' },
   { k: 'mgmt', role: 'management', n: 'Management', full: 'Management', reject: true, note: 'rq-m-note' }
 ];
 function rqStage(k) { return RQ_STAGES.find(function(x){ return x.k === k; }) || null; }
+// With the approval engine in the database (Wave 11) the steps' labels and who holds each step come from there
+// (Admin can change them); the list above is the starting point and what runs before Wave 11.
+function rqApplyEngineStages() {
+  if (!apeOn('requisition')) return;
+  RQ_STAGES.forEach(function(st){
+    var s = apeStage('requisition', st.k); if (!s) return;
+    if (s.label && s.label !== st.n) { st.n = s.label; st.full = s.label; }
+    st.head = s.holder === 'head';
+    st.role = st.head ? 'hod' : (apeHolderRole(s) || st.role);
+    st.reject = !!s.can_return && st.reject;
+  });
+}
 // HOD and CAO steps exist once their database columns are there (requisition-
 // approvals-migration.sql) and someone holds them (a head of a department, set up
 // in Admin -> Departments; a CAO login); before that, approval
@@ -23407,7 +23460,7 @@ function rqStage(k) { return RQ_STAGES.find(function(x){ return x.k === k; }) ||
 function rqStageOn(st) {
   if (st.k === 'audit' || st.k === 'mgmt') return true;
   if (RQ.stagesOk !== true) return false;
-  if (st.k === 'hod') return rqdOk() && RQD.members.some(function(m){ return Number(m.l) === 4; });
+  if (st.head) return rqdOk() && RQD.members.some(function(m){ return Number(m.l) === 4; });
   return (S.users || []).some(function(u){ return u.role === st.role; });
 }
 function rqStagesFor(r) { return RQ_STAGES.filter(function(st){ return (rqStageOn(st) && rqStageApplies(r, st)) || (r && r[st.k + '_status']); }); }
@@ -23521,6 +23574,7 @@ async function rqLoad() {
     var pr = await db.from('rq_requisitions').select('hod_status,cao_status').limit(1);
     RQ.stagesOk = !pr.error;
   }
+  if (RQ.stagesOk === true && APE.ok.requisition === undefined) { try { await apeLoad('requisition'); rqApplyEngineStages(); } catch (e) { console.error('approval steps:', e); } }
   if (S.user.role === 'accounts') { // payments and payment approvals first: Accounts sees only what Management approved for payment
     try { await apLoad(); } catch (e) { console.error('payment approvals:', e); }
     try { await accLoadPays(); } catch (e) { console.error('payments:', e); }
@@ -24430,6 +24484,19 @@ async function rqDecide(id, who, decision) {
     upd.status = 'wip'; upd.approved_cost = amt; upd.started_at = now; upd.progress = 0;
     upd.target_date = rqTargetFrom(r, todayStr());
     if (woBuyTicked()) upd.mgmt_buy = true; // Management buys it itself: no payment approval, not for Accounts
+  }
+  if (decision === 'approved' && who !== 'mgmt' && r.status === 'pending' && apeOn('requisition')) {
+    var ar = await apeAct('requisition', id, step.k, 'approved', noteTxt);
+    if (!ar.missing) {
+      if (ar.stale) return rqStaleMsg(id);
+      if (ar.error) { showSaveError('Could not save the decision', ar.error); return; }
+      await rqEvent(id, step.k + '_approved', { note: step.n + (noteTxt ? ': ' + noteTxt : ''), amount: null });
+      r = (await rqRefreshOne(id)) || r;
+      toast(r.job_no + ' \u2014 ' + step.n + ' approval recorded', 'ok-t');
+      renderRail(); rqRender(S.view);
+      await rqLoadEvents(id); rqRenderDetail(id, true);
+      return;
+    }
   }
   var q = db.from('rq_requisitions').update(upd).eq('id', id);
   if (who === 'mgmt' && r.status === 'returned' && decision === 'approved') q = q.eq('status', 'returned');
@@ -25751,7 +25818,7 @@ function rqInMyDepts(k) { return rqMyDeptKeys().indexOf(k) !== -1; }
 // whoever is head (level 4) of that department fills it.
 function rqHasStage(r, st) {
   if (!S.user || !st || !rqStageOn(st)) return false;
-  if (st.k === 'hod') return rqdOk() && !!r && rqdIsHead(r.dept, S.user.id);
+  if (st.head) return rqdOk() && !!r && rqdIsHead(r.dept, S.user.id);
   return S.user.role === st.role;
 }
 // the step this person fills on this requisition (the first one still open, if they hold more than one)
@@ -25762,14 +25829,14 @@ function rqMyStageFor(r) {
 // does this person approve requisitions at all (menus, "Waiting for me")
 function rqMyStageAny() {
   if (!S.user) return null;
-  var byRole = RQ_STAGES.find(function(st){ return st.k !== 'hod' && st.role === S.user.role && rqStageOn(st); });
+  var byRole = RQ_STAGES.find(function(st){ return !st.head && st.role === S.user.role && rqStageOn(st); });
   if (byRole) return byRole;
   var h = rqStage('hod');
   if (!rqStageOn(h)) return null;
   return rqdOk() && rqdHeadOfAny(S.user.id) ? h : null;
 }
 // a department without a head has no head step
-function rqStageApplies(r, st) { return !(st.k === 'hod' && rqdOk() && r && !rqdHeads(r.dept).length); }
+function rqStageApplies(r, st) { return !(st.head && rqdOk() && r && !rqdHeads(r.dept).length); }
 
 // ─── Accounts: a requisition shows once Management has approved a payment for it (or something is already paid) ───
 function rqAccSees(r) {
@@ -30162,7 +30229,8 @@ var BACKUP_TABLES = [ // known tables, parents before children (restore goes in 
   'pos_parties','pos_items','pos_weeks','pos_vals','costing_settings','costings','costing_history','acc_petty_cash','rq_plan_lines','wo_parties','work_orders','work_order_lines','pnl_orders','pnl_settings','pnl_oh_months',
   'erp_departments','erp_people','erp_memberships' // the organisation (Admin -> Departments): departments and people before who-belongs-where
 ];
-var BACKUP_EXCLUDE = ['user_password_view', 'notifications']; // notifications are private to each person (and passing)
+var BACKUP_EXCLUDE = ['user_password_view', 'notifications', // notifications are private to each person (and passing)
+  'erp_approvals', 'erp_approval_stages', 'erp_approval_subjects']; // the approval engine: its decisions are rebuilt from the requisitions when they are restored, its steps come with Wave 11
 var _backupBusy = false;
 // Tables that are matched on something other than an "id" column (from how
 // the app saves them). Used to order the read, and to rebuild a database.
