@@ -2645,6 +2645,16 @@ table.wo-t-buy td{vertical-align:top}
 .ad-add{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:10px}
 .ad-tabs{display:flex;gap:6px;padding:10px 16px 0}
 .ad-sub2{font-size:11.5px;color:var(--muted)}
+/* Wave 15: Admin -> Notifications */
+.ntr-mod{font-weight:700;margin:14px 0 6px;font-size:13px}
+table.ntr-t{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}table.ntr-t th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 8px}
+table.ntr-t td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}table.ntr-t tr.ntr-off td{opacity:.55}.ntr-title{font-weight:600}
+.ntr-sw{position:relative;display:inline-block;width:36px;height:20px}.ntr-sw input{opacity:0;width:0;height:0}.ntr-sw span{position:absolute;inset:0;background:var(--line);border-radius:20px;cursor:pointer;transition:.15s}
+.ntr-sw span:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.15s}.ntr-sw input:checked+span{background:var(--accent,#C2552F)}.ntr-sw input:checked+span:before{transform:translateX(16px)}
+.ntr-grid{display:grid;grid-template-columns:280px 1fr;gap:18px}.ntr-ck{display:block;margin:3px 0;font-size:12.5px}.ntr-sep{height:1px;background:var(--line);margin:8px 0}
+#ntr-add{margin-top:4px;width:100%}#ntr-body{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.ntr-prev{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel)}
+table.ntr-t td,table.ntr-t th{white-space:normal!important;overflow-wrap:anywhere}
 /* ─── Wave 6: requisition types (the picker on the form, Admin -> Requisition types), the "make work order" banner ─── */
 .rqt-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:4px}
 .rqt-c{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;cursor:pointer;font:inherit;color:var(--ink)}
@@ -2721,7 +2731,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.07.6</p>
+    <p class="login-ver">STAGING V.2026.11.08.1</p>
   </div></div>
 </div>
 
@@ -2765,7 +2775,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.07.6</div>
+  <div id="ver-stamp">STAGING V.2026.11.08.1</div>
 </div>
 
 
@@ -6162,7 +6172,7 @@ async function sendThreadReply() {
 // new one (gone after 10 seconds, or with its close button; click it to open); the inbox (click the bell): newest first,
 // filter by part of the app, mark all read. New ones arrive live (one connection per person, only their own rows).
 // Without the Wave 5A update the bell simply stays hidden.
-var NTF = { ok: null, rows: [], ch: null, openers: {}, labels: {}, filter: '', booted: false };
+var NTF = { ok: null, rows: [], ch: null, openers: {}, labels: {}, filter: '', booted: false, down: false, hiddenAt: 0, cuAt: 0 };
 var notifModule = { send: ntfSend, opener: function(k, fn){ NTF.openers[k] = fn; }, label: function(m, n){ NTF.labels[m] = n; } };
 var NTF_TOAST_MS = 10000;
 function ntfOn() { return NTF.ok === true; }
@@ -6176,6 +6186,28 @@ async function ntfBoot() {
   ntfSubscribe();
   document.addEventListener('click', function(e){ var w = $('ntf-wrap'); if (w && w.classList.contains('open') && !w.contains(e.target)) ntfClose(); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { var w = $('ntf-wrap'); if (w && w.classList.contains('open')) ntfClose(); } });
+  // catch-up (Wave 15): the live line can drop while the laptop sleeps or the tab is in the background; coming back
+  // reads the newest ones once (no timer: nothing is read while the page stays open and connected)
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) { NTF.hiddenAt = Date.now(); return; }
+    if (NTF.hiddenAt && Date.now() - NTF.hiddenAt > NTF_AWAY_MS) ntfCatchUp();
+    NTF.hiddenAt = 0;
+  });
+  window.addEventListener('online', function(){ ntfCatchUp(); });
+}
+var NTF_AWAY_MS = 20000;   // away from the tab at least this long before a catch-up read
+// read the newest ones once and show what was missed (the card for up to 3 new unread ones), at most every 15 s
+async function ntfCatchUp() {
+  if (!ntfOn() || !S.user || Date.now() - NTF.cuAt < 15000) return 0;
+  NTF.cuAt = Date.now();
+  var r = await db.from('notifications').select('*').eq('recipient_id', S.user.id).order('created_at', { ascending: false }).limit(100);
+  if (r.error) { console.error('notifications catch-up:', r.error); return 0; }
+  var have = {}; NTF.rows.forEach(function(x){ have[x.id] = 1; });
+  var fresh = (r.data || []).filter(function(x){ return !have[x.id]; });
+  NTF.rows = r.data || [];
+  ntfBell(); if ($('ntf-wrap') && $('ntf-wrap').classList.contains('open')) ntfPanel();
+  fresh.filter(function(x){ return !x.read_at; }).slice(0, 3).reverse().forEach(ntfToast);
+  return fresh.length;
 }
 // the newest 100 (one read); older ones stay in the database until they are cleared
 async function ntfLoad() {
@@ -6188,7 +6220,10 @@ function ntfSubscribe() {
   try {
     NTF.ch = db.channel('ntf-' + S.user.id)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: 'recipient_id=eq.' + S.user.id }, function(p){ try { ntfLive(p); } catch (e) { console.error('notification live:', e); } })
-      .subscribe();
+      .subscribe(function(st){   // the line came back after dropping: read what was missed meanwhile
+        if (st === 'SUBSCRIBED') { if (NTF.down) { NTF.down = false; ntfCatchUp(); } }
+        else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') NTF.down = true;
+      });
   } catch (e) { console.error('notifications live:', e); }
 }
 function ntfLive(p) {
@@ -6280,6 +6315,110 @@ function ntfToast(x) {
   setTimeout(function(){ ntfToastGone(x.id); }, NTF_TOAST_MS);
 }
 function ntfToastGone(id) { var el = document.querySelector('#ntf-toasts .ntf-toast[data-id="' + id + '"]'); if (el && el.parentNode) el.parentNode.removeChild(el); }
+// Notifications: who is told what (Wave 15). Admin -> Notifications.
+// Every event of the app (a new requisition, a payment approved, a work order over the approved amount ...) has one or
+// more rules in the database (erp_notify_rules); the database's notification engine (erp_notify_event) reads them.
+// Admin can switch a rule off, choose who is told (roles, the department head or staff, the person the event names,
+// a particular person) and change the words. A new event comes with its database file and simply shows up here.
+// Only Admin reads or changes the rules (the database checks).
+var NTR = { ok: null, rows: [], edit: null };
+var NTR_PARTY = { raiser: 'The person who raised it', asker: 'The person who asked the question', maker: 'The person who made the work order',
+  dept_head: 'The head of its department (HOD)', dept_staff: 'The staff of its department' };
+var NTR_ROLE = { admin: 'Admin', management: 'Management', cao: 'CAO', audit: 'Audit', accounts: 'Accounts', hod: 'HOD', dept: 'Department staff',
+  merchant: 'Merchants', jm: 'Junior merchandisers', manager: 'Managers', commercial: 'Commercial' };
+function ntrOn() { return NTR.ok === true; }
+async function ntrLoad() {
+  var r = await db.from('erp_notify_rules').select('*').order('module').order('sort').order('key');
+  if (r.error) { NTR.ok = /erp_notify_rules|does not exist|schema cache|PGRST205|42P01/i.test((r.error.message || '') + ' ' + (r.error.code || '')) ? false : null; NTR.rows = []; return; }
+  NTR.ok = true; NTR.rows = r.data || [];
+}
+function ntrWhoTxt(w) {
+  if (w.indexOf('role:') === 0) { var k = w.slice(5); return NTR_ROLE[k] || k; }
+  if (w.indexOf('user:') === 0) { var u = (S.users || []).find(function(x){ return x.id === w.slice(5); }); return u ? u.name : 'someone removed'; }
+  return NTR_PARTY[w] || w;
+}
+function ntrWhoList(r) { return (r.who || []).map(ntrWhoTxt).join(', ') + ((r.except_who || []).length ? ' <span class="sub2">(not ' + (r.except_who || []).map(function(w){ var t = ntrWhoTxt(w); return w.indexOf('role:') === 0 || w.indexOf('user:') === 0 ? t : t.charAt(0).toLowerCase() + t.slice(1); }).join(', ') + ')</span>' : ''); }
+async function ntrRenderAdminCard() {
+  var box = $('admin-ntr-body'); if (!box || !S.user || S.user.role !== 'admin') return;
+  await ntrLoad();
+  if (NTR.ok === true && !NTR.rows.length) NTR.ok = false;   // no rules yet: the same as before the file
+  if (NTR.ok === false) { box.innerHTML = '<div class="adm-sub" style="padding:12px 16px">Run <b>shahana-one-v30-wave15-notifications.sql</b> to choose here who is told what.</div>'; return; }
+  if (NTR.ok !== true) { box.innerHTML = '<div class="adm-sub" style="padding:12px 16px">The notification rules could not be read. Press Refresh.</div>'; return; }
+  var mods = []; NTR.rows.forEach(function(r){ if (mods.indexOf(r.module) === -1) mods.push(r.module); });
+  var E = rqEsc, h = '<div style="padding:4px 16px 16px">';
+  mods.forEach(function(m){
+    h += '<div class="ntr-mod">' + E(ntfLabel(m)) + '</div><table class="ntr-t"><colgroup><col style="width:52px"><col style="width:27%"><col style="width:29%"><col><col style="width:84px"></colgroup><thead><tr><th>On</th><th>When</th><th>Who is told</th><th>What they see (example)</th><th></th></tr></thead><tbody>'
+      + NTR.rows.filter(function(r){ return r.module === m; }).map(function(r){
+        return '<tr class="' + (r.active ? '' : 'ntr-off') + '"><td><label class="ntr-sw"><input type="checkbox"' + (r.active ? ' checked' : '') + ' onchange="ntrToggle(\'' + jsAttrEsc(r.key) + '\',this.checked,this)"><span></span></label></td>'
+          + '<td><b>' + E(r.label) + '</b></td><td>' + ntrWhoList(r) + '</td><td><div class="ntr-title">' + E(ntrFill(r.title, NTR_SAMPLE)) + '</div><div class="sub2">' + E(ntrFill(r.body || '', NTR_SAMPLE)) + '</div></td>'
+          + '<td><button class="btn sm" onclick="ntrEdit(\'' + jsAttrEsc(r.key) + '\')">Change</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  });
+  box.innerHTML = h + '<div class="sub2" style="margin-top:8px">Nobody is ever told about what they did themselves, and a switched-off login is never told.</div></div>';
+}
+async function ntrToggle(key, on, el) {
+  var r = await db.from('erp_notify_rules').update({ active: !!on, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('key', key).select();
+  if (r.error || !r.data || !r.data.length) { if (el) el.checked = !on; showSaveError('Could not save', r.error || { message: 'Only Admin can change it' }); return; }
+  toast((on ? 'On: ' : 'Off: ') + r.data[0].label, 'ok-t'); ntrRenderAdminCard();
+}
+// the people Admin can pick for one rule: the ones its event names, the department's head and staff, every role, a person
+function ntrChoices(r) {
+  var parties = (r.parties || []).slice(); ['dept_head', 'dept_staff'].forEach(function(k){ if (/^rq\./.test(r.event) || r.module === 'requisitions' || r.module === 'work_orders') if (parties.indexOf(k) === -1) parties.push(k); });
+  var roles = Object.keys(NTR_ROLE); (S.users || []).forEach(function(u){ if (u.role && roles.indexOf(u.role) === -1) roles.push(u.role); });
+  return { parties: parties, roles: roles.map(function(k){ return 'role:' + k; }) };
+}
+function ntrEdit(key) {
+  var r = NTR.rows.find(function(x){ return x.key === key; }); if (!r) return;
+  NTR.edit = key;
+  var c = ntrChoices(r), E = rqEsc, who = r.who || [], ex = r.except_who || [];
+  var people = (r.who || []).filter(function(w){ return w.indexOf('user:') === 0; });
+  function box(list, cls) { return list.map(function(w){ return '<label class="ntr-ck"><input type="checkbox" class="' + cls + '" value="' + E(w) + '"' + ((cls === 'ntr-who' ? who : ex).indexOf(w) !== -1 ? ' checked' : '') + '> ' + E(ntrWhoTxt(w)) + '</label>'; }).join(''); }
+  var users = (S.users || []).filter(function(u){ return u.active !== false; }).slice().sort(function(a, b){ return String(a.name).localeCompare(String(b.name)); });
+  accForm({ title: 'Notification: ' + E(r.label), sub: 'Who is told, and what they see. Changes apply to the next one sent.', wide: true,
+    body: '<div class="ntr-grid"><div><div class="adm-lbl">Who is told</div>' + box(c.parties, 'ntr-who') + '<div class="ntr-sep"></div>' + box(c.roles, 'ntr-who')
+      + '<div class="ntr-sep"></div><div class="adm-lbl">Particular people</div><div id="ntr-people">' + people.map(function(w){ return '<label class="ntr-ck"><input type="checkbox" class="ntr-who" value="' + E(w) + '" checked> ' + E(ntrWhoTxt(w)) + '</label>'; }).join('') + '</div>'
+      + '<select id="ntr-add" onchange="ntrAddPerson(this)"><option value="">Add a person&hellip;</option>' + users.map(function(u){ return '<option value="user:' + E(u.id) + '">' + E(u.name) + '</option>'; }).join('') + '</select>'
+      + '<div class="ntr-sep"></div><div class="adm-lbl">Never tell</div>' + box(c.parties, 'ntr-ex') + '</div>'
+      + '<div><div class="f"><label>Title</label><input id="ntr-title" maxlength="200" value="' + E(r.title) + '" oninput="ntrPreview()"></div>'
+      + '<div class="f"><label>Words</label><textarea id="ntr-body" rows="3" maxlength="1000" oninput="ntrPreview()">' + E(r.body || '') + '</textarea></div>'
+      + '<div class="sub2" style="margin:4px 0 10px">You can use: ' + E(String(r.words || '').split(/\s*,\s*/).filter(Boolean).map(function(w){ return '{' + w + '}'; }).join(' ')) + '. A part in [square brackets] is left out when what is in it is empty; {note|where} means the note, or else the place.</div>'
+      + '<div class="adm-lbl">Example of what they see</div><div class="ntr-prev" id="ntr-prev"></div></div></div>',
+    ok: 'Save',
+    after: function(){ ntrPreview(); },
+    onOk: ntrSave });
+}
+function ntrAddPerson(sel) {
+  var v = sel.value; sel.value = ''; if (!v || document.querySelector('#ntr-people input[value="' + v + '"]')) return;
+  var l = document.createElement('label'); l.className = 'ntr-ck'; l.innerHTML = '<input type="checkbox" class="ntr-who" value="' + rqEsc(v) + '" checked> ' + rqEsc(ntrWhoTxt(v));
+  $('ntr-people').appendChild(l);
+}
+// the same filling-in as the database (erp_notify_fill), with example words
+var NTR_SAMPLE = { job: 'MTSL/IT/26/0014', dept: 'IT', work: 'Computer repair', where: 'IT · Computer repair', amount: 'Tk 12,500', cost: 'Tk 12,500',
+  note: 'Please use the same brand as last time', by: 'Mahbub', wo_no: 'MTSL/IT/WO/26/0005', ref: 'MTSL/IT/26/0014', ordered: '14500', approved: '12500' };
+function ntrFill(t, v) {
+  if (t == null) return '';
+  var val = function(spec){ var a = spec.split('|'); for (var i = 0; i < a.length; i++) { var x = v[a[i]]; if (x != null && String(x) !== '') return String(x); } return ''; };
+  var m, n = 0;
+  while ((m = /\[([^\[\]]*)\]/.exec(t)) && n++ < 50) { var inner = m[1], keep = true, re = /\{([a-z_]+(\|[a-z_]+)*)\}/g, p; while ((p = re.exec(inner))) if (!val(p[1])) keep = false; t = t.slice(0, m.index) + (keep ? inner : '') + t.slice(m.index + m[0].length); }
+  return t.replace(/\{([a-z_]+(\|[a-z_]+)*)\}/g, function(_, k){ return val(k); });
+}
+function ntrPreview() {
+  var el = $('ntr-prev'); if (!el) return;
+  el.innerHTML = '<div class="ntf-mod">' + rqEsc(ntfLabel((NTR.rows.find(function(x){ return x.key === NTR.edit; }) || {}).module)) + '</div><div class="ntf-t">' + rqEsc(ntrFill($('ntr-title').value, NTR_SAMPLE)) + '</div><div class="ntf-b">' + rqEsc(ntrFill($('ntr-body').value, NTR_SAMPLE)) + '</div>';
+}
+async function ntrSave() {
+  var key = NTR.edit, title = $('ntr-title').value.trim(), body = $('ntr-body').value.trim();
+  var who = Array.from(new Set([].slice.call(document.querySelectorAll('.ntr-who:checked')).map(function(e){ return e.value; })));
+  var ex = [].slice.call(document.querySelectorAll('.ntr-ex:checked')).map(function(e){ return e.value; });
+  if (!title) return 'Write the title.';
+  if (!who.length) return 'Choose at least one person or group (or switch the notification off instead).';
+  var r = await db.from('erp_notify_rules').update({ who: who, except_who: ex, title: title, body: body || null, updated_at: new Date().toISOString(), updated_by: S.user.name }).eq('key', key).select();
+  if (r.error) return 'Could not save: ' + (r.error.message || r.error);
+  if (!r.data || !r.data.length) return 'Only Admin can change it.';
+  toast('Saved: ' + r.data[0].label, 'ok-t'); NTR.edit = null;
+  setTimeout(ntrRenderAdminCard, 0);
+  return true;
+}
 // ─── COMPANIES (Wave 9B) ───
 // Every business record belongs to one company (the database fills it in and checks it, Wave 9A).
 // This file is the page side:
@@ -17212,6 +17351,7 @@ function renderAdminPage() {
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Companies</h3><div class="adm-sub">The companies orders are made under, with the details used on commercial documents</div></div></div><div id="admin-company-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Departments</h3><div class="adm-sub">Departments, their heads and people, and which of them use requisitions</div></div></div><div id="admin-dept-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Requisition types</h3><div class="adm-sub">The types people pick when they raise a requisition, and what happens to each after approval</div></div></div><div id="admin-rqtypes-body"></div></div>'
+  + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Notifications</h3><div class="adm-sub">Who is told what (the bell): switch each one on or off, choose the people, change the words</div></div></div><div id="admin-ntr-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Requisitions</h3><div class="adm-sub">The seal, signature, logo and names printed on requisition forms</div></div></div><div id="admin-rq-body"></div></div>'
   + '<div id="admin-settings-body"></div>'
 
@@ -17253,6 +17393,7 @@ function renderAdminPage() {
   rqRenderAdminCard().catch(function(e){ console.error('rqRenderAdminCard:', e); });
   AD.deps = null; adRenderDeptCard().catch(function(e){ console.error('departments card:', e); });
   rqtRenderAdminCard().catch(function(e){ console.error('requisition types card:', e); });
+  ntrRenderAdminCard().catch(function(e){ console.error('notifications card:', e); });
   handleProfileType();
   // Sign-in status loads separately (admin only), then the list redraws.
   loadLoginStates().then(function(){ if (S.view === 'admin') renderAdminList(); });
@@ -26312,7 +26453,7 @@ function woOn() { return WO.ok === true; }
 // Wave 14: the agreed condition (a column on work_orders + its standard wording, Admin -> Requisitions)
 function woAgreedOn() { return WO.agreedStd != null; }
 // each way of ordering is a row of wo_sources; Admin can switch one off (the database then refuses new work orders from it)
-function woSrcOn(key) { if (!Array.isArray(WO.srcDb)) return true; var x = WO.srcDb.find(function(r){ return r.key === key; }); return !!x && x.active !== false; }
+function woSrcOn(key) { var x = Array.isArray(WO.srcDb) ? WO.srcDb.find(function(r){ return r.key === key; }) : null; return !x || x.active !== false; } // only an explicit "off" hides it (the database checks too)
 function woMissing(e) { return !!e && (e.code === '42P01' || e.code === 'PGRST205' || e.code === '42703' || e.code === 'PGRST204' || /work_order|wo_parties|mgmt_buy|does not exist|schema cache|could not find the table/i.test(e.message || '')); }
 function woErr(e) { return woMissing(e) ? 'Work orders need shahana-one-v8-migration.sql. Run it once in Supabase, then refresh.' : 'Could not save: ' + ((e && e.message) || e); }
 // every work order and line, read at once (they are few); departments read only their own lines
