@@ -2698,6 +2698,24 @@ table.ntr-t td,table.ntr-t th{white-space:normal!important;overflow-wrap:anywher
 .wo-desc-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px;font-size:11px;color:var(--muted)}
 input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
 #wo-agreed{width:100%;font:inherit;line-height:1.5;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);resize:vertical}
+/* Wave 16: print engine. Download PDF buttons, Admin -> Printing */
+.btn.pe-pdf{background:#1f6f4a;border-color:#1f6f4a;color:#fff}
+.btn.pe-pdf:hover{background:#185a3c;border-color:#185a3c;color:#fff}
+.btn.pe-pdf:disabled{opacity:.75;cursor:progress}
+.pe-rule{font-size:12.5px;line-height:1.6;margin:10px 0 12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+.pe-foot{font-size:11.5px;color:var(--muted);font-family:Arial,sans-serif}
+.pe-logo-row{display:grid;grid-template-columns:minmax(0,1fr) 200px auto;gap:14px;align-items:center;margin:4px 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px}
+.pe-logo-box{height:58px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px dashed var(--line);border-radius:7px}
+.pe-logo-box img{max-height:50px;max-width:180px;object-fit:contain}
+.pe-t{table-layout:fixed}.pe-t td,.pe-t th{white-space:normal!important}
+.pe-chip{display:inline-block;font-size:11px;padding:1px 8px;border:1px solid var(--line);border-radius:20px;margin:1px 2px 1px 0;background:var(--panel)}
+.pe-or{display:flex;gap:18px;flex-wrap:wrap;margin-top:4px}
+.f .pe-or label{display:inline-flex!important;align-items:center;gap:7px;margin:0!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--ink)!important;font-weight:500!important;cursor:pointer}
+.f .pe-or input{width:auto!important;height:auto!important;padding:0!important;margin:0!important;box-shadow:none!important}
+.pe-sigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pe-prev{display:flex;justify-content:space-between;gap:12px;font:11px Arial,sans-serif;color:#6b665c;border-top:1px solid var(--line);padding:7px 2px;margin-top:4px}
+@media (max-width:700px){.pe-logo-row{grid-template-columns:1fr}.pe-sigs{grid-template-columns:1fr}}
+@media print{.btn.pe-pdf{display:none!important}#dpdf-body>div{margin:0!important;box-shadow:none!important}}
 </style>
 </head>
 <body>
@@ -2731,7 +2749,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.08.1</p>
+    <p class="login-ver">STAGING V.2026.11.08.2</p>
   </div></div>
 </div>
 
@@ -2775,7 +2793,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.08.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.08.2</div>
 </div>
 
 
@@ -3023,7 +3041,8 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <div><h3 id="tnapdf-title">TNA Print Preview</h3><div class="msub" id="tnapdf-sub">Review before printing</div></div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeTNAPrint()">Cancel</button>
-        <button class="btn pri" onclick="printTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+        <button class="btn pri" onclick="printTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print</button>
+        <button class="btn pe-pdf" onclick="peOvPdf('ov-tna-print',this)">&#x2B07; Download PDF</button>
       </div>
     </div>
     <div class="m-b" id="tnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
@@ -3116,7 +3135,8 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <div><h3>To-Do</h3><div class="msub" id="todo-sub">What's left to do on this order</div></div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeOrderChecklist()">Cancel</button>
-        <button class="btn pri" onclick="printOrderChecklist()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+        <button class="btn pri" onclick="printOrderChecklist()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print</button>
+        <button class="btn pe-pdf" onclick="peOvPdf('ov-order-todo',this)">&#x2B07; Download PDF</button>
       </div>
     </div>
     <div class="m-b" id="todo-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
@@ -3166,7 +3186,8 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <div><h3 id="btnapdf-title">Bulk TNA Print Preview</h3><div class="msub" id="btnapdf-sub">Review before printing</div></div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeBulkTNAPrint()">Cancel</button>
-        <button class="btn pri" onclick="printBulkTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print / Save as PDF</button>
+        <button class="btn pri" onclick="printBulkTNADoc()" style="display:flex;align-items:center;gap:6px"><span>&#x1F5A8;</span> Print</button>
+        <button class="btn pe-pdf" onclick="peOvPdf('ov-bulk-tna-print',this)">&#x2B07; Download PDF</button>
       </div>
     </div>
     <div class="m-b" id="btnapdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
@@ -3214,7 +3235,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
         <button class="btn pri" onclick="downloadPDF()" style="padding:11px;font-size:13.5px">&#x2193; Download PDF</button>
         <button class="btn" onclick="exportExcel()" style="padding:11px;font-size:13.5px">&#x2193; Download Excel</button>
       </div>
-      <div class="hint" style="margin-top:14px">PDF opens print dialog — choose "Save as PDF".</div>
+      <div class="hint" style="margin-top:14px">PDF opens the preview: Print, or Download PDF to save the file.</div>
     </div>
     <div class="m-f"><button class="btn" onclick="closeModal('ov-print')">Close</button></div>
   </div>
@@ -3576,8 +3597,9 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeDashPdf()">Cancel</button>
         <button class="btn pri" onclick="printDashPdf()" style="display:flex;align-items:center;gap:6px">
-          <span>&#x1F5A8;</span> Print / Save as PDF
+          <span>&#x1F5A8;</span> Print
         </button>
+        <button class="btn pe-pdf" onclick="peOvPdf('ov-dash-pdf',this)">&#x2B07; Download PDF</button>
       </div>
     </div>
     <div class="m-b" id="dpdf-body" style="flex:1;overflow-y:auto;min-height:0;padding:0;background:#F7F5EF;border-radius:0 0 14px 14px"></div>
@@ -3657,8 +3679,8 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
 
 <div class="ov" id="ov-report-preview" onclick="if(event.target===this)closeReportPreview()">
   <div class="modal" style="max-width:1400px;width:96vw;height:90vh;display:flex;flex-direction:column">
-    <div class="m-h" style="flex-shrink:0"><div><h3 id="rp-title">Report</h3><div class="msub" id="rp-sub">Preview — use Print to save as PDF or print</div></div>
-      <div style="display:flex;gap:8px"><button class="btn pri" onclick="printReportPreview()">&#x1F5A8; Print / Save PDF</button><button class="btn" onclick="closeReportPreview()">Close</button></div></div>
+    <div class="m-h" style="flex-shrink:0"><div><h3 id="rp-title">Report</h3><div class="msub" id="rp-sub">Preview</div></div>
+      <div style="display:flex;gap:8px"><button class="btn pri" onclick="printReportPreview()">&#x1F5A8; Print</button><button class="btn pe-pdf" id="rp-pdf" onclick="peDownloadPdf()">&#x2B07; Download PDF</button><button class="btn" onclick="closeReportPreview()">Close</button></div></div>
     <iframe id="rp-frame" title="Report preview" style="flex:1;width:100%;border:0;background:#fff;border-radius:0 0 14px 14px"></iframe>
   </div>
 </div>
@@ -4186,6 +4208,7 @@ async function init() {
 
 async function startApp() {
   try { sigPreloadOwn(); } catch (e) {}
+  try { pePreload(); } catch (e) {}
   $('login-wrap').style.display = 'none';
   $('app').style.display = 'flex';
   applyPrefs();
@@ -6741,6 +6764,7 @@ async function coMovePreview(table, id) {
 // ── Admin: the companies card ──
 async function renderCompaniesCard() {
   var el = $('admin-company-body'); if (!el) return;
+  try { await Promise.all([peLoad(), peLoadLogos()]); } catch (e) {}
   if (!companyOn()) { el.innerHTML = '<div class="adm-sub">Run <b>company-migration.sql</b> (in all-updates-since-live.sql) in Supabase to switch on companies.</div>'; return; }
   if (!CO.regOk) { el.innerHTML = coList().map(coDetailsHtml).join('') + coAddHtml(); return; }
   el.innerHTML = '<div class="sub2">Counting&hellip;</div>';
@@ -6783,6 +6807,7 @@ function coDetailsHtml(c) {
     + '<div class="f" style="grid-column:1/-1"><label>Signature / seal picture (printed on the commercial invoice)</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
     + (ciSigOk(c.signature_img) ? '<img src="' + c.signature_img + '" alt="" style="max-height:56px;max-width:220px;border:1px solid var(--line);border-radius:6px;padding:4px;background:#fff"><button class="btn sm" onclick="removeCompanySignature(\'' + htmlEsc(c.code) + '\')">Remove</button>' : '<span class="adm-muted">None yet. Without one the invoice has a line to sign by hand.</span>')
     + '<input type="file" accept="image/png,image/jpeg" style="width:auto" onchange="companySignaturePick(\'' + htmlEsc(c.code) + '\',this)"></div></div>'
+    + peCoLogoHtml(c)
     + '</div><div style="margin-top:8px"><button class="btn sm pri" onclick="saveCompany(\'' + htmlEsc(c.code) + '\')">Save ' + htmlEsc(c.code) + '</button></div></div>';
 }
 function coAddHtml() {
@@ -7979,9 +8004,11 @@ function printOnly(overlayId) {
   document.querySelectorAll('.ov.printing').forEach(function(o){ o.classList.remove('printing'); });
   el.classList.add('printing');
   document.body.classList.add('print-isolated');
+  peOvPrintCss(overlayId, true);
   function clean(){
     el.classList.remove('printing');
     document.body.classList.remove('print-isolated');
+    peOvPrintCss(overlayId, false);
     window.removeEventListener('afterprint', clean);
   }
   window.addEventListener('afterprint', clean);
@@ -8003,8 +8030,9 @@ function isMerchantBoardView() {
 }
 
 // ─── IN-APP REPORT PREVIEW ───
-function openReportPreview(title, html) {
+function openReportPreview(title, html, key) {
   $('rp-title').textContent = title || 'Report';
+  RPV.key = key || '';
   var f = $('rp-frame');
   f.onload = function(){
     // Ctrl+P / Esc while the report itself has focus
@@ -8017,7 +8045,8 @@ function openReportPreview(title, html) {
     // the print rule: show the real pages (same size, margins and breaks as paper)
     var sub = $('rp-sub'); if (sub) sub.textContent = 'Preview \u2014 laying out the pages\u2026';
     RPV.p = rpPaginate(f.contentDocument).catch(function(e){ console.error('print preview:', e); return 0; }).then(function(n){
-      if (sub) sub.textContent = n ? 'Preview \u2014 ' + n + ' page' + (n === 1 ? '' : 's') + ', exactly as printed. Use Print to save as PDF or print' : 'Preview \u2014 use Print to save as PDF or print';
+      if (sub) sub.textContent = n ? 'Preview \u2014 ' + n + ' page' + (n === 1 ? '' : 's') + ', exactly as printed. Print opens the printer box; Download PDF saves the file straight away' : 'Preview \u2014 use Print to print or save as PDF';
+      var pb = $('rp-pdf'); if (pb) pb.style.display = n ? '' : 'none';
       return n;
     });
   };
@@ -8025,7 +8054,7 @@ function openReportPreview(title, html) {
   f.srcdoc = html;
   openModal('ov-report-preview');
 }
-var RPV = { p: null };
+var RPV = { p: null, key: '' };
 function closeReportPreview() {
   var f = $('rp-frame');
   closeModal('ov-report-preview'); f.srcdoc = '';
@@ -8457,6 +8486,432 @@ async function rpPaginate(doc) {
     src.remove();
     return 0;
   }
+}
+// ═══════════════════════════════════════════════════════════════════════
+// PRINT ENGINE (Wave 16)
+// Every document prints on A4 with 0.5 inch (12.7 mm) margins on all sides, with
+// one footer everywhere: "Printed by <name> · <date> · Shahana One" (+ the
+// document's note, + "Confidential, internal use only" for internal reports) and
+// "Page x of y". What can differ per document is one row of the register
+// print_docs (Admin -> Printing): portrait or landscape, the signature boxes,
+// the footer note, confidential or not. Until the SQL is run the starting rows
+// below are used (the same as the SQL's first rows).
+// The letterhead logo: the company's (print_logos, Admin -> Companies), else the
+// group logo (Admin -> Requisitions). Read only when something is printed.
+// Download PDF: the preview's pages are made into pictures inside the browser
+// and put into one PDF file, so the file is exactly what the preview shows.
+// ═══════════════════════════════════════════════════════════════════════
+var PE_MM = 12.7;
+// key: [name, group, orientation, can pick when printing, signature boxes (null = set by the document), confidential, footer note]
+var PE_START = {
+  rq_form: ['Requisition (full record, and the form for signing)', 'Requisitions and work orders', 'portrait', false, null, false],
+  rq_spend: ['Requisitions: monthly spend', 'Requisitions and work orders', 'portrait', false, null, true],
+  plan_week: ['Weekly budget plan', 'Requisitions and work orders', 'portrait', false, ['Prepared by', 'HOD', 'CAO', 'Management'], true],
+  plan_month: ['Monthly budget plan', 'Requisitions and work orders', 'landscape', false, ['Prepared by', 'HOD', 'CAO', 'Management'], true],
+  wo: ['Work order', 'Requisitions and work orders', 'portrait', false, ['Received by the party', 'For {company}'], false],
+  wo_list: ['Work orders: to buy list', 'Requisitions and work orders', 'portrait', false, null, true],
+  acc_iou_ledger: ['IOU ledger', 'Accounts', 'portrait', false, null, true],
+  acc_iou_person: ['IOU statement (one person)', 'Accounts', 'portrait', false, ['Prepared by', 'Received / acknowledged by', 'Approved by'], true],
+  acc_payments: ['Payments of the month', 'Accounts', 'portrait', false, ['Prepared by', 'Checked by', 'Approved by'], true],
+  acc_cheques: ['Cheque statement', 'Accounts', 'portrait', false, ['Prepared by', 'Checked by', 'Approved by'], true],
+  position: ['Creditors list (Position)', 'Accounts', 'portrait', false, null, true],
+  pnl: ['Profit & Loss', 'Accounts', 'landscape', false, null, true, 'Management only'],
+  ci: ['Commercial invoice', 'Commercial', 'portrait', false, null, false],
+  cb_report: ['Commercial board reports', 'Commercial', 'auto', true, null, true],
+  mat_status: ['Yarn / fabric & accessories status', 'Merchandising', 'landscape', false, null, true],
+  meeting: ['Weekly meeting report', 'Merchandising', 'landscape', false, null, true],
+  prod_status: ['Production status report', 'Merchandising', 'landscape', false, null, true],
+  tna: ['TNA and inventory sheets (one order)', 'Merchandising', 'portrait', false, null, true],
+  tna_bulk: ['Bulk TNA', 'Merchandising', 'landscape', false, null, true],
+  order_todo: ['Order to-do list', 'Merchandising', 'landscape', false, null, true],
+  costing: ['Costing sheet', 'Merchandising', 'portrait', false, null, true],
+  dash_export: ['Dashboard export', 'Other', 'landscape', false, null, true],
+  screen: ['Any other window (Ctrl+P)', 'Other', 'landscape', false, null, true]
+};
+var PE = { rows: null, ok: null, at: 0, _p: null, logos: null, group: null, _lp: null };
+function peMissing(e) { return !!e && (e.code === '42P01' || e.code === 'PGRST205' || /print_docs|print_logos|does not exist|schema cache/i.test(e.message || '')); }
+// the register (small; read after sign-in and again when older than 5 minutes)
+function peLoad(force) {
+  if (!force && PE.rows && Date.now() - PE.at < 300000) return Promise.resolve(PE.rows);
+  if (PE._p) return PE._p;
+  PE._p = (async function(){
+    try {
+      var r = await db.from('print_docs').select('*').order('sort', { ascending: true });
+      if (r.error) { if (peMissing(r.error)) PE.ok = false; else console.error('print register:', r.error); PE.rows = PE.rows || {}; }
+      else { PE.rows = {}; (r.data || []).forEach(function(x){ PE.rows[x.key] = x; }); PE.ok = (r.data || []).length > 0; } // no rows yet: the same as before the SQL
+      PE.at = Date.now();
+    } catch (e) { console.error('print register:', e); PE.rows = PE.rows || {}; }
+    finally { PE._p = null; }
+    return PE.rows;
+  })();
+  return PE._p;
+}
+// the logos: read once, the first time something is printed
+function peLoadLogos(force) {
+  if (!force && PE.logos) return Promise.resolve(PE.logos);
+  if (PE._lp) return PE._lp;
+  PE._lp = (async function(){
+    var logos = {}, group = '';
+    try {
+      var r = await db.from('print_logos').select('code,img');
+      if (!r.error) (r.data || []).forEach(function(x){ logos[x.code] = x.img; });
+      var g = await db.from('rq_settings').select('value').eq('key', 'group_logo').maybeSingle();
+      if (!g.error && g.data && g.data.value) group = g.data.value;
+    } catch (e) { console.error('print logos:', e); }
+    PE.logos = logos; PE.group = group; PE._lp = null;
+    return logos;
+  })();
+  return PE._lp;
+}
+function peReady() { return Promise.all([peLoad(), peLoadLogos()]); }
+function pePreload() { if (S.user) setTimeout(function(){ peLoad().catch(function(){}); }, 1500); }
+// one document's settings: the register's row, or the starting values
+function peDoc(key) {
+  var s = PE_START[key] || PE_START.screen, r = PE.rows && PE.rows[key];
+  if (!PE_START[key]) key = 'screen';
+  return {
+    key: key, name: r ? r.name : s[0], grp: r ? r.grp : s[1],
+    orientation: (r && r.orientation) || s[2], canAuto: r ? !!r.can_auto : s[3],
+    sigEdit: r ? !!r.sig_edit : !!s[4], sigs: r ? (r.sig_labels || null) : (s[4] ? s[4].slice() : null),
+    note: r ? String(r.footer_note || '') : (s[6] || ''), conf: r ? !!r.confidential : s[5]
+  };
+}
+function peCssStr(t) { return String(t == null ? '' : t).replace(/[\r\n\t]+/g, ' ').replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+function peFooter(d) {
+  var who = S.user ? S.user.name : '';
+  return 'Printed by ' + who + ' · ' + rqDateTime(new Date().toISOString()) + ' · Shahana One'
+    + (d.note ? ' · ' + d.note : '') + (d.conf ? ' · Confidential, internal use only' : '');
+}
+// the page rules every printed page follows (A4, the orientation, 0.5 inch margins, the footer)
+// html: the document, to keep its own named pages (e.g. landscape parts of a portrait document) on A4 too
+function pePageCss(d, html) {
+  html = String(html || '');
+  var orient = d.orientation;
+  if (orient === 'auto') orient = /@page\s*\{[^}]*landscape/i.test(html) ? 'landscape' : 'portrait';
+  if (orient !== 'landscape') orient = 'portrait';
+  var foot = 'font-size:7.5px;color:#8a867d;font-family:Arial,sans-serif';
+  var css = '@page{size:A4 ' + orient + ';margin:' + PE_MM + 'mm;'
+    + '@bottom-left{content:"' + peCssStr(peFooter(d)) + '";' + foot + '}'
+    + '@bottom-right{content:"Page " counter(page) " of " counter(pages);' + foot + '}}';
+  var seen = {}, re = /@page\s+([a-z][\w-]*)\s*\{([^}]*)\}/gi, m;
+  while ((m = re.exec(html))) {
+    if (seen[m[1]]) continue; seen[m[1]] = 1;
+    css += '@page ' + m[1] + '{size:A4 ' + (/landscape/i.test(m[2]) ? 'landscape' : 'portrait') + ';margin:' + PE_MM + 'mm}';
+  }
+  return { css: css, orient: orient };
+}
+var PE_BASE_CSS = 'img.pe-logo{display:block;object-fit:contain;object-position:left center;flex:none}.pe-hl{display:flex;align-items:center;gap:11px}.pe-hl>div{min-width:0}';
+// a document made for the preview: its own look, then the engine's page rules (last, so they win), logos filled in
+function peApply(key, html) {
+  var d = peDoc(key), pc = pePageCss(d, html);
+  html = String(html).replace(/<img([^>]*?)\sdata-pe-logo="([^"]*)"([^>]*)>/g, function(all, a, code, b){
+    var src = peLogoOf(code); return src ? '<img' + a + ' src="' + src + '" onerror="this.remove()"' + b + '>' : '';
+  });
+  html = html.replace(/<div class="sig" data-pe-sig="([^"]*)" data-pe-co="([^"]*)">(?:<template>([\s\S]*?)<\/template>)?<\/div>/g, function(all, k, code, extra){ return peSigFill(k, code, extra || ''); });
+  var tag = '<meta name="pe-doc" content="' + d.key + '"><style id="pe-css">' + PE_BASE_CSS + pc.css + '</style>';
+  return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, function(){ return tag + '</head>'; }) : tag + html;
+}
+// ─── the letterhead ───
+function peLogoOf(code) { return (code && PE.logos && PE.logos[code]) || PE.group || ''; }
+// a logo slot: filled in when the document is shown (left out when there is no logo).
+// peHl: the logo beside the heading block (no extra height; without a logo the heading is as before)
+function peLogoTag(code, cls, style) { return '<img class="pe-logo' + (cls ? ' ' + cls : '') + '" data-pe-logo="' + rqEsc(code || '') + '" alt=""' + (style ? ' style="' + style + '"' : '') + '>'; }
+function peHl(code, inner, h) { return '<div class="pe-hl">' + peLogoTag(code, '', 'height:' + (h || 12) + 'mm;max-width:' + Math.round((h || 12) * 3.6) + 'mm') + '<div>' + inner + '</div></div>'; }
+function peCoName(code) { return code ? companyName(code) : 'Shahana Group'; }
+function peCoAddr(code) { var c = code ? companyOf(code) : null; return c ? String(c.address || '').trim() : ''; }
+// ─── signature boxes ───
+function peSigLabels(key, code) {
+  var d = peDoc(key), cn = code ? companyName(code) : 'Shahana Group';
+  return (d.sigs || []).map(function(l){ return String(l).replace(/\{company\}/g, cn); });
+}
+// the plain row of boxes (accounts statements, budget plans): first = the person printing, with extra (e.g. a signature).
+// Written as a slot and filled in when the document is shown, so the register is always read first.
+function peSigRow(key, firstExtra, code) {
+  return '<div class="sig" data-pe-sig="' + rqEsc(key) + '" data-pe-co="' + rqEsc(code || '') + '">' + (firstExtra ? '<template>' + firstExtra + '</template>' : '') + '</div>';
+}
+function peSigFill(key, code, firstExtra) {
+  var ls = peSigLabels(key, code); if (!ls.length) return '';
+  return '<div class="sig">' + ls.map(function(l, i){ return '<div>' + rqEsc(l) + (i === 0 && firstExtra ? '<br>' + firstExtra : '') + '</div>'; }).join('') + '</div>';
+}
+// ─── the preview window: open a document ───
+// key: the document's row in the register. The page rules and footer are added; logos are read the first time.
+function peOpen(key, title, html) {
+  return peReady().catch(function(){}).then(function(){ openReportPreview(title, peApply(key, html), key); });
+}
+
+// ═══ DOWNLOAD PDF ═══
+var PE_PDF = { busy: false };
+// a file name every browser keeps: plain letters only (a dash for /, the middle dot and long dashes; other signs left out)
+function peFileName(t) {
+  var s = String(t || 'Document').replace(/\s*·\s*/g, ' - ').replace(/[‒-―]/g, '-').replace(/[‘’]/g, "'").replace(/:\s+/g, ' ').replace(/[\\\/:*?"<>|]+/g, '-')
+    .replace(/[^\x20-\x7e]+/g, ' ').replace(/\s+/g, ' ').replace(/^[\s.-]+|[\s.-]+$/g, '').slice(0, 120).trim();
+  return (s || 'Document') + '.pdf';
+}
+function peKb(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+function peB64(dataUrl) {
+  var b = atob(String(dataUrl).split(',')[1] || ''), a = new Uint8Array(b.length);
+  for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+  return a;
+}
+// one PDF from page pictures (JPEG): each page the size of the paper, the picture filling it
+function peMakePdf(pages, title) {
+  var enc = new TextEncoder(), parts = [], len = 0, offs = [];
+  function put(x) { var b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; }
+  function obj(n, body) { offs[n] = len; put(n + ' 0 obj\n'); body(); put('\nendobj\n'); }
+  var n = pages.length, info = 3 + n * 3;
+  put('%PDF-1.4\n%âãÏÓ\n');
+  obj(1, function(){ put('<< /Type /Catalog /Pages 2 0 R >>'); });
+  obj(2, function(){ put('<< /Type /Pages /Count ' + n + ' /Kids [' + pages.map(function(p, i){ return (3 + i * 3) + ' 0 R'; }).join(' ') + '] >>'); });
+  pages.forEach(function(p, i){
+    var po = 3 + i * 3, co = po + 1, io = po + 2, w = p.wpt.toFixed(2), h = p.hpt.toFixed(2);
+    obj(po, function(){ put('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + w + ' ' + h + '] /Resources << /XObject << /Im0 ' + io + ' 0 R >> >> /Contents ' + co + ' 0 R >>'); });
+    var cs = 'q ' + w + ' 0 0 ' + h + ' 0 0 cm /Im0 Do Q';
+    obj(co, function(){ put('<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream'); });
+    obj(io, function(){ put('<< /Type /XObject /Subtype /Image /Width ' + p.w + ' /Height ' + p.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + p.jpg.length + ' >>\nstream\n'); put(p.jpg); put('\nendstream'); });
+  });
+  var t = String(title || '').replace(/[^\x20-\x7e]/g, ' ').replace(/[\\()]/g, ' ');
+  obj(info, function(){ put('<< /Title (' + t + ') /Producer (Shahana One) >>'); });
+  var xref = len, size = info + 1, x = 'xref\n0 ' + size + '\n0000000000 65535 f \n';
+  for (var k = 1; k < size; k++) x += String(offs[k]).padStart(10, '0') + ' 00000 n \n';
+  put(x + 'trailer\n<< /Size ' + size + ' /Root 1 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+  return new Blob(parts, { type: 'application/pdf' });
+}
+// the laid-out pages of a preview document (.pp-page) -> pictures -> one PDF
+async function pePdfFromDoc(doc, title) {
+  var pages = doc ? doc.querySelectorAll('.pp-pages > .pp-page') : [];
+  if (!pages.length) throw new Error('the pages are not laid out');
+  var win = doc.defaultView;
+  if (!win.htmlToImage) { var sc = doc.createElement('script'); sc.textContent = PE_H2I_SRC; doc.head.appendChild(sc); }
+  if (!win.htmlToImage) throw new Error('the PDF maker did not load');
+  try { if (doc.fonts && doc.fonts.ready) await doc.fonts.ready; } catch (e) {}
+  var out = [];
+  for (var i = 0; i < pages.length; i++) {
+    var pg = pages[i], wmm = parseFloat(pg.style.width) || 210, hmm = pg.style.height === 'auto' ? pg.offsetHeight * 25.4 / 96 : (parseFloat(pg.style.height) || 297);
+    var c = await win.htmlToImage.toCanvas(pg, { pixelRatio: 2, backgroundColor: '#ffffff', skipFonts: true, style: { margin: '0', boxShadow: 'none' } });
+    out.push({ jpg: peB64(c.toDataURL('image/jpeg', 0.85)), w: c.width, h: c.height, wpt: wmm / 25.4 * 72, hpt: hmm / 25.4 * 72 });
+    c.width = c.height = 0;
+  }
+  return { blob: peMakePdf(out, title), n: out.length };
+}
+function peSave(blob, name) {
+  var a = document.createElement('a'), u = URL.createObjectURL(blob);
+  a.href = u; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 4000);
+}
+function peBtnBusy(btn, on, label) {
+  if (!btn) return;
+  if (on) { btn.dataset.peTxt = btn.innerHTML; btn.disabled = true; btn.textContent = 'Making PDF…'; }
+  else { btn.disabled = false; btn.innerHTML = btn.dataset.peTxt || label || '&#x2B07; Download PDF'; }
+}
+// the preview window's Download PDF button
+async function peDownloadPdf() {
+  if (PE_PDF.busy) return;
+  var f = $('rp-frame'); if (!f) return;
+  var btn = $('rp-pdf'); PE_PDF.busy = true; peBtnBusy(btn, true);
+  try {
+    await Promise.resolve(RPV.p);
+    var title = ($('rp-title') && $('rp-title').textContent) || 'Document', name = peFileName(title);
+    var r = await pePdfFromDoc(f.contentDocument, title);
+    peSave(r.blob, name);
+    PE_PDF.last = { name: name, pages: r.n, size: r.blob.size };
+    toast('PDF saved: ' + name + ' · ' + r.n + ' page' + (r.n === 1 ? '' : 's') + ' · ' + peKb(r.blob.size), 'ok-t');
+  } catch (e) {
+    console.error('download pdf:', e);
+    toast('The PDF could not be made here. Use Print and choose Save as PDF.', 'err');
+  } finally { PE_PDF.busy = false; peBtnBusy(btn, false); }
+}
+
+// ═══ WINDOWS THAT PRINT THEMSELVES (TNA, to-do, dashboard export ...) ═══
+var PE_OV = { 'ov-tna-print': 'tna', 'ov-bulk-tna-print': 'tna_bulk', 'ov-order-todo': 'order_todo', 'ov-dash-pdf': 'dash_export' };
+function peOvKey(id) { return PE_OV[id] || 'screen'; }
+// Print: the browser prints the window; the engine adds the page rules for its document
+function peOvPrintCss(id, on) {
+  var old = document.getElementById('pe-ov-print'); if (old) old.remove();
+  if (!on) return;
+  var d = peDoc(peOvKey(id)), st = document.createElement('style'); st.id = 'pe-ov-print';
+  st.textContent = '@media print{' + pePageCss(d, '@page tnasheet{size:A4 portrait}').css + '}';
+  document.head.appendChild(st);
+}
+// Download PDF: the window's content as its own document (the app's styles, with the print rules for that window),
+// laid out into pages exactly like the preview, then made into the PDF
+function peOvDoc(id) {
+  var ov = $(id), modal = ov && ov.querySelector('.modal'); if (!modal) return null;
+  var css = Array.prototype.map.call(document.querySelectorAll('head style'), function(s){ return s.id === 'pe-ov-print' ? '' : s.textContent; }).join('\n');
+  var extra = [];
+  Array.prototype.forEach.call(document.styleSheets, function(sh){
+    var rules; try { rules = sh.cssRules; } catch (e) { return; }
+    (function walk(list, inPrint){ for (var i = 0; i < list.length; i++) { var r = list[i];
+      if (r.type === 4) { walk(r.cssRules, inPrint || /\bprint\b/i.test(r.media.mediaText || '')); continue; }
+      if (!inPrint || r.type !== 1) continue;
+      var t = r.cssText; if (t.indexOf('.ov.printing') === -1 || t.indexOf('print-isolated') !== -1) continue;
+      extra.push(t.replace(/\.ov\.printing/g, '.pe-ov'));
+    } })(rules, false);
+  });
+  var d = peDoc(peOvKey(id)), pc = pePageCss(d, '@page tnasheet{size:A4 portrait}');
+  var clone = modal.cloneNode(true);
+  // what is typed in the window's boxes goes with it
+  var src = modal.querySelectorAll('input,textarea,select'), dst = clone.querySelectorAll('input,textarea,select');
+  for (var i = 0; i < src.length && i < dst.length; i++) {
+    if (src[i].tagName === 'TEXTAREA') dst[i].textContent = src[i].value;
+    else if (src[i].tagName === 'SELECT') Array.prototype.forEach.call(dst[i].options, function(o, k){ if (k === src[i].selectedIndex) o.setAttribute('selected', ''); else o.removeAttribute('selected'); });
+    else if (src[i].type === 'checkbox' || src[i].type === 'radio') { if (src[i].checked) dst[i].setAttribute('checked', ''); else dst[i].removeAttribute('checked'); }
+    else dst[i].setAttribute('value', src[i].value);
+  }
+  return '<!doctype html><html><head><meta charset="utf-8"><title>' + rqEsc(d.name) + '</title><style>' + css + '</style>'
+    + '<style>@media print{' + extra.join('\n') + '.pe-ov{display:block;background:#fff}}</style>'
+    + '<style id="pe-css">' + PE_BASE_CSS + pc.css + '</style></head><body><div class="pe-ov">' + clone.outerHTML + '</div></body></html>';
+}
+async function peOvPdf(id, btn) {
+  if (PE_PDF.busy) return;
+  var html = peOvDoc(id); if (!html) return;
+  PE_PDF.busy = true; peBtnBusy(btn, true);
+  var fr = document.createElement('iframe');
+  fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+  fr.style.cssText = 'position:fixed;left:-20000px;top:0;width:1400px;height:900px;border:0';
+  try {
+    await new Promise(function(res, rej){ fr.onload = res; fr.onerror = rej; fr.srcdoc = html; document.body.appendChild(fr); setTimeout(res, 8000); });
+    var n = await rpPaginate(fr.contentDocument);
+    if (!n) throw new Error('the pages could not be laid out');
+    var title = ((($(id).querySelector('h3') || {}).textContent) || peDoc(peOvKey(id)).name).replace(/\s*Print Preview\s*$/i, '').replace(/\s*Preview\s*$/i, '');
+    var sub = $(id).querySelector('.msub'), name = peFileName(title + (sub && sub.textContent && !/review before/i.test(sub.textContent) ? ' · ' + sub.textContent : ''));
+    var r = await pePdfFromDoc(fr.contentDocument, title);
+    peSave(r.blob, name);
+    PE_PDF.last = { name: name, pages: r.n, size: r.blob.size };
+    toast('PDF saved: ' + name + ' · ' + r.n + ' page' + (r.n === 1 ? '' : 's') + ' · ' + peKb(r.blob.size), 'ok-t');
+  } catch (e) {
+    console.error('download pdf:', e);
+    toast('The PDF could not be made here. Use Print and choose Save as PDF.', 'err');
+  } finally { fr.remove(); PE_PDF.busy = false; peBtnBusy(btn, false); }
+}
+// html-to-image 1.11.13 (MIT License, Copyright (c) 2017-2025 W.Y., https://github.com/bubkoo/html-to-image)
+// Kept as text: Download PDF runs it inside the print preview frame only. Made by tools/vendor_h2i.py.
+var PE_H2I_SRC = "!function(t,e){\"object\"==typeof exports&&\"undefined\"!=typeof module?e(exports):\"function\"==typeof define&&define.amd?define([\"exports\"],e):e((t=\"undefined\"!=typeof globalThis?globalThis:t||self).htmlToImage={})}(this,(function(t){\"use strict\";function e(t,e,n,r){return new(n||(n=Promise))((function(i,o){function u(t){try{a(r.next(t))}catch(t){o(t)}}function c(t){try{a(r.throw(t))}catch(t){o(t)}}function a(t){var e;t.done?i(t.value):(e=t.value,e instanceof n?e:new n((function(t){t(e)}))).then(u,c)}a((r=r.apply(t,e||[])).next())}))}function n(t,e){var n,r,i,o,u={label:0,sent:function(){if(1&i[0])throw i[1];return i[1]},trys:[],ops:[]};return o={next:c(0),throw:c(1),return:c(2)},\"function\"==typeof Symbol&&(o[Symbol.iterator]=function(){return this}),o;function c(c){return function(a){return function(c){if(n)throw new TypeError(\"Generator is already executing.\");for(;o&&(o=0,c[0]&&(u=0)),u;)try{if(n=1,r&&(i=2&c[0]?r.return:c[0]?r.throw||((i=r.return)&&i.call(r),0):r.next)&&!(i=i.call(r,c[1])).done)return i;switch(r=0,i&&(c=[2&c[0],i.value]),c[0]){case 0:case 1:i=c;break;case 4:return u.label++,{value:c[1],done:!1};case 5:u.label++,r=c[1],c=[0];continue;case 7:c=u.ops.pop(),u.trys.pop();continue;default:if(!(i=u.trys,(i=i.length>0&&i[i.length-1])||6!==c[0]&&2!==c[0])){u=0;continue}if(3===c[0]&&(!i||c[1]>i[0]&&c[1]<i[3])){u.label=c[1];break}if(6===c[0]&&u.label<i[1]){u.label=i[1],i=c;break}if(i&&u.label<i[2]){u.label=i[2],u.ops.push(c);break}i[2]&&u.ops.pop(),u.trys.pop();continue}c=e.call(t,u)}catch(t){c=[6,t],r=0}finally{n=i=0}if(5&c[0])throw c[1];return{value:c[0]?c[1]:void 0,done:!0}}([c,a])}}}var r,i=(r=0,function(){return r+=1,\"u\".concat(\"0000\".concat((Math.random()*Math.pow(36,4)<<0).toString(36)).slice(-4)).concat(r)});function o(t){for(var e=[],n=0,r=t.length;n<r;n++)e.push(t[n]);return e}var u=null;function c(t){return void 0===t&&(t={}),u||(u=t.includeStyleProperties?t.includeStyleProperties:o(window.getComputedStyle(document.documentElement)))}function a(t,e){var n=(t.ownerDocument.defaultView||window).getComputedStyle(t).getPropertyValue(e);return n?parseFloat(n.replace(\"px\",\"\")):0}function s(t,e){void 0===e&&(e={});var n,r,i,o=e.width||(r=a(n=t,\"border-left-width\"),i=a(n,\"border-right-width\"),n.clientWidth+r+i),u=e.height||function(t){var e=a(t,\"border-top-width\"),n=a(t,\"border-bottom-width\");return t.clientHeight+e+n}(t);return{width:o,height:u}}var l=16384;function f(t,e){return void 0===e&&(e={}),t.toBlob?new Promise((function(n){t.toBlob(n,e.type?e.type:\"image/png\",e.quality?e.quality:1)})):new Promise((function(n){for(var r=window.atob(t.toDataURL(e.type?e.type:void 0,e.quality?e.quality:void 0).split(\",\")[1]),i=r.length,o=new Uint8Array(i),u=0;u<i;u+=1)o[u]=r.charCodeAt(u);n(new Blob([o],{type:e.type?e.type:\"image/png\"}))}))}function h(t){return new Promise((function(e,n){var r=new Image;r.onload=function(){r.decode().then((function(){requestAnimationFrame((function(){return e(r)}))}))},r.onerror=n,r.crossOrigin=\"anonymous\",r.decoding=\"async\",r.src=t}))}function d(t){return e(this,void 0,void 0,(function(){return n(this,(function(e){return[2,Promise.resolve().then((function(){return(new XMLSerializer).serializeToString(t)})).then(encodeURIComponent).then((function(t){return\"data:image/svg+xml;charset=utf-8,\".concat(t)}))]}))}))}function v(t,r,i){return e(this,void 0,void 0,(function(){var e,o,u;return n(this,(function(n){return e=\"http://www.w3.org/2000/svg\",o=document.createElementNS(e,\"svg\"),u=document.createElementNS(e,\"foreignObject\"),o.setAttribute(\"width\",\"\".concat(r)),o.setAttribute(\"height\",\"\".concat(i)),o.setAttribute(\"viewBox\",\"0 0 \".concat(r,\" \").concat(i)),u.setAttribute(\"width\",\"100%\"),u.setAttribute(\"height\",\"100%\"),u.setAttribute(\"x\",\"0\"),u.setAttribute(\"y\",\"0\"),u.setAttribute(\"externalResourcesRequired\",\"true\"),o.appendChild(u),u.appendChild(t),[2,d(o)]}))}))}var p=function(t,e){if(t instanceof e)return!0;var n=Object.getPrototypeOf(t);return null!==n&&(n.constructor.name===e.name||p(n,e))};function g(t,e,n,r){var i=\".\".concat(t,\":\").concat(e),o=n.cssText?function(t){var e=t.getPropertyValue(\"content\");return\"\".concat(t.cssText,\" content: '\").concat(e.replace(/'|\"/g,\"\"),\"';\")}(n):function(t,e){return c(e).map((function(e){var n=t.getPropertyValue(e),r=t.getPropertyPriority(e);return\"\".concat(e,\": \").concat(n).concat(r?\" !important\":\"\",\";\")})).join(\" \")}(n,r);return document.createTextNode(\"\".concat(i,\"{\").concat(o,\"}\"))}function m(t,e,n,r){var o=window.getComputedStyle(t,n),u=o.getPropertyValue(\"content\");if(\"\"!==u&&\"none\"!==u){var c=i();try{e.className=\"\".concat(e.className,\" \").concat(c)}catch(t){return}var a=document.createElement(\"style\");a.appendChild(g(c,n,o,r)),e.appendChild(a)}}var w=\"application/font-woff\",y=\"image/jpeg\",b={woff:w,woff2:w,ttf:\"application/font-truetype\",eot:\"application/vnd.ms-fontobject\",png:\"image/png\",jpg:y,jpeg:y,gif:\"image/gif\",tiff:\"image/tiff\",svg:\"image/svg+xml\",webp:\"image/webp\"};function S(t){var e=function(t){var e=/\\.([^./]*?)$/g.exec(t);return e?e[1]:\"\"}(t).toLowerCase();return b[e]||\"\"}function E(t){return-1!==t.search(/^(data:)/)}function x(t,e){return\"data:\".concat(e,\";base64,\").concat(t)}function C(t,r,i){return e(this,void 0,void 0,(function(){var e,o;return n(this,(function(n){switch(n.label){case 0:return[4,fetch(t,r)];case 1:if(404===(e=n.sent()).status)throw new Error('Resource \"'.concat(e.url,'\" not found'));return[4,e.blob()];case 2:return o=n.sent(),[2,new Promise((function(t,n){var r=new FileReader;r.onerror=n,r.onloadend=function(){try{t(i({res:e,result:r.result}))}catch(t){n(t)}},r.readAsDataURL(o)}))]}}))}))}var P={};function R(t,r,i){return e(this,void 0,void 0,(function(){var e,o,u,c,a;return n(this,(function(n){switch(n.label){case 0:if(e=function(t,e,n){var r=t.replace(/\\?.*/,\"\");return n&&(r=t),/ttf|otf|eot|woff2?/i.test(r)&&(r=r.replace(/.*\\//,\"\")),e?\"[\".concat(e,\"]\").concat(r):r}(t,r,i.includeQueryParams),null!=P[e])return[2,P[e]];i.cacheBust&&(t+=(/\\?/.test(t)?\"&\":\"?\")+(new Date).getTime()),n.label=1;case 1:return n.trys.push([1,3,,4]),[4,C(t,i.fetchRequestInit,(function(t){var e=t.res,n=t.result;return r||(r=e.headers.get(\"Content-Type\")||\"\"),function(t){return t.split(/,/)[1]}(n)}))];case 2:return u=n.sent(),o=x(u,r),[3,4];case 3:return c=n.sent(),o=i.imagePlaceholder||\"\",a=\"Failed to fetch resource: \".concat(t),c&&(a=\"string\"==typeof c?c:c.message),a&&console.warn(a),[3,4];case 4:return P[e]=o,[2,o]}}))}))}function T(t){return e(this,void 0,void 0,(function(){var e;return n(this,(function(n){return\"data:,\"===(e=t.toDataURL())?[2,t.cloneNode(!1)]:[2,h(e)]}))}))}function A(t,r){return e(this,void 0,void 0,(function(){var e,i,o,u;return n(this,(function(n){switch(n.label){case 0:return t.currentSrc?(e=document.createElement(\"canvas\"),i=e.getContext(\"2d\"),e.width=t.clientWidth,e.height=t.clientHeight,null==i||i.drawImage(t,0,0,e.width,e.height),[2,h(e.toDataURL())]):(o=t.poster,u=S(o),[4,R(o,u,r)]);case 1:return[2,h(n.sent())]}}))}))}function k(t,r){var i;return e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:return e.trys.push([0,3,,4]),(null===(i=null==t?void 0:t.contentDocument)||void 0===i?void 0:i.body)?[4,I(t.contentDocument.body,r,!0)]:[3,2];case 1:return[2,e.sent()];case 2:return[3,4];case 3:return e.sent(),[3,4];case 4:return[2,t.cloneNode(!1)]}}))}))}var L=function(t){return null!=t.tagName&&\"SVG\"===t.tagName.toUpperCase()};function N(t,e,n){return p(e,Element)&&(function(t,e,n){var r=e.style;if(r){var i=window.getComputedStyle(t);i.cssText?(r.cssText=i.cssText,r.transformOrigin=i.transformOrigin):c(n).forEach((function(n){var o=i.getPropertyValue(n);p(t,HTMLIFrameElement)&&\"display\"===n&&\"inline\"===o&&(o=\"block\"),\"d\"===n&&e.getAttribute(\"d\")&&(o=\"path(\".concat(e.getAttribute(\"d\"),\")\")),r.setProperty(n,o,i.getPropertyPriority(n))}))}}(t,e,n),function(t,e,n){m(t,e,\":before\",n),m(t,e,\":after\",n)}(t,e,n),function(t,e){p(t,HTMLTextAreaElement)&&(e.innerHTML=t.value),p(t,HTMLInputElement)&&e.setAttribute(\"value\",t.value)}(t,e),function(t,e){if(p(t,HTMLSelectElement)){var n=e,r=Array.from(n.children).find((function(e){return t.value===e.getAttribute(\"value\")}));r&&r.setAttribute(\"selected\",\"\")}}(t,e)),e}function I(t,r,i){return e(this,void 0,void 0,(function(){return n(this,(function(u){return i||!r.filter||r.filter(t)?[2,Promise.resolve(t).then((function(t){return function(t,r){return e(this,void 0,void 0,(function(){return n(this,(function(e){return p(t,HTMLCanvasElement)?[2,T(t)]:p(t,HTMLVideoElement)?[2,A(t,r)]:p(t,HTMLIFrameElement)?[2,k(t,r)]:[2,t.cloneNode(L(t))]}))}))}(t,r)})).then((function(i){return function(t,r,i){var u,c;return e(this,void 0,void 0,(function(){var e;return n(this,(function(n){switch(n.label){case 0:return L(r)?[2,r]:(e=[],0===(e=null!=(a=t).tagName&&\"SLOT\"===a.tagName.toUpperCase()&&t.assignedNodes?o(t.assignedNodes()):p(t,HTMLIFrameElement)&&(null===(u=t.contentDocument)||void 0===u?void 0:u.body)?o(t.contentDocument.body.childNodes):o((null!==(c=t.shadowRoot)&&void 0!==c?c:t).childNodes)).length||p(t,HTMLVideoElement)?[2,r]:[4,e.reduce((function(t,e){return t.then((function(){return I(e,i)})).then((function(t){t&&r.appendChild(t)}))}),Promise.resolve())]);case 1:return n.sent(),[2,r]}var a}))}))}(t,i,r)})).then((function(e){return N(t,e,r)})).then((function(t){return function(t,r){return e(this,void 0,void 0,(function(){var e,i,o,u,c,a,s,l,f,h,d,v,p;return n(this,(function(n){switch(n.label){case 0:if(0===(e=t.querySelectorAll?t.querySelectorAll(\"use\"):[]).length)return[2,t];i={},p=0,n.label=1;case 1:return p<e.length?(o=e[p],(u=o.getAttribute(\"xlink:href\"))?(c=t.querySelector(u),a=document.querySelector(u),c||!a||i[u]?[3,3]:(s=i,l=u,[4,I(a,r,!0)])):[3,3]):[3,4];case 2:s[l]=n.sent(),n.label=3;case 3:return p++,[3,1];case 4:if((f=Object.values(i)).length){for(h=\"http://www.w3.org/1999/xhtml\",(d=document.createElementNS(h,\"svg\")).setAttribute(\"xmlns\",h),d.style.position=\"absolute\",d.style.width=\"0\",d.style.height=\"0\",d.style.overflow=\"hidden\",d.style.display=\"none\",v=document.createElementNS(h,\"defs\"),d.appendChild(v),p=0;p<f.length;p++)v.appendChild(f[p]);t.appendChild(d)}return[2,t]}}))}))}(t,r)}))]:[2,null]}))}))}var D=/url\\((['\"]?)([^'\"]+?)\\1\\)/g,H=/url\\([^)]+\\)\\s*format\\(([\"']?)([^\"']+)\\1\\)/g,M=/src:\\s*(?:url\\([^)]+\\)\\s*format\\([^)]+\\)[,;]\\s*)+/g;function F(t,r,i,o,u){return e(this,void 0,void 0,(function(){var e,c,a,s;return n(this,(function(n){switch(n.label){case 0:return n.trys.push([0,5,,6]),e=i?function(t,e){if(t.match(/^[a-z]+:\\/\\//i))return t;if(t.match(/^\\/\\//))return window.location.protocol+t;if(t.match(/^[a-z]+:/i))return t;var n=document.implementation.createHTMLDocument(),r=n.createElement(\"base\"),i=n.createElement(\"a\");return n.head.appendChild(r),n.body.appendChild(i),e&&(r.href=e),i.href=t,i.href}(r,i):r,c=S(r),a=void 0,u?[4,u(e)]:[3,2];case 1:return s=n.sent(),a=x(s,c),[3,4];case 2:return[4,R(e,c,o)];case 3:a=n.sent(),n.label=4;case 4:return[2,t.replace((l=r,f=l.replace(/([.*+?^${}()|\\[\\]\\/\\\\])/g,\"\\\\$1\"),new RegExp(\"(url\\\\(['\\\"]?)(\".concat(f,\")(['\\\"]?\\\\))\"),\"g\")),\"$1\".concat(a,\"$3\"))];case 5:return n.sent(),[3,6];case 6:return[2,t]}var l,f}))}))}function V(t){return-1!==t.search(D)}function q(t,r,i){return e(this,void 0,void 0,(function(){var e,o;return n(this,(function(n){return V(t)?(e=function(t,e){var n=e.preferredFontFormat;return n?t.replace(M,(function(t){for(;;){var e=H.exec(t)||[],r=e[0],i=e[2];if(!i)return\"\";if(i===n)return\"src: \".concat(r,\";\")}})):t}(t,i),o=function(t){var e=[];return t.replace(D,(function(t,n,r){return e.push(r),t})),e.filter((function(t){return!E(t)}))}(e),[2,o.reduce((function(t,e){return t.then((function(t){return F(t,e,r,i)}))}),Promise.resolve(e))]):[2,t]}))}))}function U(t,r,i){var o;return e(this,void 0,void 0,(function(){var e,u;return n(this,(function(n){switch(n.label){case 0:return(e=null===(o=r.style)||void 0===o?void 0:o.getPropertyValue(t))?[4,q(e,null,i)]:[3,2];case 1:return u=n.sent(),r.style.setProperty(t,u,r.style.getPropertyPriority(t)),[2,!0];case 2:return[2,!1]}}))}))}function j(t,r){return e(this,void 0,void 0,(function(){var e,i;return n(this,(function(n){switch(n.label){case 0:return[4,U(\"background\",t,r)];case 1:return n.sent()?[3,3]:[4,U(\"background-image\",t,r)];case 2:n.sent(),n.label=3;case 3:return[4,U(\"mask\",t,r)];case 4:return(i=n.sent())?[3,6]:[4,U(\"-webkit-mask\",t,r)];case 5:i=n.sent(),n.label=6;case 6:return(e=i)?[3,8]:[4,U(\"mask-image\",t,r)];case 7:e=n.sent(),n.label=8;case 8:return e?[3,10]:[4,U(\"-webkit-mask-image\",t,r)];case 9:n.sent(),n.label=10;case 10:return[2]}}))}))}function O(t,r){return e(this,void 0,void 0,(function(){var e,i,o;return n(this,(function(n){switch(n.label){case 0:return(e=p(t,HTMLImageElement))&&!E(t.src)||p(t,SVGImageElement)&&!E(t.href.baseVal)?[4,R(i=e?t.src:t.href.baseVal,S(i),r)]:[2];case 1:return o=n.sent(),[4,new Promise((function(n,i){t.onload=n,t.onerror=r.onImageErrorHandler?function(){for(var t=[],e=0;e<arguments.length;e++)t[e]=arguments[e];try{n(r.onImageErrorHandler.apply(r,t))}catch(t){i(t)}}:i;var u=t;u.decode&&(u.decode=n),\"lazy\"===u.loading&&(u.loading=\"eager\"),e?(t.srcset=\"\",t.src=o):t.href.baseVal=o}))];case 2:return n.sent(),[2]}}))}))}function B(t,r){return e(this,void 0,void 0,(function(){var e,i;return n(this,(function(n){switch(n.label){case 0:return e=o(t.childNodes),i=e.map((function(t){return z(t,r)})),[4,Promise.all(i).then((function(){return t}))];case 1:return n.sent(),[2]}}))}))}function z(t,r){return e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:return p(t,Element)?[4,j(t,r)]:[3,4];case 1:return e.sent(),[4,O(t,r)];case 2:return e.sent(),[4,B(t,r)];case 3:e.sent(),e.label=4;case 4:return[2]}}))}))}var W={};function $(t){return e(this,void 0,void 0,(function(){var e,r;return n(this,(function(n){switch(n.label){case 0:return null!=(e=W[t])?[2,e]:[4,fetch(t)];case 1:return[4,n.sent().text()];case 2:return r=n.sent(),e={url:t,cssText:r},W[t]=e,[2,e]}}))}))}function G(t,r){return e(this,void 0,void 0,(function(){var i,o,u,c,a=this;return n(this,(function(s){return i=t.cssText,o=/url\\([\"']?([^\"')]+)[\"']?\\)/g,u=i.match(/url\\([^)]+\\)/g)||[],c=u.map((function(u){return e(a,void 0,void 0,(function(){var e;return n(this,(function(n){return(e=u.replace(o,\"$1\")).startsWith(\"https://\")||(e=new URL(e,t.url).href),[2,C(e,r.fetchRequestInit,(function(t){var e=t.result;return i=i.replace(u,\"url(\".concat(e,\")\")),[u,e]}))]}))}))})),[2,Promise.all(c).then((function(){return i}))]}))}))}function _(t){if(null==t)return[];for(var e=[],n=t.replace(/(\\/\\*[\\s\\S]*?\\*\\/)/gi,\"\"),r=new RegExp(\"((@.*?keyframes [\\\\s\\\\S]*?){([\\\\s\\\\S]*?}\\\\s*?)})\",\"gi\");;){if(null===(u=r.exec(n)))break;e.push(u[0])}n=n.replace(r,\"\");for(var i=/@import[\\s\\S]*?url\\([^)]*\\)[\\s\\S]*?;/gi,o=new RegExp(\"((\\\\s*?(?:\\\\/\\\\*[\\\\s\\\\S]*?\\\\*\\\\/)?\\\\s*?@media[\\\\s\\\\S]*?){([\\\\s\\\\S]*?)}\\\\s*?})|(([\\\\s\\\\S]*?){([\\\\s\\\\S]*?)})\",\"gi\");;){var u;if(null===(u=i.exec(n))){if(null===(u=o.exec(n)))break;i.lastIndex=o.lastIndex}else o.lastIndex=i.lastIndex;e.push(u[0])}return e}function J(t,r){return e(this,void 0,void 0,(function(){var e,i;return n(this,(function(n){return e=[],i=[],t.forEach((function(e){if(\"cssRules\"in e)try{o(e.cssRules||[]).forEach((function(t,n){if(t.type===CSSRule.IMPORT_RULE){var o=n+1,u=$(t.href).then((function(t){return G(t,r)})).then((function(t){return _(t).forEach((function(t){try{e.insertRule(t,t.startsWith(\"@import\")?o+=1:e.cssRules.length)}catch(e){console.error(\"Error inserting rule from remote css\",{rule:t,error:e})}}))})).catch((function(t){console.error(\"Error loading remote css\",t.toString())}));i.push(u)}}))}catch(o){var n=t.find((function(t){return null==t.href}))||document.styleSheets[0];null!=e.href&&i.push($(e.href).then((function(t){return G(t,r)})).then((function(t){return _(t).forEach((function(t){n.insertRule(t,n.cssRules.length)}))})).catch((function(t){console.error(\"Error loading remote stylesheet\",t)}))),console.error(\"Error inlining remote css file\",o)}})),[2,Promise.all(i).then((function(){return t.forEach((function(t){if(\"cssRules\"in t)try{o(t.cssRules||[]).forEach((function(t){e.push(t)}))}catch(e){console.error(\"Error while reading CSS rules from \".concat(t.href),e)}})),e}))]}))}))}function Q(t){return t.filter((function(t){return t.type===CSSRule.FONT_FACE_RULE})).filter((function(t){return V(t.style.getPropertyValue(\"src\"))}))}function X(t,r){return e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:if(null==t.ownerDocument)throw new Error(\"Provided element is not within a Document\");return[4,J(o(t.ownerDocument.styleSheets),r)];case 1:return[2,Q(e.sent())]}}))}))}function K(t){return t.trim().replace(/[\"']/g,\"\")}function Y(t,r){return e(this,void 0,void 0,(function(){var e,i;return n(this,(function(n){switch(n.label){case 0:return[4,X(t,r)];case 1:return e=n.sent(),i=function(t){var e=new Set;return function t(n){(n.style.fontFamily||getComputedStyle(n).fontFamily).split(\",\").forEach((function(t){e.add(K(t))})),Array.from(n.children).forEach((function(e){e instanceof HTMLElement&&t(e)}))}(t),e}(t),[4,Promise.all(e.filter((function(t){return i.has(K(t.style.fontFamily))})).map((function(t){var e=t.parentStyleSheet?t.parentStyleSheet.href:null;return q(t.cssText,e,r)})))];case 2:return[2,n.sent().join(\"\\n\")]}}))}))}function Z(t,r){return e(this,void 0,void 0,(function(){var e,i,o,u,c;return n(this,(function(n){switch(n.label){case 0:return null==r.fontEmbedCSS?[3,1]:(i=r.fontEmbedCSS,[3,5]);case 1:return r.skipFonts?(o=null,[3,4]):[3,2];case 2:return[4,Y(t,r)];case 3:o=n.sent(),n.label=4;case 4:i=o,n.label=5;case 5:return(e=i)&&(u=document.createElement(\"style\"),c=document.createTextNode(e),u.appendChild(c),t.firstChild?t.insertBefore(u,t.firstChild):t.appendChild(u)),[2]}}))}))}function tt(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){var e,i,o,u;return n(this,(function(n){switch(n.label){case 0:return e=s(t,r),i=e.width,o=e.height,[4,I(t,r,!0)];case 1:return[4,Z(u=n.sent(),r)];case 2:return n.sent(),[4,z(u,r)];case 3:return n.sent(),function(t,e){var n=t.style;e.backgroundColor&&(n.backgroundColor=e.backgroundColor),e.width&&(n.width=\"\".concat(e.width,\"px\")),e.height&&(n.height=\"\".concat(e.height,\"px\"));var r=e.style;null!=r&&Object.keys(r).forEach((function(t){n[t]=r[t]}))}(u,r),[4,v(u,i,o)];case 4:return[2,n.sent()]}}))}))}function et(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){var e,i,o,u,c,a,f,d,v;return n(this,(function(n){switch(n.label){case 0:return e=s(t,r),i=e.width,o=e.height,[4,tt(t,r)];case 1:return[4,h(n.sent())];case 2:return u=n.sent(),c=document.createElement(\"canvas\"),a=c.getContext(\"2d\"),f=r.pixelRatio||function(){var t,e;try{e=process}catch(t){}var n=e&&e.env?e.env.devicePixelRatio:null;return n&&(t=parseInt(n,10),Number.isNaN(t)&&(t=1)),t||window.devicePixelRatio||1}(),d=r.canvasWidth||i,v=r.canvasHeight||o,c.width=d*f,c.height=v*f,r.skipAutoScale||function(t){(t.width>l||t.height>l)&&(t.width>l&&t.height>l?t.width>t.height?(t.height*=l/t.width,t.width=l):(t.width*=l/t.height,t.height=l):t.width>l?(t.height*=l/t.width,t.width=l):(t.width*=l/t.height,t.height=l))}(c),c.style.width=\"\".concat(d),c.style.height=\"\".concat(v),r.backgroundColor&&(a.fillStyle=r.backgroundColor,a.fillRect(0,0,c.width,c.height)),a.drawImage(u,0,0,c.width,c.height),[2,c]}}))}))}t.getFontEmbedCSS=function(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){return n(this,(function(e){return[2,Y(t,r)]}))}))},t.toBlob=function(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:return[4,et(t,r)];case 1:return[4,f(e.sent())];case 2:return[2,e.sent()]}}))}))},t.toCanvas=et,t.toJpeg=function(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:return[4,et(t,r)];case 1:return[2,e.sent().toDataURL(\"image/jpeg\",r.quality||1)]}}))}))},t.toPixelData=function(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){var e,i,o,u;return n(this,(function(n){switch(n.label){case 0:return e=s(t,r),i=e.width,o=e.height,[4,et(t,r)];case 1:return u=n.sent(),[2,u.getContext(\"2d\").getImageData(0,0,i,o).data]}}))}))},t.toPng=function(t,r){return void 0===r&&(r={}),e(this,void 0,void 0,(function(){return n(this,(function(e){switch(e.label){case 0:return[4,et(t,r)];case 1:return[2,e.sent().toDataURL()]}}))}))},t.toSvg=tt}));\n\n";
+// ─── ADMIN -> PRINTING (Wave 16) ───
+// The register of documents: paper (portrait / landscape), signature boxes, footer note, confidential.
+// The group logo (the same picture as Admin -> Requisitions) and, in Admin -> Companies, each company's logo.
+var PE_ORIENT_TXT = { portrait: 'A4 portrait', landscape: 'A4 landscape', auto: 'A4, chosen when printing' };
+async function peRenderAdmin() {
+  var box = $('admin-print-body'); if (!box || !S.user || S.user.role !== 'admin') return;
+  await Promise.all([peLoad(true), peLoadLogos(true)]);
+  var E = rqEsc, grps = [];
+  Object.keys(PE_START).forEach(function(k){ var g = peDoc(k).grp; if (grps.indexOf(g) === -1) grps.push(g); });
+  var keys = Object.keys(PE_START).sort(function(a, b){
+    var ra = PE.rows && PE.rows[a], rb = PE.rows && PE.rows[b];
+    return (ra ? ra.sort : 0) - (rb ? rb.sort : 0) || Object.keys(PE_START).indexOf(a) - Object.keys(PE_START).indexOf(b);
+  });
+  var on = PE.ok === true;
+  var h = '<div style="padding:4px 16px 16px">'
+    + (on ? '' : '<div class="adm-sub" style="margin:8px 0 10px">Run <b>shahana-one-v31-wave16-print.sql</b> to change these here. Until then every document prints with the settings below.</div>')
+    + '<div class="pe-rule">Every document prints on <b>A4</b> with <b>0.5 inch margins</b> on all sides, page breaks between rows (never through one), and this footer: <span class="pe-foot">' + E(peFooter({ note: '', conf: false })) + '</span> and <b>Page x of y</b>.</div>'
+    + '<div class="pe-logo-row"><div><div class="adm-lbl">Group logo</div><div class="sub2">Printed at the top of every document that is not one company&rsquo;s, and for a company with no logo of its own. The same picture as Admin &rarr; Requisitions.</div></div>'
+    + '<div class="pe-logo-box">' + (PE.group ? '<img src="' + PE.group + '" alt="">' : '<span class="sub2">None yet</span>') + '</div>'
+    + '<div><label class="btn sm">' + (PE.group ? 'Upload new picture' : 'Upload picture') + '<input type="file" accept="image/png,image/jpeg" style="display:none" onchange="pePickLogo(\'\',this)"></label>'
+    + (PE.group ? ' <button class="btn sm danger" onclick="peClearLogo(\'\')">Remove</button>' : '') + '</div></div>';
+  grps.forEach(function(g){
+    var ks = keys.filter(function(k){ return peDoc(k).grp === g; }); if (!ks.length) return;
+    h += '<div class="ntr-mod">' + E(g) + '</div><table class="ntr-t pe-t"><colgroup><col style="width:31%"><col style="width:17%"><col><col style="width:84px"></colgroup>'
+      + '<thead><tr><th>Document</th><th>Paper</th><th>Signature boxes &middot; footer</th><th></th></tr></thead><tbody>'
+      + ks.map(function(k){
+          var d = peDoc(k);
+          var sig = d.sigEdit ? (d.sigs && d.sigs.length ? d.sigs.map(function(x){ return '<span class="pe-chip">' + E(x) + '</span>'; }).join(' ') : '<span class="sub2">No signature boxes</span>') : '<span class="sub2">Set by the document</span>';
+          var ft = [d.note ? E(d.note) : '', d.conf ? 'Confidential, internal use only' : ''].filter(Boolean).join(' &middot; ');
+          return '<tr><td><b>' + E(d.name) + '</b></td><td>' + E(PE_ORIENT_TXT[d.orientation] || d.orientation) + '</td><td>' + sig + (ft ? '<div class="sub2" style="margin-top:3px">Footer: ' + ft + '</div>' : '') + '</td>'
+            + '<td>' + (on ? '<button class="btn sm" onclick="peEdit(\'' + jsAttrEsc(k) + '\')">Change</button>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table>';
+  });
+  box.innerHTML = h + '</div>';
+}
+function peEdit(key) {
+  var d = peDoc(key), E = rqEsc; PE.edit = key;
+  var opts = ['portrait', 'landscape'].concat(d.canAuto ? ['auto'] : []);
+  var sigs = d.sigs || [], inputs = '';
+  for (var i = 0; i < 6; i++) inputs += '<input class="pe-sig-in" maxlength="60" value="' + E(sigs[i] || '') + '" placeholder="' + (i ? 'Box ' + (i + 1) + ' (leave empty for none)' : 'Box 1') + '" oninput="pePreviewEdit()">';
+  accForm({ title: 'Printing: ' + E(d.name), sub: 'A4 with 0.5 inch margins on all sides, for every document. Changes apply to the next print.', wide: true,
+    body: '<div class="f"><label>Paper</label><div class="pe-or">' + opts.map(function(o){ return '<label class="ntr-ck"><input type="radio" name="pe-or" value="' + o + '"' + (d.orientation === o ? ' checked' : '') + '> ' + E(PE_ORIENT_TXT[o]) + '</label>'; }).join('') + '</div></div>'
+      + (d.sigEdit ? '<div class="f"><label>Signature boxes, left to right</label><div class="pe-sigs">' + inputs + '</div><div class="sub2" style="margin-top:4px">{company} is replaced by the company&rsquo;s name. Empty boxes are left out; leave all empty for no signature boxes.' + (key === 'wo' ? ' The last box carries the signature of the person who made the work order.' : '') + '</div></div>'
+                   : '<div class="f"><label>Signature boxes</label><div class="sub2">Set by the document itself (' + (key === 'rq_form' ? 'the approval boxes: prepared by, department in-charge, HOD, CAO, Audit, Management' : 'none') + ').</div></div>')
+      + '<div class="f"><label>Extra words in the footer (optional)</label><input id="pe-note" maxlength="120" value="' + E(d.note) + '" oninput="pePreviewEdit()" placeholder="e.g. Management only"></div>'
+      + '<label class="ntr-ck" style="margin:6px 0 10px"><input type="checkbox" id="pe-conf"' + (d.conf ? ' checked' : '') + ' onchange="pePreviewEdit()"> Mark <b>Confidential, internal use only</b> (internal reports; not for documents that go out)</label>'
+      + '<div class="adm-lbl">The footer will read</div><div class="pe-prev" id="pe-prev"></div>',
+    ok: 'Save', after: function(){ pePreviewEdit(); }, onOk: peSaveEdit });
+}
+function pePreviewEdit() {
+  var el = $('pe-prev'); if (!el) return;
+  el.innerHTML = '<span>' + rqEsc(peFooter({ note: ($('pe-note') || {}).value ? $('pe-note').value.trim() : '', conf: !!($('pe-conf') && $('pe-conf').checked) })) + '</span><span>Page 1 of 2</span>';
+}
+async function peSaveEdit() {
+  var key = PE.edit, d = peDoc(key); if (!key) return 'Nothing to save.';
+  var or = document.querySelector('input[name="pe-or"]:checked'); if (!or) return 'Choose the paper.';
+  var up = { orientation: or.value, footer_note: $('pe-note').value.trim(), confidential: !!$('pe-conf').checked, updated_at: new Date().toISOString(), updated_by: S.user.name };
+  if (d.sigEdit) up.sig_labels = [].slice.call(document.querySelectorAll('.pe-sig-in')).map(function(i){ return i.value.trim(); }).filter(Boolean);
+  var r = await db.from('print_docs').update(up).eq('key', key).select();
+  if (r.error) return 'Could not save: ' + (r.error.message || r.error);
+  if (!r.data || !r.data.length) return 'Only Admin can change it.';
+  PE.rows = PE.rows || {}; PE.rows[key] = r.data[0]; PE.edit = null;
+  toast('Saved: ' + r.data[0].name, 'ok-t');
+  setTimeout(peRenderAdmin, 0);
+  return true;
+}
+// ─── logos ───
+// a picture made small enough to keep (max 600 px across), as PNG (keeps a see-through background)
+function peLogoData(file) {
+  return new Promise(function(res, rej){
+    if (!file || !/^image\/(png|jpeg)$/.test(file.type)) { rej(new Error('Choose a PNG or JPEG picture')); return; }
+    var rd = new FileReader();
+    rd.onerror = function(){ rej(new Error('That picture could not be read')); };
+    rd.onload = function(){
+      var im = new Image();
+      im.onerror = function(){ rej(new Error('That picture could not be read')); };
+      im.onload = function(){
+        var sc = Math.min(1, 600 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        var url = c.toDataURL('image/png');
+        if (url.length > 380000) url = (function(){ var j = document.createElement('canvas'); j.width = c.width; j.height = c.height; var x = j.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, j.width, j.height); x.drawImage(c, 0, 0); return j.toDataURL('image/jpeg', 0.9); })();
+        if (url.length > 380000) { rej(new Error('That picture is too big even when made smaller')); return; }
+        res(url);
+      };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+// code '' = the group logo (kept with the requisition settings, as before); a company code = that company's logo
+async function pePickLogo(code, input) {
+  if (S.user.role !== 'admin') return;
+  var file = input.files && input.files[0]; input.value = ''; if (!file) return;
+  var url; try { url = await peLogoData(file); } catch (e) { toast(e.message, 'err'); return; }
+  var ok = await peSaveLogo(code, url);
+  if (ok) toast((code ? companyName(code) : 'Group') + ' logo saved', 'ok-t');
+}
+async function peClearLogo(code) {
+  if (S.user.role !== 'admin') return;
+  if (!(await appConfirm('Remove the ' + (code ? companyName(code) + ' ' : 'group ') + 'logo? Documents will print without it' + (code ? ' (or with the group logo)' : '') + '.', { title: 'Remove logo', okText: 'Remove', danger: true }))) return;
+  if (await peSaveLogo(code, null)) toast('Logo removed', 'ok-t');
+}
+async function peSaveLogo(code, url) {
+  if (!code) {
+    if (!(await rqSetSetting('group_logo', url))) return false;
+    PE.group = url || '';
+  } else {
+    var r = url ? await db.from('print_logos').upsert({ code: code, img: url, updated_at: new Date().toISOString(), updated_by: S.user.name }, { onConflict: 'code' }).select('code')
+                : await db.from('print_logos').delete().eq('code', code).select('code');
+    if (r.error) { showSaveError('Logo NOT saved.\n\nDatabase said:\n' + r.error.message); return false; }
+    if (url && (!r.data || !r.data.length)) { showSaveError('Logo NOT saved: only Admin can change it.'); return false; }
+    PE.logos = PE.logos || {}; if (url) PE.logos[code] = url; else delete PE.logos[code];
+  }
+  if ($('admin-print-body')) peRenderAdmin();
+  if ($('admin-company-body')) renderCompaniesCard();
+  if ($('admin-rq-body') && typeof rqRenderAdminCard === 'function') rqRenderAdminCard();
+  return true;
+}
+// the logo part of a company's details (Admin -> Companies), once the print register is in the database
+function peCoLogoHtml(c) {
+  if (PE.ok !== true || !c || !c.code) return '';
+  var img = PE.logos && PE.logos[c.code], code = htmlEsc(c.code);
+  return '<div class="f" style="grid-column:1/-1"><label>Logo (printed at the top of ' + htmlEsc(c.code) + '&rsquo;s documents; without one the group logo is used)</label><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+    + (img ? '<img src="' + img + '" alt="" style="max-height:56px;max-width:220px;border:1px solid var(--line);border-radius:6px;padding:4px;background:#fff"><button class="btn sm" onclick="peClearLogo(\'' + code + '\')">Remove</button>' : '<span class="sub2">None yet</span>')
+    + '<label class="btn sm">' + (img ? 'Upload new picture' : 'Upload picture') + '<input type="file" accept="image/png,image/jpeg" style="display:none" onchange="pePickLogo(\'' + code + '\',this)"></label></div></div>';
 }
 // Orders: new / edit order, several POs at once, countries, terms, notes, ship, order checklist, order detail, attachments
 // Knit merchants: Gauge becomes "Type of Fabric" (free text with suggestions,
@@ -9685,11 +10140,11 @@ function downloadPDF() {
     + 'tr.sub td{font-weight:700;background:#FBFAF6;border-top:1.5px solid #E5E2D9}'
     + 'table.grand{margin-top:14px}tr.tot td{font-weight:800;background:#F1EDE3;border-top:2px solid #191817;border-bottom:2px solid #191817}'
     + '.footer{margin-top:20px;font-size:10px;color:#A0A09A;border-top:1px solid #E5E2D9;padding-top:10px;display:flex;justify-content:space-between}'
-    + '@media print{body{padding:0}@page{margin:1.2cm;size:A3 landscape}}'
+    + '@media print{body{padding:0}@page{margin:1.2cm;size:A4 landscape}table{font-size:8.6px}th{font-size:7.2px;padding:4px 3px}td{padding:4px 4px}.kpi{padding:6px 10px}.kpi .v{font-size:16px}h1{font-size:19px}}'
     + printFrameCss('h1{padding-top:4mm}.footer{margin-bottom:3mm}')
     + '</style></head><body><div class="frame"></div>'
-    + '<h1>Production Status Report</h1>'
-    + '<div class="meta">Shahana Group &nbsp;·&nbsp; ' + E(merch?merch.name:'') + ' &nbsp;·&nbsp; ' + E(buyerLabel) + ' &nbsp;·&nbsp; ' + dateStr + '</div>'
+    + peHl('', '<h1>Production Status Report</h1>'
+    + '<div class="meta">Shahana Group &nbsp;·&nbsp; ' + E(merch?merch.name:'') + ' &nbsp;·&nbsp; ' + E(buyerLabel) + ' &nbsp;·&nbsp; ' + dateStr + '</div>', 13)
     + '<div class="kpis">'
     + '<div class="kpi"><div class="k">Orders</div><div class="v">' + orders.length + '</div></div>'
     + '<div class="kpi"><div class="k">Buyers</div><div class="v">' + groups.length + '</div></div>'
@@ -9698,14 +10153,13 @@ function downloadPDF() {
     + '<div class="kpi"><div class="k">Value</div><div class="v">' + money(totVal) + '</div></div>'
     + '</div>'
     + (orders.length ? sections + grand : '<p style="color:#73706A;padding:30px 0">No live orders.</p>')
-    + '<div class="footer"><span>Shahana One · Shahana Group</span><span>Confidential — Internal use only</span></div>'
     + '</body></html>';
 
   // Shown inside the app, not in a separate pop-up window (which browsers
   // block by default). Its own A3-landscape print styles still apply, since
   // the report prints from its own frame.
   closeModal('ov-print');
-  openReportPreview('Production Status Report', html);
+  peOpen('prod_status', 'Production Status Report', html);
 }
 
 
@@ -11265,7 +11719,7 @@ function costApi(win) {
         (r.data || []).forEach(function(row){ var it = part.find(function(x){ return x.path === row.id; }); if (it && row.pic) { it.data.pic = row.pic; it.picFull = true; } });
       }
     },
-    pdf: async function(html, name){ openReportPreview(name || 'Costing', html); return 'print'; },
+    pdf: async function(html, name){ await peOpen('costing', name || 'Costing', html); return 'print'; },
     chooseFolder: async function(){ return null; }, openFolder: async function(){ return null; }
   };
 }
@@ -17352,6 +17806,7 @@ function renderAdminPage() {
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Departments</h3><div class="adm-sub">Departments, their heads and people, and which of them use requisitions</div></div></div><div id="admin-dept-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Requisition types</h3><div class="adm-sub">The types people pick when they raise a requisition, and what happens to each after approval</div></div></div><div id="admin-rqtypes-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Notifications</h3><div class="adm-sub">Who is told what (the bell): switch each one on or off, choose the people, change the words</div></div></div><div id="admin-ntr-body"></div></div>'
+  + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Printing</h3><div class="adm-sub">Every document on A4 with 0.5 inch margins: portrait or landscape, signature boxes, footer and logo for each</div></div></div><div id="admin-print-body"></div></div>'
   + '<div class="adm-card"><div class="adm-card-head"><div><h3 class="adm-h3">Requisitions</h3><div class="adm-sub">The seal, signature, logo and names printed on requisition forms</div></div></div><div id="admin-rq-body"></div></div>'
   + '<div id="admin-settings-body"></div>'
 
@@ -17394,6 +17849,7 @@ function renderAdminPage() {
   AD.deps = null; adRenderDeptCard().catch(function(e){ console.error('departments card:', e); });
   rqtRenderAdminCard().catch(function(e){ console.error('requisition types card:', e); });
   ntrRenderAdminCard().catch(function(e){ console.error('notifications card:', e); });
+  peRenderAdmin().catch(function(e){ console.error('printing card:', e); });
   handleProfileType();
   // Sign-in status loads separately (admin only), then the list redraws.
   loadLoginStates().then(function(){ if (S.view === 'admin') renderAdminList(); });
@@ -21125,7 +21581,7 @@ async function generateCommercialInvoice() {
   d.sign = !!($('ci-sign') && $('ci-sign').checked);
   logActivity(o.id, 'Commercial invoice', 'generated ' + d.no + (lines.length > 1 ? ' (' + lines.length + ' POs)' : ''));
   if ($('ci-fill') && $('ci-fill').checked) ciFillFiles(d, lines);
-  openReportPreview('Commercial Invoice ' + d.no, ciInvoiceHtml(co, d, lines));
+  peOpen('ci', 'Commercial Invoice ' + d.no, ciInvoiceHtml(co, d, lines));
 }
 // Put the invoice number, date and value (each PO's own amount) into the
 // shipment files, only where the file has nothing yet: never overwrites.
@@ -21182,7 +21638,7 @@ function ciInvoiceHtml(co, d, lines) {
     + '<tr class="tot"><td colspan="3">Total</td><td class="num">' + (tc ? fmt(tc) : '') + '</td><td class="num">' + fmt(tq) + '</td><td></td><td class="num">' + ciMoney(ta) + '</td></tr></tbody></table>'
     + '<div class="words"><b>Amount in words</b>' + E(cur === 'USD' ? 'US Dollars ' : cur + ' ') + E(ciWords(ta)) + ' Only</div>';
   return '<!doctype html><html><head><meta charset="utf-8"><title>Commercial Invoice ' + E(d.no) + '</title><style>' + css + '</style></head><body><div class="frame"></div><div class="sheet">'
-    + '<div class="co" style="padding-top:2mm"><h2>' + E(co.name) + '</h2><div class="ad">' + Ebr(co.address || '') + (co.phone ? '<br>' + E(co.phone) : '') + (ids ? '<br>' + ids : '') + '</div></div>'
+    + '<div class="co" style="padding-top:2mm">' + peLogoTag(co.code, '', 'height:13mm;max-width:50mm;margin:0 auto 4px;object-position:center') + '<h2>' + E(co.name) + '</h2><div class="ad">' + Ebr(co.address || '') + (co.phone ? '<br>' + E(co.phone) : '') + (ids ? '<br>' + ids : '') + '</div></div>'
     + '<div class="ttl">COMMERCIAL INVOICE</div>'
     + '<table class="box"><tr>' + cell('Exporter', '<b>' + E(co.name) + '</b><br>' + Ebr(co.address || '')) + cell('Invoice no. &amp; date', '<b>' + E(d.no) + '</b><br>' + dt(d.date)) + '</tr>'
     + '<tr>' + cell('Consignee', Ebr(d.cons)) + cell('Notify party', Ebr(d.notify)) + '</tr></table>'
@@ -21734,7 +22190,7 @@ function runCbPrint() {
   var cols = cbCols(stage).filter(function(c){ return c !== CB_COL.next || stage === 'coming' || stage === 'laying' || stage === 'exf'; });
   var title = CB_REPORT_TITLE[stage] + (month ? ' — ' + cmMonthName(month) : '');
   var filt = [buyer || 'All buyers', _cb.merch ? 'merchant ' + ((userById(_cb.merch) || {}).name || '') : '', _cb.q ? 'search “' + _cb.q + '”' : '', stage === 'stuffed' ? (allStuffed ? 'B/L due and done' : 'B/L due') : ''].filter(Boolean).join(' · ');
-  openReportPreview(title, cbReportHtml(title, filt, cols, list, or, stage === 'paypend' || stage === 'paid', co ? companyName(co) : ''));
+  peOpen('cb_report', title, cbReportHtml(title, filt, cols, list, or, stage === 'paypend' || stage === 'paid', co || ''));
 }
 // Column widths from what each column actually holds: numbers and dates stay
 // on one line, text columns wrap. If the page is crowded the font gets a bit
@@ -21742,7 +22198,7 @@ function runCbPrint() {
 function cbIsTight(c) { return !!c.num || /date|month|ex-factory|handover|sl\b/i.test(c.h); }
 function cbReportLayout(cols, list, orientation, serial, tot) {
   var land = orientation !== 'portrait';
-  var avail = ((land ? 279 : 192) - 10) / 25.4 * 96;               // px across the page, inside the border
+  var avail = ((land ? 297 : 210) - 2 * PE_MM - 10) / 25.4 * 96;   // px across the page, inside the 0.5 inch margins and the border
   var base = land ? 9.4 : 8.8, pad = 9, CW = 0.6;                  // pad: cell padding + borders; CW: average char width (em)
   var spec = cols.map(function(c, ci){
     var L = 0;
@@ -21770,7 +22226,7 @@ function cbReportLayout(cols, list, orientation, serial, tot) {
   var sum = w.reduce(function(s, n){ return s + n; }, 0);
   return { font: f, wrapAll: wrapAll, widths: w.map(function(p){ return (p / sum * 100).toFixed(2) + '%'; }) };
 }
-function cbReportHtml(title, filt, cols, list, orientation, serial, coName) {
+function cbReportHtml(title, filt, cols, list, orientation, serial, coCode) {
   var E = htmlEsc, now = new Date();
   var n = cols.length + (serial ? 1 : 0);
   var tot = cbTotals(cols, list);
@@ -21781,7 +22237,7 @@ function cbReportHtml(title, filt, cols, list, orientation, serial, coName) {
   var body = list.map(function(x, i){ return '<tr>' + (serial ? '<td class="sl">' + (i + 1) + '</td>' : '') + cols.map(function(c){ return '<td class="' + tightCls(c) + '">' + E(c.txt(x)) + '</td>'; }).join('') + '</tr>'; }).join('');
   var totRow = tot ? '<tr class="tot">' + (serial ? '<td></td>' : '') + tot.map(function(v, i){ return '<td class="' + tightCls(cols[i]) + '">' + (i === 0 ? 'Total (' + list.length + ')' : E(v)) + '</td>'; }).join('') + '</tr>' : '';
   return '<!doctype html><html><head><meta charset="utf-8"><title>' + E(title) + '</title><style>' + printDocCss(orientation, lay.font) + 'td.nw{white-space:nowrap}th.nw{white-space:normal}tr.tot td:first-child{white-space:nowrap}</style></head><body><div class="frame"></div><div class="sheet">'
-    + '<div class="hd"><div><div class="org">' + (coName ? E(coName) : 'Shahana Group') + ' · Commercial</div><h1>' + E(title) + '</h1><div class="flt">' + E(filt) + '</div></div>'
+    + '<div class="hd">' + peHl(coCode, '<div class="org">' + E(peCoName(coCode)) + ' · Commercial</div><h1>' + E(title) + '</h1><div class="flt">' + E(filt) + '</div>', 11)
     + '<div class="meta"><b>' + now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '</b><br>' + list.length + ' row' + (list.length === 1 ? '' : 's') + ' · prepared by ' + sigInline(S.user.id, S.user.name, 18) + '</div></div>'
     + '<table>' + colg + '<thead>' + head + '</thead><tfoot><tr class="sp"><td colspan="' + n + '"></td></tr></tfoot><tbody>' + body + totRow + '</tbody></table></div></body></html>';
 }
@@ -22155,9 +22611,9 @@ function buildMaterialReportHtml(meta, rows) {
     + '</div>';
 
   return '<!doctype html><html><head><meta charset="utf-8"><title>' + E(matLabel) + ' & Accessories Status — ' + E(meta.merchantName) + '</title><style>' + css + printFrameCss('.hd{padding-top:4mm}') + '</style></head><body><div class="frame"></div><div class="sheet">'
-    + '<div class="hd"><div><div class="org">Shahana Group · Weekly Review</div><h1>' + E(matLabel) + ' &amp; Accessories Status</h1>'
+    + '<div class="hd"><div class="pe-hl">' + peLogoTag('', '', 'height:12mm;max-width:44mm') + '<div><div class="org">Shahana Group · Weekly Review</div><h1>' + E(matLabel) + ' &amp; Accessories Status</h1>'
     + '<div class="who">Merchandiser: <b>' + E(meta.merchantName) + '</b>' + (meta.division ? ' · ' + E(meta.division) : '')
-    + ' · <span class="scope">' + (meta.mixedWise ? 'one row per style, or per PO for PO-wise buyers' + (rows.some(function(r){ return r.yarn.sharedOnly; }) ? ' · <span class="shr">all POs</span> = one style-level booking, shown on each of its POs' : '') : meta.poWise ? 'one row per PO (PO-wise booking)' + (rows.some(function(r){ return r.yarn.sharedOnly; }) ? ' · <span class="shr">all POs</span> = one style-level booking, shown on each of its POs' : '') : 'one row per style — figures cover every PO of the style') + '</span></div></div>'
+    + ' · <span class="scope">' + (meta.mixedWise ? 'one row per style, or per PO for PO-wise buyers' + (rows.some(function(r){ return r.yarn.sharedOnly; }) ? ' · <span class="shr">all POs</span> = one style-level booking, shown on each of its POs' : '') : meta.poWise ? 'one row per PO (PO-wise booking)' + (rows.some(function(r){ return r.yarn.sharedOnly; }) ? ' · <span class="shr">all POs</span> = one style-level booking, shown on each of its POs' : '') : 'one row per style — figures cover every PO of the style') + '</span></div></div></div>'
     + '<div class="meta"><div class="wk">Week ' + meta.week + ' · ' + E(meta.dateLabel) + '</div><div>Prepared by ' + sigInline(S.user.id, meta.preparedBy, 18) + ' at ' + E(meta.timeLabel) + '</div></div></div>'
     + (rows.length ? kpis + legend + sections : '<div class="empty">No live orders for this merchandiser.</div>')
     + '</div></body></html>';
@@ -22198,7 +22654,7 @@ async function openMaterialStatusReport(uid) {
       preparedBy: S.user.name,
       photoFor: function(r){ return getStyleImage(r.merchantId, r.style); }
     }, rows);
-    openReportPreview((isKnit ? 'Fabric' : 'Yarn') + ' & Accessories Status — ' + merch.name, html);
+    await peOpen('mat_status', (isKnit ? 'Fabric' : 'Yarn') + ' & Accessories Status — ' + merch.name, html);
   } catch (e) {
     console.error('material report failed:', e);
     showSaveError('Could not build the report.\n\nDatabase said:\n' + (e && e.message ? e.message : String(e)));
@@ -22256,7 +22712,7 @@ async function runMeetingReport(includeLaying) {
     var html = buildMeetingReportHtml({ merchantName: merch ? merch.name : '', division: division, includeLaying: includeLaying, buyerNames: buyerNames,
       week: isoWeek(now), dateLabel: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       timeLabel: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), preparedBy: S.user.name }, rows);
-    openReportPreview('Meeting Report — ' + (merch ? merch.name : ''), html);
+    await peOpen('meeting', 'Meeting Report — ' + (merch ? merch.name : ''), html);
   } catch (e) {
     showSaveError('Could not build the meeting report.\n\n' + (e && e.message ? e.message : String(e)));
   } finally {
@@ -22453,12 +22909,12 @@ function buildMeetingReportHtml(meta, rows) {
     + '.foot{margin-top:6px;font-size:6.6px;color:#A09C93;display:flex;justify-content:space-between}'
     + '@media screen{body{background:#E9E6DE;padding:18px}.sheet{background:#fff;max-width:1123px;margin:0 auto;padding:14px 16px;box-shadow:0 2px 14px rgba(0,0,0,.12)}}';
   return '<!doctype html><html><head><meta charset="utf-8"><title>Meeting Report — ' + E(meta.merchantName) + '</title><style>' + css + printFrameCss('.hd{padding-top:4mm}') + '</style></head><body><div class="frame"></div><div class="sheet">'
-    + '<div class="hd"><div><div class="org">Shahana Group · Weekly Merchant Meeting</div><h1>Order Status — ' + E(meta.merchantName) + '</h1></div>'
+    + '<div class="hd">' + peHl('', '<div class="org">Shahana Group · Weekly Merchant Meeting</div><h1>Order Status — ' + E(meta.merchantName) + '</h1>', 10)
     + '<div class="meta"><b>Week ' + meta.week + ' · ' + E(meta.dateLabel) + '</b><br>' + (meta.includeLaying ? 'Live + Laying Goods orders' : 'Live orders') + ' · prepared by ' + sigInline(S.user.id, meta.preparedBy, 18) + ' at ' + E(meta.timeLabel) + '</div></div>'
     + '<div class="sum"><span>' + rows.length + ' order' + (rows.length === 1 ? '' : 's') + '</span><span class="late">' + nLate + ' late</span><span class="risk">' + nRisk + ' at risk</span><span class="ok">' + (rows.length - nLate - nRisk) + ' on track</span>'
     + '<span style="background:none;font-weight:400;color:#73706A">Status is worked out by the app: Late = a TNA date or the ship date has passed; At risk = due within 7 days, material overdue or not booked, a rejection, or a missing shipping-sample date.</span></div>'
     + (rows.length ? '<table>' + thead + '<tfoot class="sp-foot">' + printSpacer(9) + '</tfoot><tbody>' + body + '</tbody></table>' : '<p style="padding:30px 0;color:#73706A">No orders to show.</p>')
-    + '<div class="foot"><span>Shahana One · Shahana Group · Confidential, internal use only</span><span>Expected dates are the supplier’s / merchant’s latest promise</span></div>'
+    + '<div class="foot"><span>Expected dates are the supplier’s / merchant’s latest promise</span></div>'
     + '</div></body></html>';
 }
 
@@ -23065,11 +23521,8 @@ function renderDashPdf() {
       + '&#x2713; All milestones are on or ahead of plan.</div>';
   }
 
-  // ── Footer
-  html += '<div style="margin:24px 28px 0;padding-top:14px;border-top:1px solid #E5E2D9;display:flex;justify-content:space-between;padding-bottom:24px;font-size:10px;color:#A0A09A">'
-    + '<span>Shahana One \u00b7 Shahana Group \u00b7 ' + genDate + '</span>'
-    + '<span>Confidential \u2014 Internal use only</span></div>'
-    + '</div>'; // end white card
+  // the footer (printed by, date, confidential, page numbers) comes from the print engine
+  html += '<div style="height:6px"></div></div>'; // end white card
 
   html += '</div>'; // end outer bg
   $('dpdf-body').innerHTML = html;
@@ -24880,7 +25333,8 @@ async function rqPrint(id, mode) {
   var ev = RQ.events[id] || await rqLoadEvents(id);
   var _hu = rqDeptInCharge(r.dept);
   await sigNeed([r.created_by, r.hod_by, r.cao_by, r.audit_by, r.mgmt_by, _hu && _hu.id, S.user.id]);
-  openReportPreview((mode === 'form' ? 'Requisition form ' : 'Requisition ') + r.job_no, rqPrintHtml(r, st, ev, mode === 'form'));
+  await peReady();
+  await peOpen('rq_form', (mode === 'form' ? 'Requisition form ' : 'Requisition ') + r.job_no, rqPrintHtml(r, st, ev, mode === 'form'));
 }
 // "Cards" layout (option A): figure cards on top, then details, remarks,
 // items, approval path, comments / notes, and five signature cards.
@@ -24889,7 +25343,7 @@ function rqDocCss() {
   return '@page{size:A4 portrait;margin:0}*{box-sizing:border-box;margin:0;padding:0}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + 'body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#141414;font-size:9px;line-height:1.45;background:#d9d8d3;padding:18px}'
     + '.pg{background:#f3f3f1;width:210mm;min-height:297mm;margin:0 auto 18px;padding:9mm;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(0,0,0,.14)}'
-    + '@media print{body{background:#fff;padding:0}.pg{margin:0;box-shadow:none;break-after:page}.pg:last-child{break-after:auto}}'
+    + '@media print{body{background:#fff;padding:0}.pg{width:auto;min-height:0;margin:0;padding:0;display:block;box-shadow:none;break-after:page}.pg:last-child{break-after:auto}.pg .grow{display:block}}'
     + '.mut{color:#8b8b88}.k{font-size:7.4px;color:#8b8b88;font-weight:500;margin-bottom:1.5px}.v{font-size:10px;font-weight:500;overflow-wrap:anywhere}'
     + '.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}'
     + '.card{background:#fff;border:1px solid #e7e7e4;border-radius:12px;padding:10px 12px;break-inside:avoid}'
@@ -24920,9 +25374,9 @@ function rqTicks(pct, color) {
   pct = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
   return '<div class="bar"><div class="ticks" style="--c:' + color + ';width:' + pct + '%"></div><div class="ticks" style="--c:#dededb;width:' + (100 - pct) + '%"></div></div>';
 }
-function rqBrandHtml(st, coName) {
+function rqBrandHtml(st, coName, code) {
   var E = rqEsc;
-  return '<div class="brand">' + '<img class="logo" src="' + ((st && st.group_logo) || SG_MARK_IMG) + '" alt="">' + '<div><b>Shahana Group</b><span>' + E(coName) + '</span></div></div>';
+  return '<div class="brand">' + '<img class="logo" src="' + (peLogoOf(code) || (st && st.group_logo) || SG_MARK_IMG) + '" alt="">' + '<div><b>Shahana Group</b><span>' + E(coName) + '</span></div></div>';
 }
 // Requisition form, "T3" layout: letterhead, small detail cards, a big table of
 // what is required (most of the page), remarks, signatures. White page, thin
@@ -24935,7 +25389,7 @@ function rqFormCss() {
   return '@page{size:A4 portrait;margin:0}*{box-sizing:border-box;margin:0;padding:0}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + 'body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#111;font-size:9px;line-height:1.4;background:#d9d8d3;padding:18px}'
     + '.pg{background:#fff;width:210mm;min-height:297mm;margin:0 auto;padding:10mm 11mm 9mm;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(0,0,0,.14)}'
-    + '@media print{body{background:#fff;padding:0}.pg{margin:0;box-shadow:none}}'
+    + '@media print{body{background:#fff;padding:0}.pg{width:auto;min-height:0;margin:0;padding:0;display:block;box-shadow:none}}'
     + '.lh{text-align:center;padding-bottom:2mm}.lh img{height:12mm;max-width:60mm;object-fit:contain;display:block;margin:0 auto 1.5mm}.lh .g{font-size:9px;letter-spacing:.3em;font-weight:600;color:#555}'
     + '.lh .c{font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:600;margin-top:1px}.lh .a{font-size:8.4px;color:#444;margin-top:2px}'
     + '.tt{display:flex;justify-content:space-between;align-items:flex-end;margin-top:4mm}.tt h1{font-size:17px;font-weight:700;letter-spacing:-.01em}.tt .sub{font-size:8.6px;color:#666;margin-top:1px}'
@@ -24945,7 +25399,7 @@ function rqFormCss() {
     + '.bar{display:flex;margin-top:4px}.tk{height:7px;background:repeating-linear-gradient(90deg,var(--c) 0 2px,transparent 2px 4px)}'
     + '.main{flex:1;display:flex;flex-direction:column;margin-top:4mm;border:1px solid #e2e2df;border-radius:14px;padding:4mm 4mm 3mm}.main h2{font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:2mm}'
     + 'table{width:100%;border-collapse:collapse}th{font-size:8px;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:6px 7px;border-bottom:1.4px solid #111}'
-    + 'td{padding:4px 7px;border-bottom:1px solid #d0d0d0;font-size:11.5px;height:10.2mm;vertical-align:middle;overflow-wrap:anywhere}td.d{font-size:9.6px;color:#333}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}td.e{color:#bbb}'
+    + 'td{padding:4px 7px;border-bottom:1px solid #d0d0d0;font-size:11.5px;height:9.6mm;vertical-align:middle;overflow-wrap:anywhere}td.d{font-size:9.6px;color:#333}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}td.e{color:#bbb}'
     + 'tr{break-inside:avoid}tr.f td{font-weight:800;font-size:12.5px;border-top:1.4px solid #111;border-bottom:0}'
     + '.rm{margin-top:3mm;border:1px solid #e2e2df;border-radius:12px;padding:6px 8px;font-size:9.8px;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}.rm .k{margin-bottom:2px}'
     + '.box{margin-top:3mm;border:1px solid #e2e2df;border-radius:12px;padding:7px 9px;break-inside:avoid}.box h3{font-size:9px;font-weight:700;letter-spacing:.06em;margin-bottom:4px}'
@@ -24980,7 +25434,7 @@ function rqPrintHtml(r, st, ev, formOnly) {
     + cell('Raised by', E(r.created_by_name || ''))
     + '</div>';
   // the requisitioned lines, padded with numbered empty rows to fill the page
-  var minRows = formOnly ? 15 : (started ? 6 : 9);
+  var minRows = formOnly ? 13 : (started ? 6 : 9); // the form for signing fits one A4 page inside the 0.5 inch margins
   var rows = items.map(function(i, n){
     var amt = i.qty != null && i.rate != null ? i.qty * i.rate : null;
     return '<tr><td>' + (n + 1) + '</td><td><b>' + E(i.item || '') + '</b></td><td class="d">' + E(i.spec || '') + '</td><td class="n"><b>' + (i.qty == null ? '' : E(i.qty)) + '</b></td><td>' + E(i.unit || '') + '</td><td class="n">' + (i.rate == null ? '' : Number(i.rate).toLocaleString('en-IN')) + '</td><td class="n"><b>' + (amt == null ? '' : amt.toLocaleString('en-IN')) + '</b></td></tr>';
@@ -25032,11 +25486,10 @@ function rqPrintHtml(r, st, ev, formOnly) {
     + sig('Audit', auditOk ? E(r.audit_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.audit_at))) : 'Date:', auditOk ? [st.audit_seal, sigImg(r.audit_by)] : '', 'seal')
     + sig('Management', mgmtOk ? E(r.mgmt_by_name || '') + ' &middot; ' + E(rqDateTxt(rqLocalDate(r.mgmt_at))) : 'Date:', mgmtOk ? (sigImg(r.mgmt_by) || st.mgmt_sign) : '', 'sign')
     + '</div>';
-  var body = '<div class="pg"><div class="lh">' + '<img src="' + (st.group_logo || SG_MARK_IMG) + '" alt="">' + '<div class="g">SHAHANA GROUP</div><div class="c">' + E(co.n) + '</div><div class="a">' + E(rqCoAddr(st, r.company)) + ' &middot; info@shahanagroup.com</div></div>'
+  var body = '<div class="pg"><div class="lh">' + '<img src="' + (peLogoOf(r.company) || st.group_logo || SG_MARK_IMG) + '" alt="">' + '<div class="g">SHAHANA GROUP</div><div class="c">' + E(co.n) + '</div><div class="a">' + E(rqCoAddr(st, r.company)) + ' &middot; info@shahanagroup.com</div></div>'
     + '<div class="tt"><div><h1>Requisition &mdash; ' + E(d.n) + '</h1><div class="sub">' + (purchase ? 'Items to buy' : 'Work / service') + ' &middot; raised ' + E(rqDateTime(r.created_at)) + '</div></div>'
     + '<div class="job"><div class="k">Job no.</div><b>' + E(r.job_no) + '</b><div><span class="st">' + (formOnly ? 'For approval' : E(status)) + '</span></div></div></div>'
-    + strip + table + extra + sigs
-    + '<div class="ft"><span>Shahana Group &middot; Requisition ' + E(r.job_no) + (formOnly ? ' &middot; form for signing' : ' &middot; full record') + ' &middot; printed ' + E(rqDateTime(new Date().toISOString())) + ' by ' + sigInline(S.user.id, S.user.name, 18) + '</span><span>' + E(co.n) + '</span></div></div>';
+    + strip + table + extra + sigs + '</div>';
   return '<!doctype html><html><head><meta charset="utf-8"><title>Requisition ' + E(r.job_no.replace(/\//g, '-')) + '</title><style>' + rqFormCss() + '</style></head><body>' + body + '</body></html>';
 }
 
@@ -25106,7 +25559,7 @@ function rqRenderReport() {
     + '<div class="card"><div class="card-h"><h3>Completed jobs <span class="rq-count">' + doneList.length + '</span></h3>' + (D.over.length ? '<span class="note rq-late">' + D.over.length + ' over the approved amount by more than 10%</span>' : '') + '</div>' + jobs + '</div>';
 }
 async function rqPrintReport() {
-  await sigNeed([S.user.id]);
+  await sigNeed([S.user.id]); await peReady();
   var st = {}; try { st = await rqLoadSettings(true); } catch (e) {}
   var D = rqReportData(RQ.reportMonth || todayStr().slice(0, 7), RQ.filter.co);
   var E = rqEsc, T = D.tot, m = function(n){ return E(rqMoneyTxt(n) || 'Tk 0'); };
@@ -25115,7 +25568,7 @@ async function rqPrintReport() {
   var palette = ['#9aa05a', '#4f7fa8', '#8f84cf', '#c9925b', '#5fa59b', '#b07aa1'];
   var tile = function(k, big, pct, col, l, r){ return '<div class="card tile"><div class="k">' + k + '</div><div class="big">' + big + '</div>' + rqTicks(pct, col) + '<div class="row"><span>' + l + '</span><span>' + r + '</span></div></div>'; };
   var doneList = D.done.slice().sort(function(a, b){ return (Number(b.final_cost) || 0) - (Number(a.final_cost) || 0); });
-  var body = '<div class="pg"><div class="card top">' + rqBrandHtml(st, D.co ? rqCompany(D.co).n : 'All companies') + '<div class="job"><div class="k">REPORT</div><div class="v">' + E(rqMonthName(D.month)) + '</div></div></div>'
+  var body = '<div class="pg"><div class="card top">' + rqBrandHtml(st, D.co ? rqCompany(D.co).n : 'All companies', D.co || '') + '<div class="job"><div class="k">REPORT</div><div class="v">' + E(rqMonthName(D.month)) + '</div></div></div>'
     + '<h1>Monthly spend &mdash; Maintenance, Civil, IT</h1><div class="sub">Spent = work completed in the month, at final cost. Approved = approved by management in the month.</div>'
     + '<div class="tiles">'
     + tile('Spent (completed)', m(T.spent), T.doneApproved ? Math.min(100, T.spent / T.doneApproved * 100) : 0, '#9aa05a', D.done.length + ' jobs', T.doneApproved ? Math.round(T.spent / T.doneApproved * 100) + '% of approved' : '')
@@ -25133,8 +25586,8 @@ async function rqPrintReport() {
       return '<tr><td>' + E(r.job_no) + '</td><td>' + E(r.company) + '</td><td>' + E(r.location || '') + '</td><td>' + E(r.work_type || '') + '</td><td>' + E(rqDateTxt(rqLocalDate(r.completed_at))) + '</td><td class="num">' + m(r.approved_cost) + '</td><td class="num"' + (rqOverBudget(r) ? ' style="color:#c0392b;font-weight:700"' : '') + '>' + m(r.final_cost) + '</td></tr>'; }).join('') + '</table>' : '<div class="mut">None.</div>') + '</div>'
     + (D.open.length ? '<div class="card mt"><div class="h">Still open at the end of the month <span class="mut" style="font-weight:500">' + D.open.length + '</span></div><table><tr><th>Job no.</th><th>Location</th><th>Type of work</th><th>Progress</th><th>Target</th><th class="num">Approved</th><th class="num">Spent</th></tr>'
       + D.open.map(function(r){ return '<tr><td>' + E(r.job_no) + '</td><td>' + E(r.location || '') + '</td><td>' + E(r.work_type || '') + '</td><td>' + (Number(r.progress) || 0) + '%</td><td>' + E(rqDateTxt(r.target_date)) + '</td><td class="num">' + m(r.approved_cost) + '</td><td class="num">' + m(r.spent) + '</td></tr>'; }).join('') + '</table></div>' : '')
-    + '<div class="ft"><span>Shahana Group &middot; Requisitions monthly spend &middot; ' + E(rqMonthName(D.month)) + ' &middot; printed ' + E(rqDateTime(new Date().toISOString())) + ' by ' + sigInline(S.user.id, S.user.name, 18) + '</span><span>' + (D.co ? E(rqCompany(D.co).n) : 'All companies') + '</span></div></div>';
-  openReportPreview('Monthly spend ' + rqMonthName(D.month), '<!doctype html><html><head><meta charset="utf-8"><title>Requisitions spend ' + E(D.month) + '</title><style>' + rqDocCss() + '</style></head><body>' + body + '</body></html>');
+    + '</div>';
+  await peOpen('rq_spend', 'Monthly spend ' + rqMonthName(D.month), '<!doctype html><html><head><meta charset="utf-8"><title>Requisitions spend ' + E(D.month) + '</title><style>' + rqDocCss() + '</style></head><body>' + body + '</body></html>');
 }
 
 // ─── ADMIN: seal, signature, logo, names ───
@@ -25784,7 +26237,7 @@ function plPrintWeek(ws, dks) {
     + (deps.length > 1 ? '<div class="kp">' + kp + '<div class="main"><span>Total</span><b>' + plMoney(all) + '</b></div></div>' : '')
     + '<table><thead><tr><th style="width:5%">SL</th><th style="width:43%">Description</th><th class="num" style="width:11%">Qty</th><th class="num" style="width:13%">Amount (Tk)</th><th style="width:12%">Req. no.</th><th>Remarks</th></tr></thead>' + body
     + (deps.length > 1 ? '<tbody class="keep"><tr class="tot"><td></td><td>Total, all departments</td><td></td><td class="num">' + plMoney(all) + '</td><td colspan="2"></td></tr></tbody>' : '') + '</table>'
-    + '<div class="sig"><div>Prepared by</div><div>HOD</div><div>CAO</div><div>Management</div></div>';
+    + peSigRow('plan_week');
   plOpenDoc(title, html, false);
 }
 function plPrintMonth(ym) {
@@ -25798,13 +26251,13 @@ function plPrintMonth(ym) {
     + '<table class="wk"><thead><tr><th>Department</th>' + weeks.map(function(ws, i){ return '<th class="num">Week ' + (i + 1) + '<br>' + plWeekShort(ws) + '</th>'; }).join('') + '<th class="num">Month total</th></tr></thead><tbody>' + rows + '</tbody>'
     + '<tbody class="keep"><tr class="tot"><td>Total</td>' + colTot.map(function(x){ return '<td class="num">' + (x ? plMoney(x) : '&ndash;') + '</td>'; }).join('') + '<td class="num">' + plMoney(grand) + '</td></tr></tbody></table>'
     + (lines ? '<div class="sec"><span><i></i>Lines, week by week</span></div><table><thead><tr><th style="width:5%">SL</th><th style="width:55%">Description</th><th class="num" style="width:12%">Qty</th><th class="num" style="width:14%">Amount (Tk)</th><th>Req. no.</th></tr></thead>' + lines + '</table>' : '')
-    + '<div class="sig"><div>Prepared by</div><div>HOD</div><div>CAO</div><div>Management</div></div>';
+    + peSigRow('plan_month');
   plOpenDoc('Monthly budget plan ' + ym, html, true);
 }
 function plOpenDoc(title, body, land) {
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + rqEsc(title) + '</title><style>' + plDocCss(land) + '</style></head><body><div class="sheet">' + body
-    + '<div class="ft"><span>Printed ' + rqEsc(rqDateTime(new Date().toISOString())) + ' &middot; ' + rqEsc(S.user.name) + ' &middot; Shahana One</span><span>' + rqEsc(title) + '</span></div></div></body></html>';
-  openReportPreview(title, html);
+    + '</div></body></html>';
+  peOpen(land ? 'plan_month' : 'plan_week', title, html);
 }
 
 // ─── 4. REQUISITIONS: ONE "APPROVAL PENDING" LIST ───
@@ -26793,7 +27246,7 @@ function woDocHtml(w, ls) {
     return '<tr><td class="c">' + (i + 1) + '</td><td><b>' + E(l.item) + '</b>' + (l.spec ? '<div class="d">' + E(l.spec) + '</div>' : '') + '</td><td>' + E(l.ref_no || '') + '</td><td class="num">' + woQtyTxt(l.qty, l.unit) + '</td>'
       + (show ? '<td class="num">' + (l.unit_price != null ? accFmt(accP(l.unit_price)) : '&mdash;') + '</td><td class="num">' + (a == null ? '&mdash;' : accFmt(a)) + '</td>' : '') + '</tr>'; }).join('');
   var dueTxt = w.deliver_by ? new Date(w.deliver_by + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
-  return '<div class="wo-fr"><div class="wo-hd"><div class="l"><div class="cn">' + E(coName || '') + '</div><h1>Work Order</h1>' + (addr ? '<div class="ad">' + E(addr) + '</div>' : '') + '</div>'
+  return '<div class="wo-fr"><div class="wo-hd"><div class="l">' + peHl(w.company, '<div class="cn">' + E(coName || '') + '</div><h1>Work Order</h1>' + (addr ? '<div class="ad">' + E(addr) + '</div>' : ''), 15) + '</div>'
     + '<div class="r"><div><span>Work order no.</span><b>' + E(w.wo_no) + '</b></div><div><span>Date</span><b>' + rqDateTxt(w.wo_date) + '</b></div>'
     + (dp ? '<div><span>Department</span><b>' + E(dp.code || dp.n) + '</b></div>' : '') + (w.status === 'cancelled' ? '<div class="cx"><b>CANCELLED</b></div>' : '') + '</div></div>'
     + '<div class="wo-two"><div><div class="k">To (party)</div><b class="pn">' + E(w.party_name) + '</b>' + (w.party_address ? '<br>' + E(w.party_address) : '') + (w.party_phone ? '<br>Phone ' + E(w.party_phone) : '') + '</div>'
@@ -26804,8 +27257,16 @@ function woDocHtml(w, ls) {
     + (show && tot.p && tot.all ? '<div class="wo-words">In words: ' + woTkWords(tot.p) + '.</div>' : '')
     + (w.note ? '<div class="wo-note"><div class="k">Note</div>' + E(w.note) + '</div>' : '')
     + (w.agreed_text ? '<div class="wo-agree"><div class="k">Agreed condition</div>' + E(w.agreed_text) + '</div>' : '')
-    + '<div class="wo-sig"><div><div class="k">Received by the party</div><div class="ln">Name, signature and date</div></div><div><div class="k">For ' + E(co ? co.n : 'Shahana Group') + '</div>' + (sig ? '<img src="' + sig + '" alt="">' : '')
-    + '<div class="ln"><b>' + E(w.made_by_name || '') + '</b>' + (woRoleTxt(w.made_by_role, w) ? ' &middot; ' + E(woRoleTxt(w.made_by_role, w)) : '') + '</div></div></div></div>';
+    + woSigBoxes(w, sig) + '</div>';
+}
+// the signature boxes (Admin -> Printing): the last one is the maker's, with their signature; the others are signed on paper
+function woSigBoxes(w, sig) {
+  var ls = peSigLabels('wo', w.company), E = rqEsc; if (!ls.length) return '';
+  return '<div class="wo-sig" style="grid-template-columns:repeat(' + ls.length + ',1fr)">' + ls.map(function(l, i){
+    if (i < ls.length - 1) return '<div><div class="k">' + E(l) + '</div><div class="ln">Name, signature and date</div></div>';
+    return '<div><div class="k">' + E(l) + '</div>' + (sig ? '<img src="' + sig + '" alt="">' : '')
+      + '<div class="ln"><b>' + E(w.made_by_name || '') + '</b>' + (woRoleTxt(w.made_by_role, w) ? ' &middot; ' + E(woRoleTxt(w.made_by_role, w)) : '') + '</div></div>';
+  }).join('') + '</div>';
 }
 function woRoleTxt(r, w) { if (r === 'dept') { var d = w && w.dept ? rqDept(w.dept) : null; return d ? d.n + ' Department' : 'Department'; } return r === 'admin' ? 'Admin' : r === 'management' ? 'Management' : (r || ''); }
 async function woPrint(id) {
@@ -26813,10 +27274,11 @@ async function woPrint(id) {
   await sigNeed([w.made_by]);
   if (w.made_by_role === 'management') { try { await rqLoadSettings(); } catch (e) {} } // Management's signature picture (Admin -> Requisitions)
   if (!woSigOf(w) && w.made_by === S.user.id) toast('No signature on file for you: upload it in My account (or Admin \u2192 Users), then print again', 'err');
+  await peReady();
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + rqEsc(w.wo_no) + '</title><style>' + woDocCss() + '</style></head><body><div class="sheet">' + woDocHtml(w, woLinesOf(id))
-    + '<div class="ft"><span>Printed ' + rqEsc(rqDateTime(new Date().toISOString())) + ' &middot; ' + rqEsc(S.user.name) + ' &middot; Shahana One</span><span>' + rqEsc(w.wo_no) + '</span></div></div></body></html>';
+    + '</div></body></html>';
   if ($('ov-acc') && $('ov-acc').classList.contains('open')) { ACCM = null; closeModal('ov-acc'); }
-  openReportPreview(w.wo_no + ' \u00b7 ' + w.party_name, html);
+  await peOpen('wo', w.wo_no + ' \u00b7 ' + w.party_name, html);
 }
 // ─── the page: To buy / Ordered / Received (each source shows its own) ───
 function woRenderPage(source, tab) {
@@ -26891,8 +27353,8 @@ function woPrintList(source) {
     + '<table><thead><tr><th>SN</th><th>' + rqEsc(def.refHead) + '</th><th>Department</th><th>Item(s)</th><th class="num">Qty</th><th class="num">Approved</th><th>Waiting</th></tr></thead><tbody>'
     + gs.map(function(g, i){ return '<tr><td>' + (i + 1) + '</td><td>' + rqEsc(g.ref_no) + '</td><td>' + rqEsc(g.deptName || '') + '</td><td>' + g.lines.map(function(l){ return rqEsc(l.item) + (l.spec ? ' <small>' + rqEsc(l.spec) + '</small>' : ''); }).join('<br>') + '</td><td class="num">' + g.lines.map(function(l){ return woQtyTxt(l.qty, l.unit); }).join('<br>') + '</td><td class="num">' + (g.approved != null ? rqMoneyTxt(g.approved) : '') + '</td><td>' + (g.since ? rqDaysBetween(g.since, todayStr()) + ' days' : '') + '</td></tr>'; }).join('') + '</tbody></table>';
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>To buy ' + todayStr() + '</title><style>' + accDocCss() + lowInkCss() + '</style></head><body><div class="sheet">' + body
-    + '<div class="ft"><span>Printed ' + rqEsc(rqDateTime(new Date().toISOString())) + ' &middot; ' + rqEsc(S.user.name) + ' &middot; Shahana One</span><span>To buy</span></div></div></body></html>';
-  openReportPreview('To buy ' + todayStr(), html);
+    + '</div></body></html>';
+  peOpen('wo_list', 'To buy ' + todayStr(), html);
 }
 
 // ─── B. SOURCE: REQUISITIONS MANAGEMENT BUYS ITSELF ───
@@ -28156,7 +28618,7 @@ function accLedgerGo(xl) {
     + '<table class="lt"><colgroup><col style="width:7mm"><col><col style="width:27mm"><col style="width:27mm"><col style="width:27mm"><col style="width:30mm"></colgroup><thead><tr><th>SL</th><th>Particulars</th><th class="num">Opening</th><th class="num">Debit</th><th class="num">Credit</th><th class="num cl">Closing</th></tr></thead><tbody>'
     + L.rows.map(function(x, i){ return '<tr><td class="sl">' + (i + 1) + '</td><td class="nm"><b>' + E(x.p.name) + '</b>' + (x.p.dept ? ' <small>' + E(x.p.dept) + '</small>' : '') + '</td>' + [x.op, x.dr, x.cr].map(function(v){ return '<td class="num' + (v ? '' : ' z') + '">' + (v ? accFmt(v, 2) : '&mdash;') + '</td>'; }).join('') + '<td class="num cl">' + accFmt(x.cl, 2) + '</td></tr>'; }).join('')
     + '</tbody><tfoot><tr class="tot"><td></td><td>Total</td><td class="num">' + accFmt(L.tot.op, 2) + '</td><td class="num">' + accFmt(L.tot.dr, 2) + '</td><td class="num">' + accFmt(L.tot.cr, 2) + '</td><td class="num cl">' + accFmt(L.tot.cl, 2) + '</td></tr></tfoot></table>';
-  accDocOpen('IOU ledger ' + rqDateTxt(from) + ' - ' + rqDateTxt(to), body);
+  accDocOpen('IOU ledger ' + rqDateTxt(from) + ' - ' + rqDateTxt(to), body, 'acc_iou_ledger');
   return true;
 }
 function accPrintPerson(id) {
@@ -28172,8 +28634,8 @@ function accPrintPerson(id) {
   var body = accDocHead('IOU Statement', '<b>' + E(p.name) + '</b>' + (p.dept ? '<br>' + E(p.dept) : '') + '<br>' + per)
     + '<div class="kp"><div><span>' + (f.from ? 'Brought forward' : 'Opening') + '</span><b>' + accFmt(op, 2) + '</b></div><div><span>Given &middot; Debit</span><b>' + accFmt(gd, 2) + '</b></div><div><span>Adjusted &middot; Credit</span><b>' + accFmt(gc, 2) + '</b></div><div class="main"><span>Balance</span><b>' + accFmt(run, 2) + '</b></div></div>'
     + '<table class="lt"><colgroup><col style="width:20mm"><col style="width:34mm"><col><col style="width:25mm"><col style="width:25mm"><col style="width:28mm"></colgroup><thead><tr><th>Date</th><th>Entry</th><th>Note</th><th class="num">Debit</th><th class="num">Credit</th><th class="num cl">Balance</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="z">No entries.</td></tr>') + '</tbody></table>'
-    + '<div class="sig"><div>Prepared by</div><div>Received / acknowledged by</div><div>Approved by</div></div>';
-  accDocOpen('IOU statement ' + p.name, body);
+    + peSigRow('acc_iou_person');
+  accDocOpen('IOU statement ' + p.name, body, 'acc_iou_person');
 }
 
 // ─── PAYMENTS BY MONTH (the monthly money track) ───
@@ -28228,7 +28690,7 @@ function accPaysXlsx() {
 function accPrintPays() {
   var D = accPaysMonth(), E = rqEsc;
   var cos = D.f.co ? [rqCompany(D.f.co)] : RQ_COMPANIES;
-  var body = accDocHead('Payments', '<b>' + E(rqMonthName(D.f.month)) + '</b><br>' + (D.f.co ? E(rqCompany(D.f.co).n) : 'All companies') + (D.f.meth ? ' &middot; ' + E(accMethodTxt(D.f.meth)) : ''))
+  var body = accDocHead('Payments', '<b>' + E(rqMonthName(D.f.month)) + '</b><br>' + (D.f.co ? E(rqCompany(D.f.co).n) : 'All companies') + (D.f.meth ? ' &middot; ' + E(accMethodTxt(D.f.meth)) : ''), D.f.co || '')
     + '<div class="kp"><div class="main"><span>Paid</span><b>' + accFmt(D.total, 2) + '</b></div>' + ACC_METHODS.slice(0, 3).map(function(m){ return '<div><span>' + m[1] + '</span><b>' + accFmt(D.meth[m[0]], 2) + '</b></div>'; }).join('') + '</div>'
     + '<div class="sec"><span><i></i>By company and department</span></div><table class="lt"><thead><tr><th>Company</th>' + RQ_DEPTS.map(function(d){ return '<th class="num">' + d.n + '</th>'; }).join('') + '<th class="num cl">Total</th></tr></thead><tbody>'
     + cos.map(function(c){ var g = D.grid[c.c] || {}, t = 0; return '<tr><td><b>' + E(c.n) + '</b></td>' + RQ_DEPTS.map(function(d){ t += g[d.k] || 0; return '<td class="num' + (g[d.k] ? '' : ' z') + '">' + (g[d.k] ? accFmt(g[d.k], 2) : '&mdash;') + '</td>'; }).join('') + '<td class="num cl">' + accFmt(t, 2) + '</td></tr>'; }).join('') + '</tbody></table>'
@@ -28237,8 +28699,8 @@ function accPrintPays() {
     + (D.list.map(function(p){ var r = D.byId[p.req_id] || {}, off = !accPayLive(p);
       return '<tr class="' + (off ? 'off' : '') + '"><td>' + E(rqDateTxt(p.pay_date)) + '</td><td><b>' + E(r.job_no || '') + '</b><small>' + E(((rqDept(p.dept) || {}).n || '') + ' \u00B7 ' + (p.company || '')) + '</small></td><td class="nm">' + E(p.paid_to || '') + (p.reference ? '<small>' + E(p.reference) + '</small>' : '') + '</td><td>' + E(accMethodTxt(p.method)) + (p.method === 'cheque' ? '<small>' + E((p.bank_label || '') + (p.cheque_no ? ' \u00B7 CQ ' + p.cheque_no : '')) + '</small>' : '') + '</td><td>' + E(p.created_by_name || '') + '</td><td class="num cl">' + accFmt(accP(p.amount), 2) + '</td></tr>'; }).join('') || '<tr><td colspan="6" class="z">No payments.</td></tr>')
     + '</tbody><tfoot><tr class="tot"><td colspan="5">Total counted</td><td class="num cl">' + accFmt(D.total, 2) + '</td></tr></tfoot></table>'
-    + '<div class="sig"><div>Prepared by<br>' + sigInline(S.user.id, S.user.name, 26) + '</div><div>Checked by</div><div>Approved by</div></div>';
-  accDocOpen('Payments ' + rqMonthName(D.f.month), body);
+    + peSigRow('acc_payments', sigInline(S.user.id, S.user.name, 26), D.f.co || '');
+  accDocOpen('Payments ' + rqMonthName(D.f.month), body, 'acc_payments');
 }
 
 // ─── PRINTED CHEQUE STATEMENT ───
@@ -28259,8 +28721,8 @@ function accPrintCq() {
           }).join('') + '</tbody><tfoot><tr class="tot"><td></td><td colspan="4">Total &middot; ' + E(b ? b.bank + ' ' + b.acc_no : '') + '</td><td class="num amt">' + accFmt(sum(g.rows)) + '</td></tr></tfoot></table>'
           : '<div class="none">No cheques waiting.</div>');
     }).join('')
-    + '<div class="sig"><div>Prepared by<br>' + sigInline(S.user.id, S.user.name, 26) + '</div><div>Checked by</div><div>Approved by</div></div>';
-  accDocOpen('Cheque statement ' + rqDateTxt(t), body);
+    + peSigRow('acc_cheques', sigInline(S.user.id, S.user.name, 26));
+  accDocOpen('Cheque statement ' + rqDateTxt(t), body, 'acc_cheques');
 }
 
 // ─── PRINT LOOK (A4, black-and-white safe, terracotta accent) ───
@@ -28270,7 +28732,7 @@ function accDocCss() {
     + '.sheet{width:210mm;min-height:297mm;margin:14px auto;background:#fff;padding:15mm 14mm 16mm;box-shadow:0 2px 12px rgba(0,0,0,.15)}'
     + '@media print{html,body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}}'
     + '.top{height:4px;background:#C2552F;border-radius:2px;margin-bottom:12px}.h{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:14px}'
-    + '.co{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#C2552F;font-weight:700}h1{font-size:23px;margin:3px 0 0;font-weight:700;letter-spacing:-.02em}'
+    + '.co{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#C2552F;font-weight:700}.coa{font-size:8.6px;color:#6b6b6b;margin-top:1px;max-width:120mm}h1{font-size:23px;margin:3px 0 0;font-weight:700;letter-spacing:-.02em}'
     + '.meta{text-align:right;font-size:10px;color:#6b6b6b;line-height:1.55}.meta b{color:#1c1c1c}'
     + '.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.kp div{background:#FBEDE7;border-radius:7px;padding:7px 10px}'
     + '.kp span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#9A3F20;font-weight:700}.kp b{font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}'
@@ -28292,14 +28754,17 @@ function accDocCss() {
     + '.ft{margin-top:14px;display:flex;justify-content:space-between;font-size:8.5px;color:#9a9a9a;border-top:1px solid #eee;padding-top:5px}'
     + lowInkCss();
 }
-function accDocHead(title, meta) {
-  return '<div class="top"></div><div class="h"><div><div class="co">Shahana Group</div><h1>' + title + '</h1></div><div class="meta">' + meta + '</div></div>';
+// the letterhead (Wave 16): the company's name, address and logo for a company's document, else the group
+function accDocHead(title, meta, code) {
+  var addr = peCoAddr(code);
+  return '<div class="top"></div><div class="h">' + peHl(code, '<div class="co">' + rqEsc(peCoName(code)) + '</div>' + (addr ? '<div class="coa">' + rqEsc(addr) + '</div>' : '')
+    + '<h1>' + title + '</h1>', 13) + '<div class="meta">' + meta + '</div></div>';
 }
-function accDocOpen(title, body) {
+function accDocOpen(title, body, key) {
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + rqEsc(title) + '</title><style>' + accDocCss() + '</style></head><body><div class="sheet">' + body
-    + '<div class="ft"><span>Printed ' + rqEsc(rqDateTime(new Date().toISOString())) + ' &middot; ' + rqEsc(S.user.name) + ' &middot; Shahana One</span><span>' + rqEsc(title) + '</span></div></div></body></html>';
+    + '</div></body></html>';
   if ($('ov-acc') && $('ov-acc').classList.contains('open')) { ACCM = null; closeModal('ov-acc'); }
-  openReportPreview(title, html);
+  peOpen(key, title, html);
 }
 async function accXlsx(name, sheets) {
   try {
@@ -29590,7 +30055,7 @@ function posDocRows(head, rows, foot) {
 }
 function posDocCompany(co, noZero) {
   var c = posCur(co), t = c.t0, groups = posGroups(posItemsOf(co)), tot = { party: [0, 0, 0], bank: [0, 0, 0] };
-  var h = accDocHead('Creditor&rsquo;s List', '<b>' + posCo(co).n + '</b><br>Figures as at ' + rqDateTxt(todayStr()))
+  var h = accDocHead('Creditor&rsquo;s List', '<b>' + posCo(co).n + '</b><br>Figures as at ' + rqDateTxt(todayStr()), companyOf(co) ? co : '')
     + '<div class="kp"><div><span>Receivable</span><b>' + accFmt(t.rec) + '</b></div><div><span>Payable</span><b>' + accFmt(t.pay) + '</b></div><div><span>Advance</span><b>' + accFmt(t.adv) + '</b></div><div class="main"><span>Net liability</span><b>' + accFmt(t.net) + '</b></div></div>'
     + '<table class="pos-pt"><thead><tr><th style="width:4%">SN</th><th style="width:29%">Name / account</th><th style="width:9%">Nature</th><th class="num" style="width:13%">Receivable</th><th class="num" style="width:13%">Payable</th><th class="num" style="width:12%">Advance</th><th class="dt" style="width:10%">Expiry</th><th class="dt" style="width:10%">Updated</th></tr></thead>';
   groups.forEach(function(g){
@@ -29641,11 +30106,9 @@ function posDocCss() {
 function posPrint(parts, noZero) {
   var out = parts.map(function(p){ return '<div class="part' + (p === 'group' || p === 'party' ? ' wide' : '') + '">' + (p === 'MTS' || p === 'BFL' ? posDocCompany(p, noZero) : p === 'group' ? posDocGroup(noZero) : p === 'party' ? posDocParty(noZero) : posDocReport()) + '</div>'; });
   var title = 'Creditors List ' + todayStr();
-  var ft = '<div class="ft"><span>Printed ' + rqEsc(rqDateTime(new Date().toISOString())) + ' &middot; ' + rqEsc(S.user.name) + ' &middot; Shahana One</span><span>' + rqEsc(title) + '</span></div>';
-  if (out.length) out[out.length - 1] = out[out.length - 1].replace(/<\/div>$/, ft + '</div>');
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + rqEsc(title) + '</title><style>' + posDocCss() + '</style></head><body><div class="sheet">' + out.join('') + '</div></body></html>';
   if ($('ov-acc') && $('ov-acc').classList.contains('open')) { ACCM = null; closeModal('ov-acc'); }
-  openReportPreview(title, html);
+  peOpen('position', title, html);
 }
 function posExcel() {
   var parts = posPickedParts(), noZero = $('pp-zero') && $('pp-zero').checked; if (!parts.length) { toast('Tick at least one part', 'err'); return; }
@@ -30208,8 +30671,8 @@ function pnlPrint() {
   var note = '<div class="nt">Our cost / pc = the costing FOB (yarn, trims, embellishment, CM with the order&rsquo;s overhead % on labour, commercial). Profit / loss = the buyer&rsquo;s price less our cost on the whole quantity (commercial on the buyer&rsquo;s price), less discounts. Overhead by quantity: '
     + pnlBands().map(function(b, i, a){ return (b.to == null ? 'over ' + pnlPcs(a[i - 1].to) : 'up to ' + pnlPcs(b.to)) + ' ' + b.pct + '%'; }).join(', ') + '.</div>';
   var html = '<!doctype html><html><head><meta charset="utf-8"><title>Profit &amp; Loss ' + todayStr() + '</title><style>' + pnlPrintCss() + '</style></head><body><div class="sheet">' + head + pk + line + tbl + note
-    + '<div class="ft"><span>Printed ' + E(rqDateTime(new Date().toISOString())) + ' &middot; ' + E(S.user.name) + ' &middot; Shahana One &middot; Management only</span><span>Profit &amp; Loss</span></div></div></body></html>';
-  openReportPreview('Profit & Loss ' + todayStr(), html);
+    + '</div></body></html>';
+  peOpen('pnl', 'Profit & Loss ' + todayStr(), html);
 }
 function pnlExcel() {
   var rows = pnlShown(); if (!rows.length) { toast('Nothing to export', 'err'); return; }
