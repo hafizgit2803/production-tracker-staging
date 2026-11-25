@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shahana One — Factory operations</title>
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABACAMAAADS6oI8AAAAYFBMVEUREREREREREREREREREREREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzGYEmAAAAIHRSTlP2AS2Rt8pSbQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKbRVdsAAAIQSURBVHjatZhRlsMgCEURQfa/40lsJ20EFal5nz2Wq6jwIqRvoWR6i++6fslYRxbJLiF8Rc8MM3Gp0Qm8KvAJ7xgu58gMC7oA4hl9ZkcYIgDPrPiIjwQQAWTn/AtACPBc/BfA9T8JxX8BPNvGR/4hCHAdoOP8UxQAvgVEElQBxgJY8FIpcgg7iaRccKgEeuUsyZD06sZEoDJE9kC2tsUDKL74xTkPDRC1m6YoGD8BudaN4JuHAWDXH8Woq1sBZPSFEKCX2mYBKW1eQXOGchzQSW6O7oA+ReTYAk4/AOxzyuEMqYtmEyI14v+vaHuT0TXDJYDRR/heg9Uhau7g0NkJzBtJe495eEXaycK8Jf8EIJg38/YanABcAcy6vgX4OkkOwIRgAj4ED2C80RaAPwQXYGhqOwBwn6J3weRVAK0BDkTnC6cHeCfJD6jfaMeXmG6/HQCvA96YuzdT7eAqr7VqlVY0Bcxa/uUjad6dfIDSc9q4CYCqntPAXfwOyFeQvAmQlPWQzQDlL3FgESIAUTmivQBU1rTsTVGbo/9tlm0Aw11zz8CEANb3AXdMcAigzE0l0EYAWm8vaSPAeDARJwA9suv+4QAdANeLAHatB1OrpuH43lAoBR9DvICacH4ScN4pfBRwbgM+CqgEfhJQOzA9CQBcffddBdTqufY2uwh4dRgsWRvArrtGWtH9uc1TY/4AvuURzjF+CccAAAAASUVORK5CYII=">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <!-- SheetJS loaded on demand -->
 <style>
 :root{
@@ -2729,8 +2729,10 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
   <div class="lr"><div class="login-card"><div id="login-card-main">
     <h1 class="login-title">Shahana One</h1>
     <p class="login-sub">Factory operations &middot; sign in</p>
+    <div class="f" id="l_dept_f" style="display:none"><label for="l_dept">Department</label>
+      <select id="l_dept" onchange="loginFillNames()" onkeydown="if(event.key==='Enter'){event.preventDefault();$('l_name').focus();}"></select></div>
     <div class="f"><label for="l_name">Your name</label>
-      <select id="l_name"><option value="">Loading&hellip;</option></select></div>
+      <select id="l_name" onkeydown="if(event.key==='Enter'){event.preventDefault();$('l_pwd').focus();}"><option value="">Loading&hellip;</option></select></div>
     <div class="f"><label>Password</label>
       <div class="pwd-wrap"><input type="password" id="l_pwd" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"><button class="pwd-eye" tabindex="-1" onmousedown="showPwd('l_pwd',true)" onmouseup="showPwd('l_pwd',false)" onmouseleave="showPwd('l_pwd',false)" ontouchstart="showPwd('l_pwd',true)" ontouchend="showPwd('l_pwd',false)">&#x1F441;</button></div></div>
     <div class="form-err" id="l_err" style="display:none"></div>
@@ -2749,7 +2751,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.08.2</p>
+    <p class="login-ver">STAGING V.2026.11.17.1</p>
   </div></div>
 </div>
 
@@ -2793,7 +2795,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.08.2</div>
+  <div id="ver-stamp">STAGING V.2026.11.17.1</div>
 </div>
 
 
@@ -3739,6 +3741,11 @@ const MAINTENANCE_MSG  = 'System is under maintenance. Back shortly.';
 const SB_URL = 'https://fpnnmdvhxqyafeuabdfk.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwbm5tZHZoeHF5YWZldWFiZGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxOTk4MTYsImV4cCI6MjEwODc3NTgxNn0.nBvjZvdF9h4octYDp6O31W9a31SJWysAsX9siKZS-Vc';
 
+// The Supabase library is loaded with an integrity check (a changed file is refused). If it did not load, say so
+// plainly on the sign-in screen instead of leaving it stuck on "Loading".
+if (typeof supabase === 'undefined') {
+  document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('l_name'); if (el) el.innerHTML = '<option value="">The database library could not be loaded. Check the internet, then reload. If it stays, tell Admin.</option>'; });
+}
 const { createClient } = supabase;
 const db = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 10 } },
   auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }); // one sign-in per tab (v12)
@@ -3934,8 +3941,11 @@ let toastTimer;
 // Safe to embed free-text (style numbers, buyer/user names) inside a single-quoted
 // JS string literal within an onclick="..." attribute — an apostrophe in a buyer
 // name (e.g. "Macy's") would otherwise break the generated attribute outright.
+// A text put inside a JS string inside an HTML attribute (onclick="f('...')"): safe for the JS string AND for the
+// attribute (a double quote or < in a style or buyer name used to end the attribute and let markup in).
 function jsAttrEsc(s) {
-  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n|\r/g, '\\n')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // Safe to embed free-text inside HTML attribute values (title="...") or text content.
@@ -4177,7 +4187,7 @@ async function init() {
     // to anyone who simply opened the login page.
     const data = await loginNames(); const error = null; S.loginNames = data; // names only, never passwords (v12)
     if (data && data.length) {
-      $('l_name').innerHTML = '<option value="">— Select your name —</option>' +
+      if (!loginShowDepts()) $('l_name').innerHTML = '<option value="">— Select your name —</option>' +
         data.map(u => `<option value="${htmlEsc(u.id)}">${htmlEsc(u.name)}</option>`).join('');
     } else {
       // an empty or brand-new database: offer to set it up from a backup
@@ -5359,7 +5369,7 @@ async function doLogin() {
   const uid = $('l_name').value;
   const pwd = $('l_pwd').value;
   loginErr('');
-  if (!uid) { loginErr('Please select your name.'); return; }
+  if (!uid) { loginErr(($('l_dept_f') && $('l_dept_f').style.display !== 'none' && !$('l_dept').value) ? 'Please select your department.' : 'Please select your name.'); return; }
   if (!pwd) { loginErr('Please enter your password.'); return; }
   loginBusy(true);
   try {
@@ -5400,14 +5410,49 @@ var _loginPending = null; // the person who still has to choose their own passwo
 function loginErr(msg) { var e = $('l_err'); if (!e) return; e.textContent = msg; e.style.display = msg ? 'block' : 'none'; }
 function loginBusy(on) { var s = $('l_spin'); if (s) s.style.display = on ? 'block' : 'none'; }
 
-// Names for the sign-in list. Uses the v12 function when present (keeps working once the users table is locked).
+// Names for the sign-in list. With v32: the names with their department (erp_login_list), so the person picks the
+// department first and sees only its people. Before v32: the plain list (erp_login_names), as it was.
 async function loginNames() {
+  S.loginList = null;
+  try {
+    var l = await db.rpc('erp_login_list');
+    if (!l.error && l.data && l.data.length) {
+      S.loginList = l.data;
+      var seen = {}, out = [];
+      l.data.forEach(function (x) { if (!seen[x.id]) { seen[x.id] = 1; out.push({ id: x.id, name: x.name }); } });
+      return out.sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+    }
+  } catch (e) { }
   try {
     var r = await db.rpc('erp_login_names');
     if (!r.error && r.data) return r.data;
   } catch (e) { }
   var q = await db.from('users').select('id,name').order('name');
   return q.data || [];
+}
+
+// The Department step: the departments in the database's order; the name list waits until one is chosen.
+function loginShowDepts() {
+  var list = S.loginList || [], f = $('l_dept_f'), d = $('l_dept');
+  if (!list.length || !f || !d) return false;
+  var depts = [], seen = {};
+  list.slice().sort(function (a, b) { return (a.dept_sort - b.dept_sort) || String(a.dept).localeCompare(String(b.dept)); })
+    .forEach(function (x) { if (!seen[x.dept]) { seen[x.dept] = 1; depts.push(x.dept); } });
+  d.innerHTML = '<option value="">\u2014 Select your department \u2014</option>'
+    + depts.map(function (n) { return '<option value="' + htmlEsc(n) + '">' + htmlEsc(n) + '</option>'; }).join('');
+  f.style.display = '';
+  loginFillNames();
+  return true;
+}
+function loginFillNames() {
+  var d = $('l_dept'), n = $('l_name'); if (!d || !n) return;
+  var dept = d.value;
+  if (!dept) { n.innerHTML = '<option value="">\u2014 Select your department first \u2014</option>'; n.disabled = true; return; }
+  var people = (S.loginList || []).filter(function (x) { return x.dept === dept; })
+    .sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+  n.disabled = false;
+  n.innerHTML = '<option value="">\u2014 Select your name \u2014</option>'
+    + people.map(function (u) { return '<option value="' + htmlEsc(u.id) + '">' + htmlEsc(u.name) + '</option>'; }).join('');
 }
 
 // After Supabase accepted the password (or a saved session was found): check the login state, then open the app.
@@ -5605,7 +5650,7 @@ function viewAsEnter(target, reason, until) {
 }
 // Nothing can be saved while viewing as someone: every write is stopped here, before it leaves the browser.
 // (The database refuses them too for every table protected by the new rules.)
-var VIEWAS_READ_RPC = { erp_my_login_state: 1, erp_view_as_end: 1, erp_login_names: 1, erp_my_role: 1, erp_rq_setup: 1, erp_approval_state: 1 }; // reads only: the database refuses every change during view-as anyway
+var VIEWAS_READ_RPC = { erp_my_login_state: 1, erp_view_as_end: 1, erp_login_names: 1, erp_login_list: 1, erp_my_role: 1, erp_rq_setup: 1, erp_approval_state: 1 }; // reads only: the database refuses every change during view-as anyway
 function viewAsGuard() {
   if (db.__viewAsGuarded) return; db.__viewAsGuarded = true;
   var blocked = function () {
@@ -7535,7 +7580,7 @@ function renderBuyerOrdersTable(orders, uid, division, canEdit, VSTEPS, buyerId)
     var wStr = 'width:' + w + 'px;min-width:' + w + 'px;max-width:' + w + 'px;';
     var fStyle = frozenStyle(item);
     var fClass = frozenClass(item);
-    var lbl = (item.cfg && item.cfg.label) || null; // buyer-specific display-name override
+    var lbl = (item.cfg && item.cfg.label) ? htmlEsc(item.cfg.label) : null; // buyer-specific display-name override (typed by Admin: escaped)
 
     if (key === '_style') topRow += '<th class="wrap2' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Style Number') + '</th>';
     else if (key === '_photo') topRow += '<th class="' + fClass + '" style="' + wStr + fStyle + '" rowspan="2">' + (lbl||'Photo') + '</th>';
@@ -12094,7 +12139,8 @@ function lgTable(orders,showM){
     var dl=daysTo(o.ship_date);
     var dlH=dl===null?'--':dl<0?'<span class="chip bad" style="font-size:10px">'+dl+'d</span>':dl<=10?'<span class="chip warn" style="font-size:10px">'+dl+'d</span>':'<span style="font-size:11px">'+dl+'d</span>';
     var ir=o.inspection_result||'pending';
-    var irLabel={pass:'Pass',fail:'Fail',hold:'Hold',pending:'Pending'}[ir]||ir;
+    var irLabel={pass:'Pass',fail:'Fail',hold:'Hold',pending:'Pending'}[ir]||htmlEsc(ir);
+    if(!/^(pass|fail|hold|pending)$/.test(ir)) ir='pending'; // used as a class name: only the four known values
     var canAct=S.user.role==='admin'||actsAsMerchant(o.merchant_id);
     var inspH=canAct
       ? '<button class="insp-chip '+ir+'" data-uid="'+o.id+'" onclick="openInspection(this.dataset.uid)">'+irLabel+'</button>'
@@ -17026,7 +17072,7 @@ function renderDevLabdip() {
     else line = 'Never sent';
     var acts = '';
     if (_dl.canEdit) {
-      var cj = htmlEsc(jsAttrEsc(c.colour));
+      var cj = jsAttrEsc(c.colour);
       if (c.status === 'sourcing') acts = '<button class="btn sm pri" onclick="devLabStep(\'' + cj + '\',\'submit\')">Submit to Buyer</button><button class="btn sm ghost" onclick="devLabUndo(\'' + cj + '\')">&#x21A9; Undo</button>';
       else if (c.status === 'awaiting') acts = '<input class="dev-lab-cmt" id="dld-cmt-' + ci + '" placeholder="buyer comment (optional)">'
         + '<button class="btn sm" style="background:var(--green);border-color:var(--green);color:#fff" onclick="devLabStep(\'' + cj + '\',\'approve\',' + ci + ')">&#x2713; Approve</button>'
@@ -24025,7 +24071,42 @@ function docMaxPages(k, dflt) { var x = docKind(k); return x ? x.max_pages : dfl
 function docKeepYears(k) { var x = docKind(k); return x ? x.keep_years : 2; }
 function docAddYears(d, n) { var p = String(d || todayStr()).slice(0, 10).split('-'); var y = +p[0] + n, m = p[1], dd = p[2]; if (m === '02' && dd === '29') dd = '28'; return y + '-' + m + '-' + dd; }
 function docStore(b) { return db.storage.from(b || 'erp-documents'); } // (the name is written out so backups find this file store)
-function docUrl(d, path) { return docStore(d && d.bucket).getPublicUrl(path).data.publicUrl; }
+// Pages are private (v32): a page is opened through a link that works for an hour. docUrl() answers at once: the
+// link if it is already known, otherwise a blank placeholder that is swapped for the link a moment later (the links
+// for everything on screen are asked for together). Before v32 the stores are public and the links work the same.
+var DOC_SIGNED = {}, DOC_WANT = {}, DOC_SIGN_T = null, DOC_BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+function docKey(b, path) { return (b || DOC_BUCKET) + '|' + path; }
+function docUrl(d, path) {
+  if (!path) return DOC_BLANK;
+  var k = docKey(d && d.bucket, path), c = DOC_SIGNED[k];
+  if (c && c.t > Date.now()) return c.u;
+  DOC_WANT[k] = 1; if (!DOC_SIGN_T) DOC_SIGN_T = setTimeout(docSignNow, 0);
+  return DOC_BLANK + '#doc=' + encodeURIComponent(k);
+}
+async function docUrlNow(d, path) { var u = docUrl(d, path); if (u.indexOf(DOC_BLANK + '#doc=') === 0) { await docSignNow(); u = docUrl(d, path); } return u; }
+async function docSignNow() {
+  DOC_SIGN_T = null;
+  var keys = Object.keys(DOC_WANT); DOC_WANT = {}; if (!keys.length) return;
+  var byB = {};
+  keys.forEach(function(k){ var i = k.indexOf('|'); (byB[k.slice(0, i)] = byB[k.slice(0, i)] || []).push(k.slice(i + 1)); });
+  for (var b in byB) {
+    var paths = byB[b];
+    for (var i = 0; i < paths.length; i += 100) {
+      var grp = paths.slice(i, i + 100), got = null;
+      try { var r = await docStore(b).createSignedUrls(grp, 3600); if (!r.error) got = r.data || []; } catch (e) { }
+      grp.forEach(function(p, j){
+        var row = got && got.find(function(x){ return x.path === p; }), u = row && !row.error && row.signedUrl;
+        if (!u) u = docStore(b).getPublicUrl(p).data.publicUrl;           // a store still public (before v32)
+        DOC_SIGNED[docKey(b, p)] = { u: u, t: Date.now() + 50 * 60 * 1000 };
+      });
+    }
+  }
+  // swap the placeholders on screen for the real links
+  document.querySelectorAll('img[src^="' + DOC_BLANK + '#doc="], a[href^="' + DOC_BLANK + '#doc="]').forEach(function(el){
+    var at = el.tagName === 'A' ? 'href' : 'src', v = el.getAttribute(at), k = decodeURIComponent(v.slice((DOC_BLANK + '#doc=').length)), c = DOC_SIGNED[k];
+    if (c) el.setAttribute(at, c.u);
+  });
+}
 function docMoney(n, cur) { if (n == null || n === '' || isNaN(Number(n))) return '&mdash;'; return (cur && cur !== 'BDT' ? docEsc(cur) + ' ' : 'Tk ') + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 
 // ── reading ──
@@ -24154,6 +24235,7 @@ function docViewDraw() {
   $('qv-t').innerHTML = DOCV.title;
   $('qv-n').textContent = 'Page ' + (DOCV.i + 1) + ' of ' + d.pages.length;
   var u = docUrl(d, p.path); $('qv-img').src = u; $('qv-open').href = u;
+  if (u.indexOf(DOC_BLANK + '#doc=') === 0) docUrlNow(d, p.path).then(function(v){ if (DOCV.d === d && d.pages[DOCV.i] === p) { $('qv-img').src = v; $('qv-open').href = v; } });
 }
 function docViewGo(n) { var d = DOCV.d; if (!d) return; var j = DOCV.i + n; if (j < 0 || j >= d.pages.length) return; DOCV.i = j; docViewDraw(); }
 function docViewClose() { closeModal('ov-qv'); }
