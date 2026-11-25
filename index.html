@@ -2751,7 +2751,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
       <button class="btn pri" onclick="doSetPassword()">Save and continue <span class="arr">&rarr;</span></button>
       <p class="login-hint">Press Enter to save. <a href="#" onclick="cancelSetPassword();return false">Back</a></p>
     </div>
-    <p class="login-ver">STAGING V.2026.11.17.1</p>
+    <p class="login-ver">STAGING V.2026.11.17.2</p>
   </div></div>
 </div>
 
@@ -2795,7 +2795,7 @@ input.wo-by{font-weight:700;border:2px solid var(--ink)!important}
     <div id="float-hscroll" class="float-hscroll no-print" aria-hidden="true"><div class="float-hscroll-inner"></div></div>
     <div id="float-thead" class="card float-thead no-print" aria-hidden="true"></div>
   </main>
-  <div id="ver-stamp">STAGING V.2026.11.17.1</div>
+  <div id="ver-stamp">STAGING V.2026.11.17.2</div>
 </div>
 
 
@@ -4296,6 +4296,7 @@ async function startApp() {
   cleanOldArchive();
   subscribeRealtime();
   if (rqCanSee()) rqSubscribe();
+  liveSetup();
   // audit / management: say how many requisitions are waiting for them
   if (rqCanSee() && !RQ.missing) {
     var _rqMine = RQ.rows.filter(rqNeedsMe).length;
@@ -4480,22 +4481,21 @@ async function _checkTNAAfterShipAlerts(merchantId, orders) {
     var problemIds = problems.map(function(p){ return p.order.id; });
     // Auto-clear: the order was flagged before but its dates are fine now.
     var toClear = (existingRes.data||[]).filter(function(r){ return problemIds.indexOf(r.order_id) === -1; });
-    for (var i = 0; i < toClear.length; i++) {
-      await db.from('shipment_alerts').update({ dismissed: true }).eq('id', toClear[i].id);
-    }
-
-    var changed = toClear.length > 0;
+    var offIds = toClear.map(function(r){ return r.id; }), adds = [];
     for (var j = 0; j < problems.length; j++) {
       var p = problems[j];
       var existing = existingByOrder[p.order.id];
       if (existing && existing.detail === p.detail) continue; // already flagged, nothing new to say
-      if (existing) await db.from('shipment_alerts').update({ dismissed: true }).eq('id', existing.id); // detail changed — replace with a fresh one
-      await db.from('shipment_alerts').insert({dismissed:false,
+      if (existing) offIds.push(existing.id); // detail changed — replace with a fresh one
+      adds.push({dismissed:false,
         order_id: p.order.id, style: p.order.style, buyer: p.order.buyer, merchant_id: merchantId,
         alert_type: 'tna_after_ship', detail: p.detail
       });
-      changed = true;
     }
+    // all the changes in a few writes, not one per order
+    for (var i = 0; i < offIds.length; i += 150) await db.from('shipment_alerts').update({ dismissed: true }).in('id', offIds.slice(i, i + 150));
+    if (adds.length) await db.from('shipment_alerts').insert(adds);
+    var changed = offIds.length > 0 || adds.length > 0;
     if (changed) { await loadAlerts(); renderRail(); if (S.view === 'inbox') renderInbox(); }
   } catch (e) { /* best-effort — never block board load */ }
 }
@@ -4698,7 +4698,13 @@ async function reloadSummaries(merchantId) {
   S.boardSummaries[merchantId] = sums;
 }
 
-async function loadArchiveData() {
+// The whole shipped history: loaded once, even when two screens ask for it at the same moment.
+function loadArchiveData() {
+  if (S.archiveLoaded) return Promise.resolve();
+  if (!S._archiveP) S._archiveP = loadArchiveDataNow().then(function(){ S._archiveP = null; }, function(e){ S._archiveP = null; throw e; });
+  return S._archiveP;
+}
+async function loadArchiveDataNow() {
   if (S.archiveLoaded) return;
   var scope = historyScopeIds(), data;
   try {
@@ -4706,6 +4712,19 @@ async function loadArchiveData() {
   } catch (e) { console.error('loadArchiveData:', e); toast('Could not load shipped orders \u2014 check the connection and try again', 'err'); S.archive = S.archive || []; return; }
   S.archive = (data || []).map(function(o){ if (o.style) o.style = o.style.toUpperCase(); return o; });
   S.archiveLoaded = true;
+}
+
+// The dashboard only counts this year's shipments: a few columns of this year's shipped orders, instead of the whole
+// shipped history with every column (which grows every year). The full list still loads when Shipped is opened.
+function shippedYearRows() { return S.archiveLoaded ? (S.archive || []) : (S.shipYear || []); }
+function loadShippedYear() {
+  if (S.archiveLoaded || S.shipYearLoaded) return Promise.resolve();
+  if (!S._shipYearP) S._shipYearP = (async function(){
+    var scope = historyScopeIds(), from = new Date().getFullYear() + '-01-01';
+    var data = await fetchAllRows(function(){ var q = db.from('orders').select('id,merchant_id,shipped_on,shipped_qty,qty,fob').eq('stage', 'shipped').gte('shipped_on', from); return scope ? q.in('merchant_id', scope) : q; });
+    S.shipYear = data || []; S.shipYearLoaded = true;
+  })().then(function(){ S._shipYearP = null; }, function(e){ S._shipYearP = null; throw e; });
+  return S._shipYearP;
 }
 
 // ─── APP SETTINGS ───
@@ -4877,6 +4896,60 @@ function liveChangeIsForThisBoard(payload) {
   if (row.order_id) return (S.boardCache[S.view] || []).some(function(o){ return o.id === row.order_id; });
   return true; // can't tell (e.g. a receipt, or a delete) — refresh to be safe
 }
+// ─── LIVE UPDATES ON THE FREE PLAN ───
+// Every open tab holds one live connection, and the Free plan allows 200 at a time. A tab hidden for 5 minutes gives
+// its connection back; when it is looked at again it reconnects and re-reads the screen (nothing is missed). If the
+// connection is refused (the plan is full) or drops, the screen re-reads itself every 2 minutes while it is on
+// screen, until live updates work again.
+var LIVE = { pausedAt: 0, t: null, poll: null, down: false, on: false };
+var LIVE_PAUSE_MS = 5 * 60 * 1000, LIVE_POLL_MS = 2 * 60 * 1000;
+function liveSetup() {
+  if (LIVE.on) return; LIVE.on = true;
+  document.addEventListener('visibilitychange', function(){
+    if (!S.user) return;
+    clearTimeout(LIVE.t);
+    if (document.hidden) { LIVE.t = setTimeout(livePause, LIVE_PAUSE_MS); return; }
+    if (LIVE.pausedAt) liveResume();
+  });
+}
+function livePause() {
+  if (!document.hidden || LIVE.pausedAt || !S.user) return;
+  LIVE.pausedAt = Date.now();
+  try { db.removeAllChannels(); } catch (e) { }
+  try { if (db.realtime && db.realtime.disconnect) db.realtime.disconnect(); } catch (e) { }
+  S.channel = S.channelExtra = S.channelComm = S.msgChannel = null;
+  if (typeof RQ !== 'undefined') RQ.channel = null;
+  if (typeof NTF !== 'undefined') { NTF.ch = null; NTF.down = true; }   // the bell reads what was missed when it reconnects
+  liveStopPoll();
+}
+async function liveResume() {
+  LIVE.pausedAt = 0;
+  try {
+    subscribeRealtime();
+    if (rqCanSee()) rqSubscribe();
+    if (typeof ntfOn === 'function' && ntfOn()) ntfSubscribe();
+    if (typeof msgRqInbox === 'function' && msgRqInbox()) msgRqBoot();
+  } catch (e) { console.error('live resume:', e); }
+  await liveCatchUp();
+}
+// re-read what is on screen (the board, the requisitions, the bell), without the "Refreshed" message
+async function liveCatchUp() {
+  try {
+    if (typeof S.view === 'string' && isMerchantBoardView()) { await reloadSummaries(S.view); renderBoard(S.view, true); }
+    else if (typeof S.view === 'string' && S.view.indexOf('rq:') === 0 && typeof rqLoad === 'function') { await rqLoad(); if (!RQ.editId && !rqFormDirty()) rqRender(S.view); renderRail(); }
+    if (typeof ntfCatchUp === 'function') ntfCatchUp();
+  } catch (e) { console.error('live catch-up:', e); }
+}
+function liveStatus(st) {
+  if (st === 'SUBSCRIBED') { if (LIVE.down) { LIVE.down = false; liveStopPoll(); liveCatchUp(); } return; }
+  if ((st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') && !LIVE.pausedAt) { LIVE.down = true; liveStartPoll(); }
+}
+function liveStartPoll() {
+  if (LIVE.poll) return;
+  LIVE.poll = setInterval(function(){ if (!document.hidden && LIVE.down && !LIVE.pausedAt) liveCatchUp(); }, LIVE_POLL_MS);
+}
+function liveStopPoll() { if (LIVE.poll) { clearInterval(LIVE.poll); LIVE.poll = null; } }
+
 function queueBoardRefresh(payload) {
   if (!liveChangeIsForThisBoard(payload)) return;
   if (!_rtTimer) _rtFirstAt = Date.now();
@@ -4901,7 +4974,10 @@ function subscribeRealtime() {
       } else if (payload.new) {
         upsertLocalOrder(payload.new); // merge in place — no cache wipe, no reload flash
       }
-      if (S.archiveLoaded) S.archiveLoaded = false; // shipped list may be stale — refetch lazily when opened
+      // the shipped lists are re-read only when the change can touch them (shipped, Laying Goods, trash, a delete):
+      // an edit of a live order no longer makes every open dashboard re-read the shipped orders
+      var _nw = payload.new || {}, _touchesShipped = payload.eventType === 'DELETE' || (_nw.stage && _nw.stage !== 'live') || !!_nw.shipped_on;
+      if (_touchesShipped && (S.archiveLoaded || S.shipYearLoaded || S.archivePartLoaded)) S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; // shipped list may be stale — refetch lazily when opened
       if (S.trashLoaded) S.trashLoaded = false; // same idea for trash
       await loadDashOrders();
       renderRail();
@@ -4949,7 +5025,7 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'accessory_receipts' }, async (payload) => {
       queueBoardRefresh(payload); // other pages (Inbox, Trash, Admin…) used to be thrown back to the Dashboard
     })
-    .subscribe();
+    .subscribe(liveStatus);
   // Tables added by optional SQL updates listen on their own channels: a
   // listener on a table that doesn't exist yet can stop a whole channel, and
   // these must never take the main one (orders, messages…) down with them.
@@ -5102,7 +5178,7 @@ async function refreshPage() {
   // Clear all caches
   S.boardCache = {};
   S.boardSummaries = {};
-  S.archiveLoaded = false;
+  S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false;
   S.archive = [];
   await loadMyAssignments();
   await Promise.all([loadDashOrders(), loadMemo(), loadTNARequests(), loadMessages()]);
@@ -7919,7 +7995,7 @@ async function restoreOrder(ordId) {
   // Whichever list it's going back to hasn't seen it in a while — refresh that
   // one so the next visit shows it rather than a stale, incomplete picture.
   S.boardCache = {};
-  if (backTo === 'shipped') { S.archiveLoaded = false; }
+  if (backTo === 'shipped') { S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; }
   else if (backTo === 'laying') { await loadLayingGoods(); }
   else { await loadDashOrders(); }
   toast('Restored to ' + ({live:'Live Orders',laying:'Laying Goods',shipped:'Shipped'}[backTo] || backTo));
@@ -10050,7 +10126,7 @@ async function confirmShip() {
       });
     }
     if (o.merchant_id) delete S.boardCache[o.merchant_id];
-    S.archiveLoaded = false;
+    S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false;
     closeModal('ov-ship');
     await loadDashOrders();
     render();
@@ -12625,12 +12701,12 @@ async function _checkLabDipSupplierAlerts(merchantId, orders) {
       if (maxByLeg[k] == null || r.days_late > maxByLeg[k]) maxByLeg[k] = r.days_late;
     });
 
-    var inserted = 0;
+    var inserted = 0, adds = [];
     for (var i = 0; i < pending.length; i++) {
       var p = pending[i];
       var legKey = p.ord.id + '\u0001' + p.latest.colour + '\u0001' + p.latest.sent_to_supplier_on;
       if (maxByLeg[legKey] != null && maxByLeg[legKey] >= p.checkpoint) continue;
-      await db.from('shipment_alerts').insert({dismissed:false,
+      adds.push({dismissed:false,
         order_id: p.ord.id, style: p.ord.style, buyer: p.ord.buyer, merchant_id: merchantId,
         alert_type: 'labdip_supplier_late', days_late: p.checkpoint,
         colour: p.latest.colour, supplier_name: p.latest.supplier_name || null, sent_to_supplier_on: p.latest.sent_to_supplier_on,
@@ -12638,6 +12714,7 @@ async function _checkLabDipSupplierAlerts(merchantId, orders) {
       });
       inserted++;
     }
+    if (adds.length) await db.from('shipment_alerts').insert(adds); // one write for all of them
     // Newly-fired alerts otherwise wouldn't show until the next full reload.
     if (inserted) { await loadAlerts(); renderRail(); if (S.view === 'inbox') renderInbox(); }
   } catch (e) { /* best-effort — never block board load */ }
@@ -15215,34 +15292,38 @@ async function _checkTNADueSoonAlerts(merchantId, orders) {
     var division = divisionOf(merchantId);
     // `orders` is always this merchant's full live list (board or dashboard).
     var live = (orders||[]).filter(function(o){ return (o.stage === 'live' || !o.stage) && o.merchant_id === merchantId; });
+    // Two reads for the whole board (the open reminders, and the ones of the last few days, dismissed or not), then the
+    // changes in as few writes as possible: a board of a few hundred orders used to make a few hundred calls here.
+    var since = new Date(Date.now() - 4 * 86400000).toISOString();
     var r0 = await db.from('shipment_alerts').select('id,order_id,detail,days_late,created_at').eq('alert_type', 'tna_due_soon').not('dismissed', 'is', true).eq('merchant_id', merchantId);
     if (r0.error) return;
+    var recentAll;   // read once, and only if an order needs it (most loads do not)
     var existing = (r0.data || []).slice().sort(function(a,b){ return String(a.created_at||'').localeCompare(String(b.created_at||'')); });
-    var changed = false, sysOff = function(){ return { dismissed: true, dismissed_by: 'system', dismissed_at: new Date().toISOString() }; };
+    var off = [], adds = [], changed = false;
     // Orders no longer live here (shipped, moved to Laying Goods, deleted,
     // transferred to another merchant) — their reminders go.
     var liveIds = {}; live.forEach(function(o){ liveIds[o.id] = 1; });
-    for (var x = 0; x < existing.length; x++) if (!liveIds[existing[x].order_id]) { await db.from('shipment_alerts').update(sysOff()).eq('id', existing[x].id); changed = true; }
+    for (var x = 0; x < existing.length; x++) if (!liveIds[existing[x].order_id]) off.push(existing[x].id);
     existing = existing.filter(function(a){ return liveIds[a.order_id]; });
     // Duplicates (e.g. merchant and JM opened the app at the same moment): keep the oldest.
     var seenKey = {};
     for (var y = 0; y < existing.length; y++) {
       var kk = existing[y].order_id + '|' + existing[y].days_late;
-      if (seenKey[kk]) { await db.from('shipment_alerts').update(sysOff()).eq('id', existing[y].id); existing[y]._gone = true; changed = true; } else seenKey[kk] = 1;
+      if (seenKey[kk]) { off.push(existing[y].id); existing[y]._gone = true; } else seenKey[kk] = 1;
     }
     existing = existing.filter(function(a){ return !a._gone; });
     for (var j = 0; j < live.length; j++) {
       var o = live[j], due = tnaDueItems(o, division), mine = existing.filter(function(a){ return a.order_id === o.id; });
       if (!due.length) { // nothing due any more — clear old reminders
-        for (var k = 0; k < mine.length; k++) { await db.from('shipment_alerts').update({ dismissed: true, dismissed_by: 'system', dismissed_at: new Date().toISOString() }).eq('id', mine[k].id); changed = true; }
+        for (var k = 0; k < mine.length; k++) off.push(mine[k].id);
         continue;
       }
       var checkpoint = due[0].d === 0 ? 0 : 3; // 3 = "coming up", 0 = "due today" (the second reminder)
-      var detail = (o.po_number ? 'PO ' + o.po_number + ' \u00b7 ' : '') + due.map(function(x){ return x.n + ' ' + (x.d === 0 ? 'due TODAY' : 'due in ' + x.d + ' day' + (x.d === 1 ? '' : 's')) + ' (' + short(x.p) + ')'; }).join(' \u00b7 ');
+      var detail = (o.po_number ? 'PO ' + o.po_number + ' · ' : '') + due.map(function(x){ return x.n + ' ' + (x.d === 0 ? 'due TODAY' : 'due in ' + x.d + ' day' + (x.d === 1 ? '' : 's')) + ' (' + short(x.p) + ')'; }).join(' · ');
       var same = mine.find(function(a){ return a.days_late === checkpoint; });
       for (var m = 0; m < mine.length; m++) { // a reminder from the other checkpoint is replaced by this one
         if (mine[m] === same) continue;
-        await db.from('shipment_alerts').update({ dismissed: true, dismissed_by: 'system', dismissed_at: new Date().toISOString() }).eq('id', mine[m].id); changed = true;
+        off.push(mine[m].id);
       }
       if (same) {
         if (same.detail !== detail) { await db.from('shipment_alerts').update({ detail: detail }).eq('id', same.id); changed = true; } // keep it current, no new reminder
@@ -15252,13 +15333,16 @@ async function _checkTNADueSoonAlerts(merchantId, orders) {
       // moved, or "due today" was dealt with and another item is still coming
       // up) is brought back instead of sending a new one — so anyone who had
       // dismissed it doesn't get it again.
-      var prev = await db.from('shipment_alerts').select('id,created_at').eq('alert_type', 'tna_due_soon').eq('order_id', o.id).eq('merchant_id', merchantId).eq('days_late', checkpoint);
-      var recent = (prev.data || []).filter(function(a){ return a.created_at && (Date.now() - new Date(a.created_at).getTime()) < 4 * 86400000; })
+      if (recentAll === undefined) { var rr = await db.from('shipment_alerts').select('id,order_id,days_late,created_at').eq('alert_type', 'tna_due_soon').eq('merchant_id', merchantId).gte('created_at', since); recentAll = rr.error ? null : (rr.data || []); }
+      var prevRows = recentAll ? recentAll.filter(function(a){ return a.order_id === o.id && a.days_late === checkpoint; })
+        : ((await db.from('shipment_alerts').select('id,created_at').eq('alert_type', 'tna_due_soon').eq('order_id', o.id).eq('merchant_id', merchantId).eq('days_late', checkpoint)).data || []);
+      var recent = prevRows.filter(function(a){ return a.created_at && (Date.now() - new Date(a.created_at).getTime()) < 4 * 86400000 && off.indexOf(a.id) === -1; })
         .sort(function(a,b){ return String(a.created_at).localeCompare(String(b.created_at)); })[0];
       if (recent) { await db.from('shipment_alerts').update({ dismissed: false, dismissed_by: null, dismissed_at: null, detail: detail }).eq('id', recent.id); changed = true; continue; }
-      await db.from('shipment_alerts').insert({dismissed:false, order_id: o.id, style: o.style, buyer: o.buyer, merchant_id: merchantId, alert_type: 'tna_due_soon', days_late: checkpoint, detail: detail });
-      changed = true;
+      adds.push({dismissed:false, order_id: o.id, style: o.style, buyer: o.buyer, merchant_id: merchantId, alert_type: 'tna_due_soon', days_late: checkpoint, detail: detail });
     }
+    if (off.length) { for (var q = 0; q < off.length; q += 150) await db.from('shipment_alerts').update({ dismissed: true, dismissed_by: 'system', dismissed_at: new Date().toISOString() }).in('id', off.slice(q, q + 150)); changed = true; }
+    if (adds.length) { await db.from('shipment_alerts').insert(adds); changed = true; }
     if (changed) { await loadAlerts(); renderRail(); if (S.view === 'inbox') renderInbox(); if (S.view === 'dashboard') renderDashboard(); }
   } catch (e) { console.error('TNA reminders:', e); /* best-effort — never block a board load */ }
 }
@@ -18876,7 +18960,7 @@ async function runTransferBuyer(assignOnly) {
   bpMerchantChanged(B, A, C);
   if (!errs.length || assignOnly) ids.forEach(function(id){ logActivity(id, 'Transferred', bname + ': ' + fromN + ' \u2192 ' + toN); });
   _tb.busy = false;
-  S.buyerAssignments[B] = C; S.boardCache = {}; S.layingLoaded = false; S.archiveLoaded = false; S.developmentsLoaded = false;
+  S.buyerAssignments[B] = C; S.boardCache = {}; S.layingLoaded = false; S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; S.developmentsLoaded = false;
   await loadDashOrders(); renderRail();
   if (errs.length) {
     toast('Transfer partly done — run it again to finish. ' + errs[0], 'err');
@@ -21164,7 +21248,7 @@ function queueCommercialRefresh(payload) {
 // ─── dashboard section (management, HOD, audit, manager, admin, commercial, merchant) ───
 function commercialDashboardHtml() {
   if (S.commercialMissing) return S.user.role === 'commercial' || S.user.role === 'admin' ? '<div class="card"><div class="m-b">Shipment & payment tracking needs <b>commercial-migration.sql</b> to be run in Supabase.</div></div>' + (S.user.role === 'commercial' ? commercialSoonHtml() : '') : '';
-  var lay = S.layingGoods || [], shp = S.archive || [];
+  var lay = S.layingGoods || [], shp = dashShipped();
   var cut60 = addDaysISO(todayStr(), -60);
   function rowOf(o){ return S.comm.rows[o.id]; }
   function stOf(o){ return commercialState(o, rowOf(o), S.comm.pays[o.id]); }
@@ -21221,10 +21305,25 @@ function commercialDashboardHtml() {
     + '</tbody></table></div>' + (acts.length > 20 ? '<div class="m-b adm-muted">and ' + (acts.length - 20) + ' more</div>' : '') + '</div>' : '';
   return '<div class="dash-sec-h">Shipment &amp; payments</div>' + tiles + actHtml + (S.user.role === 'commercial' ? commercialSoonHtml() : '') + aging;
 }
+// The dashboard needs only the shipped orders of the last 60 days (BL pending) and those with money still due:
+// those, not the whole shipped history (which grows every year). The full list still loads on the Shipped and
+// Commercial screens.
+function dashShipped() { return S.archiveLoaded ? (S.archive || []) : (S.archivePart || []); }
+async function loadArchivePart(cut, openIds) {
+  var scope = historyScopeIds(), byId = {};
+  var add = function(rows){ (rows || []).forEach(function(o){ if (o.style) o.style = o.style.toUpperCase(); byId[o.id] = o; }); };
+  add(await fetchAllRows(function(){ var q = db.from('orders').select('*').eq('stage', 'shipped').gte('shipped_on', cut).order('shipped_on', { ascending: false }); return scope ? q.in('merchant_id', scope) : q; }));
+  var ids = (openIds || []).filter(function(id){ return !byId[id]; });
+  for (var i = 0; i < ids.length; i += 150) {
+    var r = await db.from('orders').select('*').eq('stage', 'shipped').in('id', ids.slice(i, i + 150));
+    if (r.error) throw r.error; add(r.data);
+  }
+  S.archivePart = Object.keys(byId).map(function(k){ return byId[k]; }); S.archivePartLoaded = true;
+}
 // Makes sure Laying Goods, Shipped and the open commercial records are loaded for the dashboard.
 async function ensureCommercialDashData() {
   if (S.commercialMissing || S._commDashBusy) return;
-  if (S._commOpenLoadedAt && Date.now() - S._commOpenLoadedAt < 3 * 60 * 1000 && S.layingLoaded && S.archiveLoaded) {
+  if (S._commOpenLoadedAt && Date.now() - S._commOpenLoadedAt < 3 * 60 * 1000 && S.layingLoaded && (S.archiveLoaded || S.archivePartLoaded)) {
     // fresh — only fetch records for orders that just appeared (e.g. a ship date moved into the 14 days)
     var missing = (S.commSoon || []).concat(S.layingGoods || []).map(function(o){ return o.id; }).filter(function(id){ return !S.comm.have[id]; });
     if (!missing.length || (S._commMissTried && Date.now() - S._commMissTried < 60 * 1000)) return;
@@ -21241,12 +21340,12 @@ async function ensureCommercialDashData() {
   S._commDashBusy = true;
   try {
     if (!S.layingLoaded) await loadLayingGoods();
-    if (!S.archiveLoaded) await loadArchiveData();
     await loadOpenCommercial();
     // Laying Goods + everything shipped in the last 60 days (for "BL pending")
     var cut60 = addDaysISO(todayStr(), -60);
+    if (!S.archiveLoaded) await loadArchivePart(cut60, Object.keys(S.comm.rows));
     await loadCommercialFor((S.layingGoods || []).concat(S.commSoon || []).map(function(o){ return o.id; })
-      .concat((S.archive || []).filter(function(o){ return (o.shipped_on || '') >= cut60; }).map(function(o){ return o.id; })));
+      .concat(dashShipped().filter(function(o){ return (o.shipped_on || '') >= cut60; }).map(function(o){ return o.id; })));
   } catch (e) { console.error('commercial dashboard data:', e); }
   S._commDashBusy = false;
   if (S.view === 'dashboard') renderDashboard();
@@ -21313,7 +21412,7 @@ function movedByOtherMsg(res) {
   if (res && res.error) return false;
   if (res && Array.isArray(res.data) && res.data.length) return false;
   showSaveError('This order was already moved by someone else (or in another tab), so nothing was changed.\n\nThe page will refresh to show where it is now.');
-  S.boardCache = {}; S.layingLoaded = false; S.archiveLoaded = false; S.trashLoaded = false;
+  S.boardCache = {}; S.layingLoaded = false; S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; S.trashLoaded = false;
   setTimeout(function(){ try { loadDashOrders().then(function(){ render(); renderRail(); }); } catch (e) {} }, 300);
   return true;
 }
@@ -21921,7 +22020,7 @@ function commBoardOrders() {
 }
 async function loadCommBoard(force) {
   if (S.commercialMissing) return;
-  if (force) { S.layingLoaded = false; S.archiveLoaded = false; }
+  if (force) { S.layingLoaded = false; S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; }
   if (!S.layingLoaded) await loadLayingGoods();
   if (!S.archiveLoaded) await loadArchiveData();
   if (force || !S.commSoon) await loadCommSoon();
@@ -23298,13 +23397,20 @@ function renderDashboard() {
   // The shipped list is loaded lazily (only when the Shipped page is opened),
   // so on a fresh login these figures read 0. Load it in the background and
   // redraw the dashboard once it arrives.
-  if (!S.archiveLoaded && !S._archiveLoading) {
+  if (!S.archiveLoaded && !S.shipYearLoaded && !S._archiveLoading) {
     S._archiveLoading = true;
-    loadArchiveData().then(function(){ S._archiveLoading = false; if (S.view === 'dashboard') renderDashboard(); })
+    loadShippedYear().then(function(){ S._archiveLoading = false; if (S.view === 'dashboard') renderDashboard(); })
       .catch(function(){ S._archiveLoading = false; });
   }
+  // the full shipped list (the Shipped count in the menu, suggestions) still comes, but a little later and at a random
+  // moment, so 300 people signing in at 8 o'clock do not all read the whole history in the same minute
+  if (!S.archiveLoaded && !S._archiveLater) {
+    S._archiveLater = setTimeout(function(){
+      loadArchiveData().then(function(){ S._archiveLater = null; renderRail(); if (S.view === 'dashboard') renderDashboard(); }).catch(function(){ S._archiveLater = null; });
+    }, 15000 + Math.random() * 45000);
+  }
   const thisYear = new Date().getFullYear();
-  const shippedThisYear = (S.archive||[]).filter(o => o.shipped_on && new Date(o.shipped_on).getFullYear() === thisYear);
+  const shippedThisYear = shippedYearRows().filter(o => o.shipped_on && new Date(o.shipped_on).getFullYear() === thisYear);
   // Actual shipped quantity, not the order quantity — short shipments count as shipped.
   const shippedQty = shippedThisYear.reduce((s, o) => s + (o.shipped_qty != null ? o.shipped_qty : (o.qty || 0)), 0);
   const shippedVal = shippedThisYear.reduce((s, o) => s + ((o.shipped_qty != null ? o.shipped_qty : (o.qty || 0)) * (o.fob || 0)), 0);
@@ -23457,7 +23563,7 @@ function renderDashPdf() {
   var unshP = unshippedTotals(unshippedOrders());
   var totalBal = unshP.qty, totalVal = unshP.value, totalPkd = unshP.packed;
   var thisYear = new Date().getFullYear();
-  var shippedY = (S.archive||[]).filter(function(o){ return o.shipped_on && new Date(o.shipped_on).getFullYear()===thisYear; });
+  var shippedY = shippedYearRows().filter(function(o){ return o.shipped_on && new Date(o.shipped_on).getFullYear()===thisYear; });
   var shpQty = shippedY.reduce(function(s,o){ return s+(o.shipped_qty!=null?o.shipped_qty:(o.qty||0)); }, 0);
   var shpVal = shippedY.reduce(function(s,o){ return s+(o.shipped_qty!=null?o.shipped_qty:(o.qty||0))*(o.fob||0); }, 0);
   var merchants = S.users.filter(function(u){ return u.role==='merchant' && can('view_board', u.id); });
@@ -31722,7 +31828,7 @@ async function runRestore() {
   _backupBusy = true; var st = $('bk-status');
   var r = await restoreEverything(b, _restoreZip, function(m){ if (st) st.textContent = m; });
   _backupBusy = false; if (st) st.textContent = '';
-  S.boardCache = {}; S.archiveLoaded = false; S.layingLoaded = false; S.trashLoaded = false; S.developmentsLoaded = false;
+  S.boardCache = {}; S.archiveLoaded = S.shipYearLoaded = S.archivePartLoaded = false; S.layingLoaded = false; S.trashLoaded = false; S.developmentsLoaded = false;
   if (typeof _styleImagesReadAt !== 'undefined') Object.keys(_styleImagesReadAt).forEach(function(k){ delete _styleImagesReadAt[k]; });
   var msgs = r.fails.concat(r.short).concat(r.notes);
   if (msgs.length) showSaveError('Restored ' + r.done + ' of ' + r.total + ' rows' + (r.files ? ' and ' + r.files.ok + ' of ' + r.files.total + ' files' : '') + '.\n\n' + msgs.join('\n'));
